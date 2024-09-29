@@ -4,8 +4,10 @@ import com.asos.reservationSystem.domain.dto.CourseDto;
 import com.asos.reservationSystem.domain.entities.Course;
 import com.asos.reservationSystem.mappers.Mapper;
 import com.asos.reservationSystem.services.CourseService;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/")
@@ -17,5 +19,12 @@ public class CourseController {
     public CourseController(CourseService courseService, Mapper<Course, CourseDto> courseMapper) {
         this.courseService = courseService;
         this.courseMapper = courseMapper;
+    }
+
+    @GetMapping(path = "/course")
+    public List<CourseDto> getAll(){
+        List<Course> course = courseService.getAll();
+        return course.stream().map(courseMapper::mapToDto).
+                collect(Collectors.toList());
     }
 }

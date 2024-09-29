@@ -1,5 +1,6 @@
 package com.asos.reservationSystem.domain.entities;
 
+import com.asos.reservationSystem.token.Token;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
@@ -13,6 +14,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.List;
 
 @Data
 @Builder
@@ -50,6 +52,9 @@ public class User implements UserDetails{
 
     private String description;
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Token> tokens;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return role.getAuthorities();
@@ -79,7 +84,4 @@ public class User implements UserDetails{
     public boolean isEnabled() {
         return true;
     }
-
-//    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
-//    private List<Token> tokens;
 }

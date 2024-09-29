@@ -15,13 +15,13 @@ import static com.asos.reservationSystem.domain.entities.Permission.*;
 public enum Role {
     STUDENT(Collections.emptySet()),
     TEACHER(Collections.emptySet()),
-    ADMIN(
-            Set.of(
-                    ADMIN_READ,
-                    ADMIN_UPDATE,
-                    ADMIN_DELETE,
-                    ADMIN_CREATE
-            )
+    ADMIN( Collections.emptySet()
+//            Set.of(
+//                    ADMIN_READ,
+//                    ADMIN_UPDATE,
+//                    ADMIN_DELETE,
+//                    ADMIN_CREATE
+//            )
     );
 
     @Getter
