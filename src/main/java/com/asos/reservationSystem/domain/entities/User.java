@@ -7,7 +7,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 
 import org.springframework.security.core.GrantedAuthority;
@@ -36,7 +35,6 @@ public class User implements UserDetails{
     private String lastName;
 
     @NotNull(message = "Email cannot be null")
-    @Email(message = "Email should be valid")
     @Column(unique = true)
     private String email;
 
