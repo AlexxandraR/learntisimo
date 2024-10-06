@@ -54,9 +54,9 @@ public class DBInitializer implements CommandLineRunner {
         var user1 = User.builder()
                 .firstName("John")
                 .lastName("Boe")
-                .email("jb@gmail.com")
+                .email("student@student.com")
                 .phoneNumber("+421949000000")
-                .password(passwordEncoder.encode("john"))
+                .password(passwordEncoder.encode("student"))
                 .role(Role.STUDENT)
                 .build();
         var savedUser1 = userRepository.save(user1);
@@ -67,9 +67,9 @@ public class DBInitializer implements CommandLineRunner {
         var user2 = User.builder()
                 .firstName("Sanne")
                 .lastName("Boe")
-                .email("sb@gmail.com")
+                .email("teacher@teacher.com")
                 .phoneNumber("+421949000000")
-                .password(passwordEncoder.encode("sanne"))
+                .password(passwordEncoder.encode("teacher"))
                 .role(Role.TEACHER)
                 .degree("Mgr.")
                 .description("I am awesome!")

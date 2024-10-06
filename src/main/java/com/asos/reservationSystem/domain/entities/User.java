@@ -38,7 +38,7 @@ public class User implements UserDetails{
     @Column(unique = true)
     private String email;
 
-    @Pattern(regexp = "^\\+\\d{1,3}\\d{1,15}$", message = "The phone number must be in international format.")
+    @Pattern(regexp = "^\\+[0-9]{3}\\s?[0-9]{3}\\s?[0-9]{3}\\s?[0-9]{3}$", message = "The phone number must be in international format.")
     private String phoneNumber;
 
     @NotNull(message = "Password cannot be null")
