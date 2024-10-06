@@ -49,7 +49,8 @@ public class DBInitializer implements CommandLineRunner {
         var savedUser = userRepository.save(user);
         var jwtToken = jwtService.generateToken(user);
         var refreshedToken = jwtService.generateRefreshToken(user);
-        authenticationService.saveUserToken(savedUser, jwtToken);
+        authenticationService.saveUserToken(savedUser, jwtToken, true);
+        authenticationService.saveUserToken(savedUser, refreshedToken, false);
 
         var user1 = User.builder()
                 .firstName("John")
@@ -62,7 +63,8 @@ public class DBInitializer implements CommandLineRunner {
         var savedUser1 = userRepository.save(user1);
         var jwtToken1 = jwtService.generateToken(user1);
         var refreshedToken1 = jwtService.generateRefreshToken(user1);
-        authenticationService.saveUserToken(savedUser1, jwtToken1);
+        authenticationService.saveUserToken(savedUser1, jwtToken1, true);
+        authenticationService.saveUserToken(savedUser1, refreshedToken1, false);
 
         var user2 = User.builder()
                 .firstName("Sanne")
@@ -77,7 +79,8 @@ public class DBInitializer implements CommandLineRunner {
         var savedUser2 = userRepository.save(user2);
         var jwtToken2 = jwtService.generateToken(user2);
         var refreshedToken2 = jwtService.generateRefreshToken(user2);
-        authenticationService.saveUserToken(savedUser2, jwtToken2);
+        authenticationService.saveUserToken(savedUser2, jwtToken2, true);
+        authenticationService.saveUserToken(savedUser2, refreshedToken2, false);
 
         var course = Course.builder()
                 .name("Fyzika")

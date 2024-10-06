@@ -3,10 +3,7 @@ package com.asos.reservationSystem.token;
 
 import com.asos.reservationSystem.domain.entities.User;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Data
 @Builder
@@ -27,6 +24,8 @@ public class Token {
     public boolean revoked;
 
     public boolean expired;
+
+    public boolean access;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
