@@ -2,12 +2,10 @@ package com.asos.reservationSystem.domain;
 
 import com.asos.reservationSystem.auth.AuthenticationService;
 import com.asos.reservationSystem.config.JwtService;
-import com.asos.reservationSystem.domain.entities.Course;
-import com.asos.reservationSystem.domain.entities.Meeting;
-import com.asos.reservationSystem.domain.entities.Role;
-import com.asos.reservationSystem.domain.entities.User;
+import com.asos.reservationSystem.domain.entities.*;
 import com.asos.reservationSystem.repositories.CourseRepository;
 import com.asos.reservationSystem.repositories.MeetingRepository;
+import com.asos.reservationSystem.repositories.TeachingRequestRepository;
 import com.asos.reservationSystem.repositories.UserRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,16 +19,18 @@ public class DBInitializer implements CommandLineRunner {
     private final UserRepository userRepository;
     private final CourseRepository courseRepository;
     private final MeetingRepository meetingRepository;
+    private final TeachingRequestRepository teachingRequestRepository;
     private final JwtService jwtService;
     private final AuthenticationService authenticationService;
     private final PasswordEncoder passwordEncoder;
 
     public DBInitializer(UserRepository userRepository, CourseRepository courseRepository,
-                         MeetingRepository meetingRepository, JwtService jwtService,
+                         MeetingRepository meetingRepository, TeachingRequestRepository teachingRequestRepository, JwtService jwtService,
                          AuthenticationService authenticationService, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.courseRepository = courseRepository;
         this.meetingRepository = meetingRepository;
+        this.teachingRequestRepository = teachingRequestRepository;
         this.jwtService = jwtService;
         this.authenticationService = authenticationService;
         this.passwordEncoder = passwordEncoder;
@@ -99,5 +99,12 @@ public class DBInitializer implements CommandLineRunner {
                 .course(savedCourse)
                 .build();
         var savedMeeting = meetingRepository.save(meeting);
+
+        var request = TeachingRequest.builder()
+                .status(TeachingRequestStatus.APPROVED)
+                .dateTime(LocalDateTime.now())
+                .teacher(savedUser2)
+                .build();
+        var savedTeachingRequest = teachingRequestRepository.save(request);
     }
 }
