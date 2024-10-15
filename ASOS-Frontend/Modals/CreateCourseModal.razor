@@ -1,0 +1,49 @@
+﻿@using System.Globalization;
+@using System.ComponentModel.DataAnnotations;
+@using Microsoft.AspNetCore.Components.Forms;
+
+@inject Radzen.DialogService DialogService
+
+<div style="display:flex; flex-direction:column; gap:20px; min-width:350px; max-width:300px;">
+	<EditForm Model="formInputModel" OnValidSubmit="ReturnCreatedCourse">
+		<DataAnnotationsValidator />
+		<RadzenFieldset Text="Špecifikácia">
+			<RadzenStack Orientation="Radzen.Orientation.Vertical" JustifyContent="JustifyContent.Center" AlignItems="Radzen.AlignItems.Center" Gap="1rem">
+				<RadzenFormField Text="Predmet" Variant="Radzen.Variant.Outlined" AllowFloatingLabel="false">
+					<RadzenTextBox @bind-Value="formInputModel.Subject" Style="width: 200px;" class="rz-shadow-5" />
+				</RadzenFormField>
+				<ValidationMessage For="@(() => formInputModel.Subject)" />
+				<RadzenFormField Text="Miestnosť" Variant="Radzen.Variant.Outlined" AllowFloatingLabel="false">
+					<RadzenTextBox @bind-Value="formInputModel.Room"style ="width: 200px;" class="rz-shadow-5" />
+				</RadzenFormField>
+				<ValidationMessage For="@(() => formInputModel.Room)" />
+				<RadzenFormField Text="Cena (€)" Variant="Radzen.Variant.Outlined" AllowFloatingLabel="false">
+					<RadzenNumeric @bind-Value="formInputModel.Price" TValue="double?"style ="width: 200px;" class="rz-shadow-5" />
+				</RadzenFormField>
+				<ValidationMessage For="@(() => formInputModel.Price)" />
+			</RadzenStack>
+		</RadzenFieldset>
+		<RadzenRow JustifyContent="JustifyContent.Center" Gap="20px" Style="margin-top:20px;">
+			<MudButton ButtonType="MudBlazor.ButtonType.Submit" Variant="MudBlazor.Variant.Filled" StartIcon="@Icons.Material.Filled.Login" Color="MudBlazor.Color.Success" Style="width: 145px;">Potvrdiť</MudButton>
+			<MudButton Variant="MudBlazor.Variant.Filled" StartIcon="@Icons.Material.Filled.Cancel" Color="MudBlazor.Color.Error" Style="width: 145px;" @onclick='() => DialogService.Close()'>Zrušiť</MudButton>
+		</RadzenRow>
+	</EditForm>
+</div>
+
+@code {
+
+	CreateCourseInputModel formInputModel = new();
+
+	void ReturnCreatedCourse()
+	{
+		//TODO: Match teacher on backend via jwt token
+		CourseDto newCourse = new CourseDto
+		{
+			Name = formInputModel.Subject,
+			Room = formInputModel.Room,
+			Price = (double)formInputModel.Price!,
+		};
+
+		DialogService.Close(newCourse);
+	}
+}

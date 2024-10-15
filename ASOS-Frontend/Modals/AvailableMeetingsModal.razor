@@ -1,0 +1,137 @@
+﻿@using System.Globalization
+
+@inject Radzen.DialogService DialogService
+
+<style>
+	.rz-pager-summary {
+		box-shadow: unset !important;
+	}
+
+	.rz-pager-element {
+		box-shadow: unset !important;
+	}
+
+	.rz-datalist-content .rz-card {
+		padding-bottom: 12px !important;
+		min-height: unset !important;
+	}
+</style>
+
+<div style="display:flex; flex-direction:column; gap:10px; min-width:350px; max-width:450px; height:100%;">
+	<RadzenRow Style="padding-left:8px">
+		<RadzenDatePicker @bind-Value=@SelectDate Name="RadzenDatePickerBindValue" ShowCalendarWeek AllowClear Placeholder="Dátum" DateFormat="dd.MM.yyyy" Culture='new CultureInfo("sk-SK")' class="rz-shadow-5" />
+	</RadzenRow>
+	<RadzenDataList AllowVirtualization="false"
+					WrapItems="true" AllowPaging="true" PagerAlwaysVisible="true" EmptyText="Zoznam je prázdny, skontrolujte zvolené filtre."
+					Data="@filteredMeetingsList" TItem="MeetingDto" PageSize="5" PagerHorizontalAlign="HorizontalAlign.Left"
+					ShowPagingSummary="true" PagingSummaryFormat="Strana {0} / {1}">
+		<Template Context="meeting">
+			<RadzenCard Variant="Radzen.Variant.Outlined" class="rz-p-0 rz-shadow-3 rz-border-radius-3" Style="width: 100%; overflow: hidden;">
+				<RadzenRow JustifyContent="JustifyContent.SpaceEvenly" Gap="0rem">
+					<RadzenStack Gap="0">
+						<RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="rz-mb-0" Style="width:fit-content">Dátum a čas</RadzenText>
+						<RadzenText TextStyle="TextStyle.Body2" Style="font-size:1.1rem; width:fit-content">@(meeting.Beginning)</RadzenText>
+					</RadzenStack>
+					<MudButton Variant="MudBlazor.Variant.Filled" StartIcon="@Icons.Material.Filled.HistoryEdu" Color="MudBlazor.Color.Info" Style="width: 175px; border-radius:25px;" @onclick="() => ReturnSelectedMeeting(meeting)">Zapísať termín</MudButton>
+				</RadzenRow>
+			</RadzenCard>
+		</Template>
+	</RadzenDataList>
+</div>
+
+@code {
+	[Parameter]
+	public CourseDto Course { get; set; }
+
+	List<MeetingDto> meetingsList;
+	List<MeetingDto> filteredMeetingsList;
+
+	DateTime? selectedDate;
+
+	public DateTime? SelectDate
+	{
+		get
+		{
+			return selectedDate;
+		}
+		set
+		{
+			if (selectedDate == value)
+			{
+				return;
+			}
+
+			selectedDate = value;
+
+			ApplyFilters();
+		}
+	}
+
+	protected override async Task OnInitializedAsync()
+	{
+		meetingsList = new List<MeetingDto>
+		{
+			new MeetingDto
+			{
+				Id = 1,
+				Beginning = new DateTime(2024,12,20,8,0,0),
+				Course = Course
+			},
+			new MeetingDto
+			{
+				Id = 2,
+				Beginning = new DateTime(2024,12,20,13,30,0),
+				Course = Course
+			},
+			new MeetingDto
+			{
+				Id = 3,
+				Beginning = new DateTime(2024,12,21,8,0,0),
+				Course = Course
+			},
+			new MeetingDto
+			{
+				Id = 4,
+				Beginning = new DateTime(2024,12,21,13,30,0),
+				Course = Course
+			},
+			new MeetingDto
+			{
+				Id = 5,
+				Beginning = new DateTime(2024,12,21,16,0,0),
+				Course = Course
+			},
+			new MeetingDto
+			{
+				Id = 6,
+				Beginning = new DateTime(2024,10,10,10,0,0),
+				Course = Course
+			}
+		};
+
+		filteredMeetingsList = meetingsList;
+	}
+
+	void ApplyFilters()
+	{
+		filteredMeetingsList = meetingsList.ToList();
+
+		if (selectedDate != null)
+		{
+			filteredMeetingsList = filteredMeetingsList
+				.Where(x => x.Beginning.Date == selectedDate.Value.Date)
+				.ToList();
+		}
+
+		if (selectedDate == null)
+		{
+			filteredMeetingsList = meetingsList;
+		}
+	}
+
+
+	void ReturnSelectedMeeting(MeetingDto meeting)
+	{
+		DialogService.Close(meeting);
+	}
+}

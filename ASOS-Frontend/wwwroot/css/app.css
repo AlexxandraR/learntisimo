@@ -1,0 +1,127 @@
+
+@font-face {
+    font-family: "SF Pro Display";
+    font-style: normal;
+    font-weight: 100;
+    src: url("https://raw.githubusercontent.com/blaisck/sfwin/master/SFPro/TrueType/SFProDisplay-SemiBold.ttf");
+}
+
+html {
+    height: 100dvh;
+    width: 100dvw;
+    background-color: #c7c9ea;
+    background-image: linear-gradient(135deg, #c7c9ea 0%, #ccd2e4 33%, #ccd2e4 66%, #d4d6f7 100%);
+    overscroll-behavior: none;
+}
+
+body {
+    background: none !important;
+}
+
+main {
+    width: 100%;
+    display: block;
+    /*-webkit-justify-content: inherit;
+    justify-content: inherit;
+    -webkit-align-items: center;
+    align-items: center;*/
+}
+
+html, body {
+    min-height: 100dvh;
+    min-width: 100dvw;
+}
+
+body component {
+    display: flex;
+    width: 100dvw;
+    height: 100dvh;
+}
+
+#app {
+    height: 100dvh;
+    width: 100dvw;
+}
+
+h1:focus {
+    outline: none;
+}
+
+#blazor-error-ui {
+    background: lightyellow;
+    bottom: 0;
+    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
+    display: none;
+    left: 0;
+    padding: 0.6rem 1.25rem 0.7rem 1.25rem;
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
+}
+
+#blazor-error-ui .dismiss {
+    cursor: pointer;
+    position: absolute;
+    right: 0.75rem;
+    top: 0.5rem;
+}
+
+.blazor-error-boundary {
+    background: red;
+    padding: 1rem 1rem 1rem 3.7rem;
+    color: white;
+}
+
+.blazor-error-boundary::after {
+    content: "Nastala chyba."
+}
+
+.rz-datepicker.invalid {
+    border: 1px solid red;
+}
+
+.rz-dropdown.invalid {
+    border: 1px solid red;
+}
+
+.rz-numeric-input.invalid {
+    border: 1px solid red !important;
+}
+
+.rz-textbox.invalid {
+    border: 1px solid red;
+}
+
+div.validation-message {
+    color: red;
+    margin: 0;
+    font-size: .75rem;
+    text-align: start;
+    font-weight: 400;
+    line-height: 1.66;
+    letter-spacing: .03333em;
+}
+
+/** {
+    -moz-box-sizing: inherit;
+    -webkit-box-sizing: inherit;
+    box-sizing: inherit;
+
+    outline: 3px solid limegreen !important;
+}*/
+
+@media only screen and (max-width: 1150px) {
+    #logo-nav-container {
+        display: none;
+    }
+}
+
+@media only screen and (max-width: 965px) {
+    #menu-toggler {
+        display: block !important;
+    }
+
+    #horizontal-navmenu {
+        display: none !important;
+    }
+}

@@ -1,0 +1,511 @@
+﻿@page "/courses"
+
+@inject Radzen.DialogService DialogService
+@inject ISnackbar Snackbar
+
+<PageTitle>Doučovania</PageTitle>
+
+<style>
+    .rz-datalist-content .rz-card {
+        background: white;
+        min-height: 100px;
+        padding-top: 12px !important;
+    }
+
+    .rz-badge {
+        text-transform: none;
+        padding: 5px;
+    }
+
+    .rz-pager-summary {
+        padding: 5px !important;
+        background-color: white;
+        border-radius: 5px;
+        color: #424242;
+        font-weight: 500;
+        box-shadow: var(--rz-shadow-5);
+    }
+
+    .rz-pager-element {
+        box-shadow: var(--rz-shadow-5);
+    }
+
+    .rz-pager-element:not(.rz-state-disabled):not(.rz-state-active) {
+        background-color: white;
+    }
+
+    .rz-datalist-content .mud-button {
+        border-radius: 30px;
+    }
+
+</style>
+
+
+<div style="padding: 3% 11% 0 11%; overflow:auto;">
+@* <div style="overflow:auto; margin:auto; margin-top:51px; max-width:1332px;"> *@
+    <RadzenRow Style="padding-left:8px;">
+        <RadzenDropDown @bind-SearchText=TeacherSearchText FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" FilterOperator="StringFilterOperator.Contains" AllowFiltering="true"
+                        Data=@coursesList.Select(x => x.Teacher.FirstName + " " + x.Teacher.LastName).Distinct().ToList() AllowClear="true" @bind-Value=SelectTeacher Style="width: 200px; max-width: 400px;" 
+                        class="rz-shadow-5" Placeholder="Lektor" />
+
+        <RadzenDropDown @bind-SearchText=SubjectSearchText FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" FilterOperator="StringFilterOperator.Contains" AllowFiltering="true"
+                        Data=@coursesList.Select(x => x.Name).Distinct().ToList() AllowClear="true" @bind-Value=SelectSubject Style="width: 200px; max-width: 400px;"
+                        class="rz-shadow-5" Placeholder="Predmet" />
+
+        <div style="display:flex; margin-left:auto; margin-right:10px; gap: 10px;">
+            <MudButton Variant="MudBlazor.Variant.Filled" StartIcon="@Icons.Material.Filled.ArrowCircleDown" Color="MudBlazor.Color.Inherit" Style="width: 150px; background-color:white;" @onclick="() => ChangeSortOrder(SortDirection.Ascending)">Najlacnejšie</MudButton>
+            <MudButton Variant="MudBlazor.Variant.Filled" StartIcon="@Icons.Material.Filled.ArrowCircleUp" Color="MudBlazor.Color.Inherit" Style="width: 150px; background-color:white;" @onclick="() => ChangeSortOrder(SortDirection.Descending)">Najdrahšie</MudButton>
+        </div>
+    </RadzenRow>
+
+    <RadzenDataList AllowVirtualization="false" Style="padding-top:0.65%;"
+                    WrapItems="true" AllowPaging="true" PagerAlwaysVisible="true" EmptyText="Zoznam je prázdny, skontrolujte zvolené filtre."
+                    Data="@filteredCoursesList" TItem="CourseDto" PageSize="5" PagerHorizontalAlign="HorizontalAlign.Left"
+                    ShowPagingSummary="true" PagingSummaryFormat="Strana {0} / {1} ({2} lektorov)">
+        <Template Context="course">
+            <RadzenCard Variant="Radzen.Variant.Outlined" class="rz-p-0 rz-shadow-3 rz-border-radius-3" Style="width: 100%; overflow: hidden;">
+                <RadzenRow Gap="0">
+                    <RadzenColumn Size="12" SizeLG="3" class="rz-p-4 product-title" Style="display:flex; align-items:center; justify-content:center;">
+                        <RadzenLink href="javascript:void(0)" Style="font-size:1.2rem;" @onclick="async () => await OpenTeacherModal(course)">@($"{course.Teacher.Degree} {course.Teacher.FirstName} {course.Teacher.LastName}")</RadzenLink>
+                    </RadzenColumn>
+                    <RadzenColumn Size="12" SizeLG="6" class="rz-p-4">
+                        <RadzenRow Gap="0">
+                            <RadzenColumn Size="12" SizeMD="6" SizeLG="3">
+                                <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="rz-mb-0">Predmet</RadzenText>
+                                <RadzenText TextStyle="TextStyle.Body2" Style="font-size:1.1rem;">@(course.Name)</RadzenText>
+                            </RadzenColumn>
+                            <RadzenColumn Size="12" SizeMD="6" SizeLG="5">
+                                <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="rz-mb-0">Email</RadzenText>
+                                <RadzenText TextStyle="TextStyle.Body2" Style="font-size:1.1rem;">@(course.Teacher.Email)</RadzenText>
+                            </RadzenColumn>
+                            <RadzenColumn Size="12" SizeMD="6" SizeLG="3">
+                                <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="rz-mb-0">Tel.číslo</RadzenText>
+                                <RadzenText TextStyle="TextStyle.Body2" Style="font-size:1.1rem;">@(course.Teacher.PhoneNumber)</RadzenText>
+                            </RadzenColumn>
+                        </RadzenRow>
+                    </RadzenColumn>
+                    <RadzenColumn Size="12" SizeLG="1" class="rz-p-4" Style="display:flex; align-items:center; justify-content:center;">
+                        <RadzenBadge BadgeStyle="BadgeStyle.Secondary" style="font-size:1.2rem;" Shade="Shade.Lighter" class="price-badge" Text=@($"{String.Format(new System.Globalization.CultureInfo("sk-SK"), "{0:C}", course.Price)} /hod") />
+                     </RadzenColumn>
+                    <RadzenColumn Size="12" SizeLG="2" class="rz-p-4" Style="display:flex; align-items:center; justify-content:center;">
+                        <MudButton Variant="MudBlazor.Variant.Filled" StartIcon="@Icons.Material.Filled.AddCircle" Color="MudBlazor.Color.Info" Style="width: 145px;" @onclick="async () => await JoinCourse(course)">Zapísať sa</MudButton>
+                    </RadzenColumn>
+                </RadzenRow>
+            </RadzenCard>
+        </Template>
+    </RadzenDataList>
+</div>
+
+
+@code {
+    List<CourseDto> coursesList = new List<CourseDto>();
+    List<CourseDto> filteredCoursesList = new List<CourseDto>();
+
+    SortDirection? priceSortDirection = SortDirection.Ascending;
+
+    string? selectedTeacher;
+    string? selectedSubject;
+
+    public string? SelectTeacher
+    {
+        get
+        {
+            return selectedTeacher;
+        }
+        set
+        {
+            if (selectedTeacher == value)
+            {
+                return;
+            }
+
+            selectedTeacher = value;
+
+            ApplyFilters();
+        }
+    }
+
+    public string? SelectSubject
+    {
+        get
+        {
+            return selectedSubject;
+        }
+        set
+        {
+            if (selectedSubject == value)
+            {
+                return;
+            }
+
+            selectedSubject = value;
+
+            ApplyFilters();
+        }
+    }
+
+    string teacherSearchText = "";
+    string subjectSearchText = "";
+
+    public string TeacherSearchText
+    {
+        get
+        {
+            return teacherSearchText;
+        }
+        set
+        {
+            if (teacherSearchText != value)
+            {
+                teacherSearchText = value;
+            }
+        }
+    }
+
+    public string SubjectSearchText
+    {
+        get
+        {
+            return subjectSearchText;
+        }
+        set
+        {
+            if (subjectSearchText != value)
+            {
+                subjectSearchText = value;
+            }
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        // TODO: Fetch data from ENDPOINT
+        coursesList = new List<CourseDto>
+        {
+            new CourseDto
+            {
+                Id = 1,
+                Name = "Matematika",
+                Price = 10,
+                Room = "AB-30",
+                Teacher = new UserDto
+                {
+                    Degree = "Ing.",
+                    FirstName = "Peter",
+                    LastName = "Dobrák",
+                    Email = "peter.dobrak@gmail.com",
+                    PhoneNumber = "+421 911 123 456"
+                },
+                Students = new List<UserDto>
+                {
+
+                }
+            },
+            new CourseDto
+            {
+                Id = 2,
+                Name = "Fyzika",
+                Price = 7,
+                Room = "BC-30",
+                Teacher = new UserDto
+                {
+                    Degree = "doc.",
+                    FirstName = "Lacikam",
+                    LastName = "Dobrák",
+                    Email = "lacikam.dobrak@gmail.com",
+                    PhoneNumber = "+421 911 333 456"
+                },
+                Students = new List<UserDto>
+                {
+
+                }
+            },
+            new CourseDto
+            {
+                Id = 3,
+                Name = "Informatika",
+                Price = 9,
+                Room = "CD-30",
+                Teacher = new UserDto
+                {
+                    Degree = "prof.",
+                    FirstName = "Ján",
+                    LastName = "Novák",
+                    Email = "jan.novak@gmail.com",
+                    PhoneNumber = "+421 911 444 456"
+                },
+                Students = new List<UserDto>
+                {
+
+                }
+            },
+            new CourseDto
+            {
+                Id = 4,
+                Name = "Angličtina",
+                Price = 8,
+                Room = "DE-30",
+                Teacher = new UserDto
+                {
+                    Degree = "Bc.",
+                    FirstName = "Michal",
+                    LastName = "Horváth",
+                    Email = "michal.horvath@gmail.com",
+                    PhoneNumber = "+421 911 555 456"
+                },
+                Students = new List<UserDto>
+                {
+
+                }
+            },
+            new CourseDto
+            {
+                Id = 5,
+                Name = "Dejepis",
+                Price = 12,
+                Room = "EF-30",
+                Teacher = new UserDto
+                {
+                    Degree = "Phdr.",
+                    FirstName = "Katarína",
+                    LastName = "Kováčová",
+                    Email = "katarina.kovacova@gmail.com",
+                    PhoneNumber = "+421 911 666 456"
+                },
+                Students = new List<UserDto>
+                {
+
+                }
+            },
+            new CourseDto
+            {
+                Id = 6,
+                Name = "Biológia",
+                Price = 11,
+                Room = "FG-30",
+                Teacher = new UserDto
+                {
+                    Degree = string.Empty,
+                    FirstName = "Lukáš",
+                    LastName = "Polák",
+                    Email = "lukas.polak@gmail.com",
+                    PhoneNumber = "+421 911 777 456"
+                },
+                Students = new List<UserDto>
+                {
+
+                }
+            }
+        };
+
+                /*doucovanieList = new List<Doucovanie>
+                {
+                new Doucovanie
+                {
+                Degree = "Ing.",
+                Name = "Peter",
+                LastName = "Marcinek",
+                Email = "peter.marcinek@gmail.com",
+            PhoneNumber = "0905123456",
+            Subject = "Matematika",
+                Price = 10.5m
+                },
+                new Doucovanie
+                {
+                Degree = "Ing.",
+                Name = "Peter",
+                LastName = "Dobrák",
+                Email = "peter.dobrak@gmail.com",
+                PhoneNumber = "0905123455",
+            Subject = "Matematika",
+            Price = 8.75m
+                },
+                new Doucovanie
+                {
+                Degree = "doc.",
+                Name = "Lacikam",
+                LastName = "Dobrák",
+                Email = "lacikam.dobrak@gmail.com",
+                PhoneNumber = "0905734055",
+                Subject = "Matematika",
+            Price = 12.20m
+            },
+            new Doucovanie
+                {
+                Degree = "Phd.",
+                Name = "Jana",
+                LastName = "Nováková",
+                Email = "jana.novakova@gmail.com",
+                PhoneNumber = "0905123478",
+                Subject = "Fyzika",
+                Price = 9.5m
+            },
+            new Doucovanie
+            {
+                Degree = "prof.",
+                Name = "Ján",
+                LastName = "Novák",
+                Email = "jan.novak@gmail.com",
+                PhoneNumber = "0911123478",
+                Subject = "Fyzika",
+                Price = 12m
+                },
+                new Doucovanie
+            {
+            Degree = "Bc.",
+            Name = "Michal",
+                LastName = "Horváth",
+                Email = "michal.horvath@gmail.com",
+                PhoneNumber = "0905123489",
+                Subject = "Chémia",
+                Price = 11.22m
+                },
+                new Doucovanie
+                {
+                Degree = "Phdr.",
+            Name = "Katarína",
+            LastName = "Kováčová",
+                Email = "katarina.kovacova@gmail.com",
+                PhoneNumber = "0905123490",
+                Subject = "Biológia",
+                Price = 8.40m
+                },
+                new Doucovanie
+                {
+                Name = "Lukáš",
+            LastName = "Polák",
+            Email = "lukas.polak@gmail.com",
+                PhoneNumber = "0905123501",
+                Subject = "Geografia",
+                Price = 10m
+                },
+                new Doucovanie
+                {
+                Degree = "Mgr.",
+                Name = "Simona",
+                LastName = "Rybáriková",
+            Email = "simona.rybarikova@gmail.com",
+                PhoneNumber = "0905123512",
+                Subject = "Dejepis",
+                Price = 5.5m
+                },
+                new Doucovanie
+                {
+                Degree = "Mgr.",
+                Name = "Marek",
+                LastName = "Tóth",
+                Email = "marek.toth@gmail.com",
+            PhoneNumber = "0905123523",
+                Subject = "Angličtina",
+                Price = 7m
+                },
+                new Doucovanie
+                {
+                Degree = "Mgr.",
+                Name = "Eva",
+                LastName = "Slováková",
+                Email = "eva.slovakova@gmail.com",
+                PhoneNumber = "0905123534",
+            Subject = "Francúzština",
+                Price = 9.8m
+                },
+                new Doucovanie
+                {
+                Degree = "Mgr.",
+                Name = "Tomáš",
+                LastName = "Ďuriš",
+                Email = "tomas.duris@gmail.com",
+                PhoneNumber = "0905123545",
+                Subject = "Nemčina",
+            Price = 13.3m
+            },
+                new Doucovanie
+                {
+                Degree = "Mgr.",
+                Name = "Lenka",
+                LastName = "Urbanová",
+                Email = "lenka.urbanova@gmail.com",
+                PhoneNumber = "0905123556",
+                Subject = "Informatika",
+                Price = 20m
+        }
+        };*/
+
+        filteredCoursesList = coursesList;
+    }
+
+    void ChangeSortOrder(SortDirection direction) {
+
+        priceSortDirection = direction;
+
+        ApplyFilters();
+    }
+
+    void ApplyFilters()
+    {
+        filteredCoursesList = coursesList.ToList();
+
+        if (!string.IsNullOrWhiteSpace(selectedTeacher))
+        {
+            var nameParts = selectedTeacher.Split(' ');
+
+            if (nameParts.Length == 2)
+            {
+                string name = nameParts[0];
+                string lastName = nameParts[1];
+
+                filteredCoursesList = filteredCoursesList
+                    .Where(x => string.Equals(x.Teacher.FirstName, name, StringComparison.OrdinalIgnoreCase) &&
+                                string.Equals(x.Teacher.LastName, lastName, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(selectedSubject))
+        {
+            filteredCoursesList = filteredCoursesList
+                .Where(x => string.Equals(x.Name, selectedSubject, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+
+        if (string.IsNullOrWhiteSpace(selectedTeacher) && string.IsNullOrWhiteSpace(selectedSubject))
+        {
+            filteredCoursesList = coursesList;
+        }
+
+        if (priceSortDirection == SortDirection.Ascending)
+        {
+            filteredCoursesList = filteredCoursesList.OrderBy(x => x.Price).ToList();
+        }
+        else if (priceSortDirection == SortDirection.Descending)
+        {
+            filteredCoursesList = filteredCoursesList.OrderByDescending(x => x.Price).ToList();
+        }
+    }
+
+    async Task JoinCourse(CourseDto course)
+    {
+        //TODO: Add user to course
+
+        Snackbar.Add("Zápis prebehol úspešne!", Severity.Success);
+    }
+
+    async Task OpenTeacherModal(CourseDto course)
+    {
+        var options = new Radzen.DialogOptions()
+        {
+            Resizable = false,
+            Draggable = false,
+            CloseDialogOnOverlayClick = true,
+            Width = "fit-content",
+            Height = "600px",
+        };
+
+        var parameters = new Dictionary<string, object>
+        {
+            { "Teacher", course.Teacher }
+        };
+
+        await DialogService.OpenAsync<TeacherInfoModal>("Informácie o lektorovi", parameters, options);
+    }
+}

@@ -1,0 +1,32 @@
+﻿@page "/mymeetings"
+
+@using Microsoft.AspNetCore.Components.Authorization
+
+<PageTitle>Moje termíny</PageTitle>
+
+<style>
+	.rz-pager-summary {
+		padding: 5px !important;
+		background-color: white;
+		border-radius: 5px;
+		color: #424242;
+		font-weight: 500;
+		box-shadow: var(--rz-shadow-5);
+	}
+</style>
+
+<AuthorizeView Policy="TeacherOnly">
+	<Authorized>
+		<MyMeetingsTeacher />
+	</Authorized>
+</AuthorizeView>
+
+<AuthorizeView Policy="StudentOnly">
+	<Authorized>
+		<MyMeetingsStudent />
+	</Authorized>
+</AuthorizeView>
+
+@code {
+
+}

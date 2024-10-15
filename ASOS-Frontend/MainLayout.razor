@@ -1,0 +1,26 @@
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@using ASOS_Frontend.Pages
+
+@inherits LayoutComponentBase
+
+<RadzenComponents />
+<MudThemeProvider />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<AuthorizeView>
+	<Authorized>
+		<NavMenu />
+		<main style="height: calc(100% - 64px);">
+			@Body
+		</main>
+	</Authorized>
+	<NotAuthorized>
+		<main style="height:100%">
+			@Body
+		</main>
+	</NotAuthorized>
+</AuthorizeView>
+
+

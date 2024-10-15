@@ -1,0 +1,31 @@
+﻿@page "/logout"
+
+@using Microsoft.AspNetCore.Components.Authorization
+
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IAuthService AuthService
+@inject ISnackbar Snackbar
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity != null && user.Identity.IsAuthenticated)
+        {
+            try
+            {
+                await AuthService.LogoutAsync();
+            }
+            catch (Exception)
+            {
+                Snackbar.Add("Odhlásenie zlyhalo! Skontrolujte pripojenie ku internetu.", Severity.Error);
+                return;
+            }
+        }
+
+        NavigationManager.NavigateTo("/login", forceLoad: true);
+    }
+}

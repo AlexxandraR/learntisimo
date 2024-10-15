@@ -1,0 +1,224 @@
+﻿@page "/profile"
+
+@using System.Text.Json
+@using Microsoft.AspNetCore.Components.Forms
+@using System.ComponentModel.DataAnnotations;
+@using FormInputModels.Account;
+@using FormInputModels.ManageAccount;
+@using Microsoft.AspNetCore.Components.Authorization
+
+@inject ISnackbar Snackbar
+@inject NavigationManager NavigationManager
+@inject IHttpClientFactory HttpClientFactory
+
+<style>
+	.mud-tabs-tabbar {
+		border-bottom: var(--rz-fieldset-border);
+	}
+
+	.mud-tabs {
+		display: flex;
+		width: 100%;
+		height: 100%;
+	}
+
+	.mud-tabs-panels {
+		display: flex;
+		height: 100%;
+		overflow-y: auto;
+		overflow-x: hidden;
+	}
+
+	.rz-fieldset-legend-text {
+		font-weight: bold;
+		font-size: medium;
+	}
+</style>
+
+<div style="width:100%; height:100%; display:flex; justify-content:center; align-items:center;">
+	<RadzenCard Variant="Radzen.Variant.Filled" class="rz-p-0 rz-shadow-3 rz-border-radius-3" Style="width: 50%; height:90%; overflow: auto;">
+		@if (currentUser != null)
+		{
+			<MudTabs Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-5">
+				<MudTabPanel Text="Profil">
+					<EditForm Model="formInputModel" OnValidSubmit="UpdateProfile" style="margin:auto; max-width:650px; flex:1">
+						<DataAnnotationsValidator />
+						<RadzenFieldset Text="Základné údaje">
+							<RadzenStack Orientation="Radzen.Orientation.Vertical" Gap="0.5rem">
+								<RadzenRow AlignItems="Radzen.AlignItems.Center" Gap="0">
+									<MudText Typo="Typo.body2">Status:</MudText>
+									<MudChip T="string" Variant="MudBlazor.Variant.Text" Color="Color.Info" Icon="@Icons.Material.Filled.Person">@currentUser.Role</MudChip>
+								</RadzenRow>
+								<RadzenRow>
+									<RadzenStack Style="width:48%; min-width:250px" Gap="0.2rem">
+										<MudTextField Label="Titul" Variant="MudBlazor.Variant.Outlined" ShrinkLabel @bind-Value="formInputModel.Degree" For="@(() => formInputModel.Degree)" Style="width:125px;" />
+										<MudTextField Label="Meno" Variant="MudBlazor.Variant.Outlined" ShrinkLabel @bind-Value="formInputModel.FirstName" For="@(() => formInputModel.FirstName)" Style="width:250px;" />
+										<MudTextField Label="Priezvisko" Variant="MudBlazor.Variant.Outlined" ShrinkLabel @bind-Value="formInputModel.LastName" For="@(() => formInputModel.LastName)" Style="width:250px;" />
+										<MudTextField Label="Tel.číslo" Variant="MudBlazor.Variant.Outlined" ShrinkLabel Mask="@(new PatternMask("+000 000 000 000"))" @bind-Value="formInputModel.PhoneNumber" For="@(() => formInputModel.PhoneNumber)" Style="width:250px;" />
+									</RadzenStack>
+									<RadzenStack Style="width:48%;min-width:250px" JustifyContent="JustifyContent.Center" AlignItems="Radzen.AlignItems.Center" Gap="0.75rem">
+										<RadzenImage Style="height: 250px;" Path="/profile_picture.jpg" />
+										<RadzenRow JustifyContent="JustifyContent.Center" Gap="0.6rem">
+											<MudFileUpload T="IBrowserFile" FilesChanged="(e) => UploadProfilePicture(e)" Accept=".jpg, .png" Style="width:fit-content; border-radius:20px; ">
+												<ActivatorContent>
+													<MudFab Color="Color.Info" Class="mud-button-outlined mud-button-outlined-info mud-button-outlined-size-medium mud-ripple rz-shadow-0" StartIcon="@Icons.Material.Filled.Edit" Label="Zmeniť" Style="width: 125px; height:38px; background-color: white;" />
+												</ActivatorContent>
+											</MudFileUpload>
+											<MudButton Variant="MudBlazor.Variant.Outlined" StartIcon="@Icons.Material.Filled.Delete" Color="MudBlazor.Color.Info" Style="width: 125px; border-radius:20px;" @onclick="async() => await DeleteProfilePicture()">Odstrániť</MudButton>
+										</RadzenRow>
+									</RadzenStack>
+								</RadzenRow>
+								<MudTextField Label="Popis" Variant="MudBlazor.Variant.Outlined" ShrinkLabel Lines="4" @bind-Value="formInputModel.Description" For="@(() => formInputModel.Description)" Style="width:100%;" />
+							</RadzenStack>
+						</RadzenFieldset>
+						<RadzenRow class="rz-mt-5" JustifyContent="JustifyContent.Center" Gap="1rem">
+							<MudButton ButtonType="MudBlazor.ButtonType.Submit" Variant="MudBlazor.Variant.Filled" StartIcon="@Icons.Material.Filled.Save" Color="MudBlazor.Color.Success" Style="width: 200px;">Uložiť zmeny</MudButton>
+							<AuthorizeView Policy="StudentOnly">
+								<Authorized Context="none">
+									<MudButton Variant="MudBlazor.Variant.Filled" StartIcon="@Icons.Material.Filled.GroupAdd" Color="MudBlazor.Color.Info" @onclick="async() => await RequestTeacherRole()" Style="width: 200px;">Žiadosť o učenie</MudButton>
+								</Authorized>
+							</AuthorizeView>
+						</RadzenRow>
+					</EditForm>
+				</MudTabPanel>
+
+
+				<MudTabPanel Text="Email">
+					<EditForm Model="emailChangeInputModel" OnValidSubmit="UpdateEmail" style="margin:auto; max-width:325px; min-width:250px; flex:1">
+						<DataAnnotationsValidator />
+						<RadzenFieldset Text="Zmena emailu">
+							<RadzenStack Orientation="Radzen.Orientation.Vertical" Gap="0.5rem">
+								<MudTextField Label="Email" Variant="MudBlazor.Variant.Outlined" ShrinkLabel @bind-Value="emailChangeInputModel.Email" For="@(() => emailChangeInputModel.Email)" />
+								<MudTextField Label="Nový email" Variant="MudBlazor.Variant.Outlined" ShrinkLabel @bind-Value="emailChangeInputModel.NewEmail" For="@(() => emailChangeInputModel.NewEmail)" />
+								<MudTextField Label="Heslo" Variant="MudBlazor.Variant.Outlined" ShrinkLabel @bind-Value="emailChangeInputModel.Password" For="@(() => emailChangeInputModel.Password)" InputType="InputType.Password" />
+							</RadzenStack>
+						</RadzenFieldset>
+						<RadzenRow class="rz-mt-5">
+							<MudButton ButtonType="MudBlazor.ButtonType.Submit" Variant="MudBlazor.Variant.Filled" StartIcon="@Icons.Material.Filled.Save" Color="MudBlazor.Color.Success" Style="width: 200px; margin:auto">Uložiť zmeny</MudButton>
+						</RadzenRow>
+					</EditForm>
+				</MudTabPanel>
+
+
+				<MudTabPanel Text="Heslo">
+					<EditForm Model="passwordChangeInputModel" OnValidSubmit="UpdatePassword" style="margin:auto; max-width:340px">
+						<DataAnnotationsValidator />
+						<RadzenFieldset Text="Zmena hesla">
+							<RadzenStack Orientation="Radzen.Orientation.Vertical" Gap="0.5rem">
+								<MudTextField Label="Heslo" Variant="MudBlazor.Variant.Outlined" ShrinkLabel @bind-Value="passwordChangeInputModel.Password" For="@(() => passwordChangeInputModel.Password)" InputType="InputType.Password" />
+								<MudTextField Label="Nové heslo" Variant="MudBlazor.Variant.Outlined" ShrinkLabel @bind-Value="passwordChangeInputModel.NewPassword" For="@(() => passwordChangeInputModel.NewPassword)" InputType="InputType.Password" />
+								<MudTextField Label="Potvrdenie hesla" Variant="MudBlazor.Variant.Outlined" ShrinkLabel @bind-Value="passwordChangeInputModel.ConfirmNewPassword" For="@(() => passwordChangeInputModel.ConfirmNewPassword)" InputType="InputType.Password" />
+							</RadzenStack>
+						</RadzenFieldset>
+						<RadzenRow class="rz-mt-5">
+							<MudButton ButtonType="MudBlazor.ButtonType.Submit" Variant="MudBlazor.Variant.Filled" StartIcon="@Icons.Material.Filled.Save" Color="MudBlazor.Color.Success" Style="width: 200px; margin:auto">Uložiť zmeny</MudButton>
+						</RadzenRow>
+					</EditForm>
+				</MudTabPanel>
+			</MudTabs>
+		}
+	</RadzenCard>
+</div>
+
+@code {
+	UserDto? currentUser;
+	ProfileInputModel formInputModel;
+	EmailChangeInputModel emailChangeInputModel;
+	PasswordChangeInputModel passwordChangeInputModel;
+
+	protected override async Task OnInitializedAsync()
+	{
+		var httpClient = HttpClientFactory.CreateClient("API");
+
+		var userResponse = await httpClient.GetAsync("user");
+
+		if (userResponse.IsSuccessStatusCode)
+		{
+			var userJson = await userResponse.Content.ReadAsStringAsync();
+
+			currentUser = JsonSerializer.Deserialize<UserDto>(userJson);
+
+			formInputModel = new ProfileInputModel
+				{
+					Degree = currentUser.Degree,
+					FirstName = currentUser.FirstName,
+					LastName = currentUser.LastName,
+					Email = currentUser.Email,
+					PhoneNumber = currentUser.PhoneNumber,
+					Description = currentUser.Description
+				};
+
+			emailChangeInputModel = new EmailChangeInputModel
+				{
+					Email = currentUser.Email,
+					NewEmail = string.Empty,
+					Password = string.Empty
+				};
+
+			passwordChangeInputModel = new PasswordChangeInputModel
+				{
+					Password = string.Empty,
+					NewPassword = string.Empty,
+					ConfirmNewPassword = string.Empty
+				};
+		}
+	}
+
+	async Task UpdateProfile()
+	{
+		//TODO: Update user's profile via endpoint
+		// There is an option to pass form data directly via UserDto (DECIDE)
+
+		ProfileChangeDto profileChangeDto = new()
+		{
+			Degree = formInputModel.Degree,
+			FirstName = formInputModel.FirstName,
+			LastName = formInputModel.LastName,
+			PhoneNumber = formInputModel.PhoneNumber,
+			Description = formInputModel.Description
+		};
+
+		Snackbar.Add("Profil bol úspešne upravený!", Severity.Success);
+	}
+
+	async Task UpdateEmail()
+	{
+		//TODO: Update user's email via endpoint
+
+		if (string.Equals(emailChangeInputModel.Email, emailChangeInputModel.NewEmail))
+		{
+			Snackbar.Add("Emailová adresa je totožná!", Severity.Warning);
+			return;
+		}
+
+		Snackbar.Add("Email bol úspešne zmenený!", Severity.Success);
+	}
+
+	async Task UpdatePassword()
+	{
+		//TODO: Update user's password via endpoint
+
+		Snackbar.Add("Heslo bolo úspešne zmenené!", Severity.Success);
+	}
+
+	async Task UploadProfilePicture(IBrowserFile e)
+	{
+		//TODO: Upload profile picture via endpoint
+
+		Snackbar.Add("Profilová fotka úspešne nahraná!", Severity.Success);
+	}
+
+	async Task DeleteProfilePicture()
+	{
+		//TODO: Delete profile picture via endpoint
+
+		Snackbar.Add("Profilová fotka úspešne odstránená!", Severity.Success);
+	}
+
+	async Task RequestTeacherRole()
+	{
+		//TODO: Create the request via endpoint
+
+		Snackbar.Add("Žiadosť o učitela bolo úspešne podaná!", Severity.Success);
+	}
+}

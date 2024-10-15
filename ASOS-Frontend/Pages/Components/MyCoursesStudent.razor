@@ -1,0 +1,352 @@
+﻿@using System.Text.Json
+
+@inject Radzen.DialogService DialogService
+@inject NotificationService notificationService
+@inject ISnackbar Snackbar
+@inject IHttpClientFactory HttpClientFactory
+
+<div style="padding: 3% 11% 0 11%; overflow:auto;">
+	<RadzenRow Style="padding-left:8px">
+		<RadzenDropDown @bind-SearchText=TeacherSearchText FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" FilterOperator="StringFilterOperator.Contains" AllowFiltering="true"
+						Data=@myCoursesList.Select(x => x.Teacher.FirstName + " " + x.Teacher.LastName).Distinct().ToList() AllowClear="true" @bind-Value=SelectTeacher Style="width: 200px; max-width: 400px;"
+						class="rz-shadow-5" Placeholder="Lektor" />
+
+		<RadzenDropDown @bind-SearchText=SubjectSearchText FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" FilterOperator="StringFilterOperator.Contains" AllowFiltering="true"
+						Data=@myCoursesList.Select(x => x.Name).Distinct().ToList() AllowClear="true" @bind-Value=SelectSubject Style="width: 200px; max-width: 400px;"
+						class="rz-shadow-5" Placeholder="Predmet" />
+	</RadzenRow>
+
+	<RadzenDataList AllowVirtualization="false" Style="padding-top:0.65%;"
+					WrapItems="true" AllowPaging="true" PagerAlwaysVisible="true" EmptyText="Zoznam je prázdny, skontrolujte zvolené filtre."
+					Data="@filteredMyCoursesList" TItem="CourseDto" PageSize="5" PagerHorizontalAlign="HorizontalAlign.Left"
+					ShowPagingSummary="true" PagingSummaryFormat="Strana {0} / {1} ({2} doučovaní)">
+		<Template Context="myCourse">
+			<RadzenCard Variant="Radzen.Variant.Outlined" class="rz-p-0 rz-shadow-3 rz-border-radius-3" Style="width: 100%; overflow: hidden;">
+				<RadzenRow Gap="0">
+					<RadzenColumn Size="12" SizeLG="3" class="rz-p-4 product-title" Style="display:flex; align-items:center; justify-content:center;">
+						<RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="rz-mb-0">@(myCourse.Name)</RadzenText>
+					</RadzenColumn>
+					<RadzenColumn Size="12" SizeLG="5" class="rz-p-4">
+						<RadzenRow Gap="0">
+							<RadzenColumn Size="12" SizeMD="6" SizeLG="6">
+								<RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="rz-mb-0">Lektor</RadzenText>
+								<RadzenLink href="javascript:void(0)" Style="font-size:1rem;" @onclick="async () => await OpenTeacherModal(myCourse.Teacher)">@($"{myCourse.Teacher.Degree} {myCourse.Teacher.FirstName} {myCourse.Teacher.LastName}")</RadzenLink>
+							</RadzenColumn>
+							<RadzenColumn Size="12" SizeMD="6" SizeLG="3">
+								<RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="rz-mb-0">Miestnosť</RadzenText>
+								<RadzenText TextStyle="TextStyle.Body2" Style="font-size:1.1rem;">@(myCourse.Room)</RadzenText>
+							</RadzenColumn>
+						</RadzenRow>
+					</RadzenColumn>
+					<RadzenColumn Size="12" SizeLG="4" class="rz-p-4" Style="display:flex; align-items:center; justify-content:center; gap:10px;">
+						<MudButton Variant="MudBlazor.Variant.Filled" StartIcon="@Icons.Material.Filled.AddCircle" Color="MudBlazor.Color.Info" Style="width: 210px;" @onclick="async () => await ShowMeetings(myCourse)">Naplánovať termín</MudButton>
+						<MudButton Variant="MudBlazor.Variant.Filled" StartIcon="@Icons.Material.Filled.Cancel" Color="MudBlazor.Color.Error" Style="width: 150px;" @onclick="async () => await RemoveDoucovanie(myCourse)">Odpísať sa</MudButton>
+					</RadzenColumn>
+				</RadzenRow>
+			</RadzenCard>
+		</Template>
+	</RadzenDataList>
+</div>
+
+@code {
+	List<CourseDto> myCoursesList = new List<CourseDto>();
+	List<CourseDto> filteredMyCoursesList = new List<CourseDto>();
+
+	string? selectedTeacher;
+	string? selectedSubject;
+
+	public string? SelectTeacher
+	{
+		get
+		{
+			return selectedTeacher;
+		}
+		set
+		{
+			if (selectedTeacher == value)
+			{
+				return;
+			}
+
+			selectedTeacher = value;
+
+			ApplyFilters();
+		}
+	}
+
+	public string? SelectSubject
+	{
+		get
+		{
+			return selectedSubject;
+		}
+		set
+		{
+			if (selectedSubject == value)
+			{
+				return;
+			}
+
+			selectedSubject = value;
+
+			ApplyFilters();
+		}
+	}
+
+	string teacherSearchText = "";
+	string subjectSearchText = "";
+
+	public string TeacherSearchText
+	{
+		get
+		{
+			return teacherSearchText;
+		}
+		set
+		{
+			if (teacherSearchText != value)
+			{
+				teacherSearchText = value;
+			}
+		}
+	}
+
+	public string SubjectSearchText
+	{
+		get
+		{
+			return subjectSearchText;
+		}
+		set
+		{
+			if (subjectSearchText != value)
+			{
+				subjectSearchText = value;
+			}
+		}
+	}
+
+	protected override async Task OnInitializedAsync()
+	{
+		// TODO: Fetch data from ENDPOINT
+
+		var httpClient = HttpClientFactory.CreateClient("API");
+
+		var userResponse = await httpClient.GetAsync("user");
+
+		UserDto? currentUser = new();
+
+		if (userResponse.IsSuccessStatusCode)
+		{
+			var userJson = await userResponse.Content.ReadAsStringAsync();
+
+			currentUser = JsonSerializer.Deserialize<UserDto>(userJson);
+		}
+
+		myCoursesList = new List<CourseDto>
+		{
+			new CourseDto
+			{
+				Id = 1,
+				Name = "Matematika",
+				Price = 10,
+				Room = "AB-30",
+				Teacher = new UserDto
+				{
+					Degree = "Ing.",
+					FirstName = "Peter",
+					LastName = "Dobrák",
+					Email = "peter.dobrak@gmail.com",
+					PhoneNumber = "+421 911 123 456"
+				},
+				Students = new List<UserDto>
+				{
+					currentUser
+				}
+			},
+			new CourseDto
+			{
+				Id = 2,
+				Name = "Fyzika",
+				Price = 10,
+				Room = "BC-30",
+				Teacher = new UserDto
+				{
+					Degree = "doc.",
+					FirstName = "Lacikam",
+					LastName = "Dobrák",
+					Email = "lacikam.dobrak@gmail.com",
+					PhoneNumber = "+421 911 333 456"
+				},
+				Students = new List<UserDto>
+				{
+					currentUser
+				}
+			},
+			new CourseDto
+			{
+				Id = 3,
+				Name = "Informatika",
+				Price = 10,
+				Room = "CD-30",
+				Teacher = new UserDto
+				{
+					Degree = "prof.",
+					FirstName = "Ján",
+					LastName = "Novák",
+					Email = "jan.novak@gmail.com",
+					PhoneNumber = "+421 911 444 456"
+				},
+				Students = new List<UserDto>
+				{
+					currentUser
+				}
+			},
+			new CourseDto
+			{
+				Id = 4,
+				Name = "Angličtina",
+				Price = 10,
+				Room = "DE-30",
+				Teacher = new UserDto
+				{
+					Degree = "Bc.",
+					FirstName = "Michal",
+					LastName = "Horváth",
+					Email = "michal.horvath@gmail.com",
+					PhoneNumber = "+421 911 555 456"
+				},
+				Students = new List<UserDto>
+				{
+					currentUser
+				}
+			},
+			new CourseDto
+			{
+				Id = 5,
+				Name = "Dejepis",
+				Price = 10,
+				Room = "EF-30",
+				Teacher = new UserDto
+				{
+					Degree = "Phdr.",
+					FirstName = "Katarína",
+					LastName = "Kováčová",
+					Email = "katarina.kovacova@gmail.com",
+					PhoneNumber = "+421 911 666 456"
+				},
+				Students = new List<UserDto>
+				{
+					currentUser
+				}
+			},
+			new CourseDto
+			{
+				Id = 6,
+				Name = "Biológia",
+				Price = 10,
+				Room = "FG-30",
+				Teacher = new UserDto
+				{
+					Degree = string.Empty,
+					FirstName = "Lukáš",
+					LastName = "Polák",
+					Email = "lukas.polak@gmail.com",
+					PhoneNumber = "+421 911 777 456"
+				},
+				Students = new List<UserDto>
+				{
+					currentUser
+				}
+			}
+		};
+
+		filteredMyCoursesList = myCoursesList;
+	}
+
+	void ApplyFilters()
+	{
+		filteredMyCoursesList = myCoursesList.ToList();
+
+		if (!string.IsNullOrWhiteSpace(selectedTeacher))
+		{
+			var nameParts = selectedTeacher.Split(' ');
+
+			if (nameParts.Length == 2)
+			{
+				string name = nameParts[0];
+				string lastName = nameParts[1];
+
+				filteredMyCoursesList = filteredMyCoursesList
+					.Where(x => string.Equals(x.Teacher.FirstName, name, StringComparison.OrdinalIgnoreCase) &&
+								string.Equals(x.Teacher.LastName, lastName, StringComparison.OrdinalIgnoreCase))
+					.ToList();
+			}
+		}
+
+		if (!string.IsNullOrWhiteSpace(selectedSubject))
+		{
+			filteredMyCoursesList = filteredMyCoursesList
+				.Where(x => string.Equals(x.Name, selectedSubject, StringComparison.OrdinalIgnoreCase))
+				.ToList();
+		}
+
+		if (string.IsNullOrWhiteSpace(selectedTeacher) && string.IsNullOrWhiteSpace(selectedSubject))
+		{
+			filteredMyCoursesList = myCoursesList;
+		}
+	}
+
+	async Task RemoveDoucovanie(CourseDto myCourse)
+	{
+		// TODO: Remove student from course via ENDPOINT
+		filteredMyCoursesList.Remove(myCourse);
+
+		Snackbar.Add("Doučovanie bolo úspešne zrušené.", Severity.Success);
+	}
+
+	async Task OpenTeacherModal(UserDto teacher)
+	{
+		var options = new Radzen.DialogOptions()
+			{
+				Resizable = false,
+				Draggable = false,
+				CloseDialogOnOverlayClick = true,
+				Width = "fit-content",
+				Height = "fit-content",
+			};
+
+		var parameters = new Dictionary<string, object>
+		{
+			{ "Teacher", teacher }
+		};
+
+		await DialogService.OpenAsync<TeacherInfoModal>("Informácie o lektorovi", parameters, options);
+	}
+
+	async Task ShowMeetings(CourseDto myCourse)
+	{
+		var options = new Radzen.DialogOptions()
+			{
+				Resizable = false,
+				Draggable = false,
+				CloseDialogOnOverlayClick = true,
+				Width = "fit-content",
+				Height = "fit-content",
+			};
+
+		var parameters = new Dictionary<string, object>
+		{
+			{ "Course", myCourse }
+		};
+
+		var result = await DialogService.OpenAsync<AvailableMeetingsModal>("Dostupné termíny", parameters, options);
+
+		if (result is MeetingDto meeting)
+		{
+			//TODO: Add student to meeting via ENDPOINT
+
+			Snackbar.Add("Doučovanie bolo úspešne naplánované.", Severity.Success);
+		}
+	}
+}

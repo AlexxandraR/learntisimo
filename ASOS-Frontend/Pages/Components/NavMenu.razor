@@ -1,0 +1,142 @@
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+
+<style>
+	.mud-toolbar {
+		background-color: white;
+	}
+
+	.mud-toolbar * {
+		color: dimgray;
+	}
+
+	.mud-nav-link {
+		border-radius: 30px;
+	}
+
+	.mud-nav-link .mud-nav-link-text {
+		font-size: 1.0rem;
+		font-weight: bold;
+	}
+
+	.mud-drawer-content {
+		gap: 0.5rem;
+	}
+
+	#horizontal-navmenu .mud-nav-item {
+		width: fit-content;
+	}
+
+	#logo-nav-container {
+		box-shadow: 0 0 4px 0 gray;
+		border-radius: 30px;
+	}
+
+	#account-container {
+		box-shadow: 0 0 4px 0 gray;
+		border-radius: 30px;
+		padding: 8px 16px;
+	}
+
+	#account-container:hover {
+		background-color: var(--mud-palette-action-default-hover);
+	}
+
+	.mud-menu p {
+		font-size: 1.0rem;
+		font-weight: bold;
+	}
+</style>
+
+<MudAppBar Fixed="false" Elevation="4">
+	<MudIconButton id="menu-toggler" Icon="@Icons.Material.Filled.Menu" Color="Color.Dark" OnClick="ToggleDrawer" Style="display:none;" />
+
+	<MudNavLink id="logo-nav-container" IconColor="@Color.Dark" Icon="@Icons.Material.Filled.MenuBook" Style="width:fit-content; margin-right:auto">LEARNTISIMO</MudNavLink>
+
+	<RadzenRow id="horizontal-navmenu" JustifyContent="JustifyContent.Center" style="flex: 1; flex-wrap:nowrap;">
+		<MudNavLink Icon="@Icons.Material.Filled.Home" Href="#" Style="width:fit-content">Domov</MudNavLink>
+		<MudNavLink Icon="@Icons.Material.Filled.School" Href="courses" Style="">Doučovania</MudNavLink>
+
+		<AuthorizeView Policy="StudentOnly">
+			<Authorized>
+				<MudNavLink Icon="@Icons.Material.Filled.Book" Href="mycourses">Moje doučovania</MudNavLink>
+				<MudNavLink Icon="@Icons.Material.Filled.Dashboard" Href="mymeetings">Moje termíny</MudNavLink>
+			</Authorized>
+		</AuthorizeView>
+
+		<AuthorizeView Policy="TeacherOnly">
+			<Authorized>
+				<MudNavLink Icon="@Icons.Material.Filled.Book" Href="mycourses">Moje doučovania</MudNavLink>
+				<MudNavLink Icon="@Icons.Material.Filled.Dashboard" Href="mymeetings">Moje termíny</MudNavLink>
+			</Authorized>
+		</AuthorizeView>
+
+		<AuthorizeView Policy="AdminOnly">
+			<Authorized>
+				<MudNavLink Icon="@Icons.Material.Filled.Gavel" Href="requests">Žiadosti</MudNavLink>
+			</Authorized>
+		</AuthorizeView>
+	</RadzenRow>
+
+	<AuthorizeView>
+		<Authorized>
+			@{
+				var email = context.User.FindFirst(ClaimTypes.Email)?.Value;
+			}
+			<MudMenu FullWidth="true" Style="margin-left:auto">
+				<ActivatorContent>
+					<RadzenRow id="account-container" Gap="0">
+						<MudIcon Icon="@Icons.Material.Filled.Person"></MudIcon>
+						<MudText>@email</MudText>
+						<MudIcon Icon="@Icons.Material.Filled.ArrowDropDown"></MudIcon>
+					</RadzenRow>
+				</ActivatorContent>
+				<ChildContent>
+					<MudNavLink Icon="@Icons.Material.Filled.AccountCircle" Href="profile">Profil</MudNavLink>
+					<MudNavLink Icon="@Icons.Material.Filled.Logout" Href="logout">Odhlásiť</MudNavLink>
+				</ChildContent>
+			</MudMenu>
+		</Authorized>
+	</AuthorizeView>
+</MudAppBar>
+
+<MudDrawer @bind-Open="_drawerOpen" Anchor="Anchor.Left" Variant="DrawerVariant.Temporary">
+
+	<MudIconButton Icon="@Icons.Material.Filled.Close" OnClick="ToggleDrawer" Style="width:fit-content; margin-left:5px;"></MudIconButton>
+
+	<MudNavLink Icon="@Icons.Material.Filled.Home" Href="#">Domov</MudNavLink>
+	<MudNavLink Icon="@Icons.Material.Filled.School" Href="courses">Doučovania</MudNavLink>
+
+	<AuthorizeView Policy="StudentOnly">
+		<Authorized>
+			<MudNavLink Icon="@Icons.Material.Filled.Book" Href="mycourses">Moje doučovania</MudNavLink>
+			<MudNavLink Icon="@Icons.Material.Filled.Dashboard" Href="mymeetings">Moje termíny</MudNavLink>
+		</Authorized>
+	</AuthorizeView>
+
+	<AuthorizeView Policy="TeacherOnly">
+		<Authorized>
+			<MudNavLink Icon="@Icons.Material.Filled.Book" Href="mycourses">Moje doučovania</MudNavLink>
+			<MudNavLink Icon="@Icons.Material.Filled.Dashboard" Href="mymeetings">Moje termíny</MudNavLink>
+		</Authorized>
+	</AuthorizeView>
+
+	<AuthorizeView Policy="AdminOnly">
+		<Authorized>
+			<MudNavLink Icon="@Icons.Material.Filled.Gavel" Href="requests">Žiadosti</MudNavLink>
+		</Authorized>
+	</AuthorizeView>
+
+	<MudNavLink Icon="@Icons.Material.Filled.AccountCircle" Href="profile">Profil</MudNavLink>
+	<MudNavLink Icon="@Icons.Material.Filled.Logout" Href="logout">Odhlásiť</MudNavLink>
+</MudDrawer>
+
+@code {
+	private bool _drawerOpen = false;
+
+	private void ToggleDrawer()
+	{
+		_drawerOpen = !_drawerOpen;
+	}
+
+}

@@ -1,0 +1,34 @@
+﻿@using System.Globalization;
+@using System.ComponentModel.DataAnnotations;
+@using Microsoft.AspNetCore.Components.Forms;
+
+@inject Radzen.DialogService DialogService
+
+<style>
+	.rz-dialog-content {
+		flex: 1 1 auto;
+	}
+
+	.rz-pager-element {
+		box-shadow: unset !important;
+	}
+</style>
+
+<div style="display:flex; flex-direction:column; gap:20px; min-width:350px; max-width:900px; height:100%;">
+
+	<RadzenDataGrid Data="@Course.Students" PagerPosition="PagerPosition.Bottom" PagerAlwaysVisible AllowColumnResize AllowPaging="true" AllowSorting="true" Style="height:100%">
+		<Columns>
+			<RadzenDataGridColumn Property="FirstName" Title="Meno" MinWidth="100px" />
+			<RadzenDataGridColumn Property="LastName" Title="Priezvisko" MinWidth="100px" />
+			<RadzenDataGridColumn Property="Email" Title="Email" Width="300px" MinWidth="225px" />
+			<RadzenDataGridColumn Property="PhoneNumber" Title="Tel.číslo" MinWidth="225px" />
+		</Columns>
+	</RadzenDataGrid>
+</div>
+
+@code {
+	[Parameter]
+	public CourseDto Course { get; set; }
+
+
+}

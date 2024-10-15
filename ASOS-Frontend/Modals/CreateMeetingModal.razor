@@ -1,0 +1,56 @@
+﻿@using System.Globalization;
+@using System.ComponentModel.DataAnnotations;
+@using Microsoft.AspNetCore.Components.Forms;
+
+@inject Radzen.DialogService DialogService
+
+<div style="display:flex; flex-direction:column; gap:20px; min-width:350px; max-width:300px;">
+	<EditForm Model="formInputModel" OnValidSubmit="ReturnCreatedMeeting">
+		<DataAnnotationsValidator />
+		<RadzenFieldset Text="Špecifikácia">
+			<RadzenStack Orientation="Radzen.Orientation.Vertical" JustifyContent="JustifyContent.Center" AlignItems="Radzen.AlignItems.Center" Gap="1rem">
+				<RadzenFormField Text="Predmet" Variant="Radzen.Variant.Outlined" AllowFloatingLabel="false">
+					<RadzenDropDown FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" FilterOperator="StringFilterOperator.Contains" AllowFiltering="true"
+									Data=@subjects AllowClear="true" @bind-Value=formInputModel.Subject Style="width: 200px;" class="rz-shadow-5" />
+				</RadzenFormField>
+				<ValidationMessage For="@(() => formInputModel.Subject)" />
+				<RadzenFormField Text="Dátum a čas" Variant="Radzen.Variant.Outlined" AllowFloatingLabel="false">
+					<RadzenDatePicker @bind-Value="formInputModel.CombinedDateTime" ShowCalendarWeek AllowClear ShowTime="true" DateFormat="dd.MM.yyyy HH:mm" Culture='new CultureInfo("sk-SK")' Style="width: 200px;" class="rz-shadow-5" />
+				</RadzenFormField>
+				<ValidationMessage For="@(() => formInputModel.CombinedDateTime)" />
+				<RadzenFormField Text="Trvanie (minút)" Variant="Radzen.Variant.Outlined" AllowFloatingLabel="false">
+					<RadzenNumeric @bind-Value="formInputModel.Duration" Style="width: 200px;" class="rz-shadow-5" />
+				</RadzenFormField>
+				<ValidationMessage For="@(() => formInputModel.Duration)" />
+			</RadzenStack>
+		</RadzenFieldset>
+		<RadzenRow JustifyContent="JustifyContent.Center" Gap="20px" Style="margin-top:20px;">
+			<MudButton ButtonType="MudBlazor.ButtonType.Submit" Variant="MudBlazor.Variant.Filled" StartIcon="@Icons.Material.Filled.Login" Color="MudBlazor.Color.Success" Style="width: 145px;">Potvrdiť</MudButton>
+			<MudButton Variant="MudBlazor.Variant.Filled" StartIcon="@Icons.Material.Filled.Cancel" Color="MudBlazor.Color.Error" Style="width: 145px;" @onclick='() => DialogService.Close()'>Zrušiť</MudButton>
+		</RadzenRow>
+	</EditForm>
+</div>
+
+@code {
+	//TODO: Show only courses of the teacher
+	List<string> subjects = new() { "Matematika", "Angličtina", "Biológia", "Chémia", "Dejepis", "Slovenčina", "Nemčina", "Informatika" };
+
+	CreateMeetingInputModel formInputModel = new();
+
+	void ReturnCreatedMeeting()
+	{
+		//TODO: Match the course that teacher selected on backend based on subject name
+		// Match teacher on backend via jwt token
+		MeetingDto newMeeting = new MeetingDto
+			{
+				Beginning = (DateTime)formInputModel.CombinedDateTime!,
+				Duration = (int)formInputModel.Duration!,
+				Course = new CourseDto
+				{
+					Name = formInputModel.Subject,
+				}
+			};
+
+		DialogService.Close(newMeeting);
+	}
+}

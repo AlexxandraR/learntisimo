@@ -1,0 +1,363 @@
+﻿@using System.Globalization;
+@using System.Text.Json;
+@using DTOs.Account;
+
+@inject Radzen.DialogService DialogService
+@inject NotificationService notificationService
+@inject ISnackbar Snackbar
+@inject IHttpClientFactory HttpClientFactory
+
+<div style="padding: 3% 11% 0 11%; overflow:auto;">
+	<RadzenRow Style="padding-left:8px">
+		<RadzenDropDown @bind-SearchText=SubjectSearchText FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" FilterOperator="StringFilterOperator.Contains" AllowFiltering="true"
+						Data=@meetingsList.Select(x => x.Course.Name).Distinct().ToList() AllowClear="true" @bind-Value=SelectSubject Style="width: 200px; max-width: 400px;"
+						class="rz-shadow-5" Placeholder="Predmet" />
+
+		<RadzenDatePicker @bind-Value=@SelectDate Name="RadzenDatePickerBindValue" ShowCalendarWeek AllowClear Placeholder="Dátum" DateFormat="dd.MM.yyyy" Culture='new CultureInfo("sk-SK")' class="rz-shadow-5" />
+		<MudButton Variant="MudBlazor.Variant.Filled" StartIcon="@Icons.Material.Filled.Add" Color="MudBlazor.Color.Success" Style="width: 175px;" @onclick="async () => await CreateTermin()">Pridať termín</MudButton>
+		<div style="display:flex; margin-left:auto; margin-right:10px; gap: 10px;">
+			@if (!showHistory)
+			{
+				<MudButton Variant="MudBlazor.Variant.Filled" StartIcon="@Icons.Material.Filled.History" Color="MudBlazor.Color.Inherit" Style="width: 200px; background-color:white;" @onclick="ShowHistory">Zobraziť históriu</MudButton>
+			}
+			else
+			{
+				<MudButton Variant="MudBlazor.Variant.Filled" StartIcon="@Icons.Material.Filled.HistoryToggleOff" Color="MudBlazor.Color.Inherit" Style="width: 200px; background-color:white;" @onclick="ShowUpcoming">Skryť históriu</MudButton>
+			}
+		</div>
+	</RadzenRow>
+
+	<RadzenDataList @ref="dataList" AllowVirtualization="false" Style="padding-top:0.65%;"
+					WrapItems="true" AllowPaging="true" PagerAlwaysVisible="true" EmptyText="Zoznam je prázdny, skontrolujte zvolené filtre."
+					Data="@filteredMeetingsList" TItem="MeetingDto" PageSize="5" PagerHorizontalAlign="HorizontalAlign.Left"
+					ShowPagingSummary="true" PagingSummaryFormat="Strana {0} / {1} ({2} termíny)">
+		<Template Context="meeting">
+			<RadzenCard Variant="Radzen.Variant.Outlined" class="rz-p-0 rz-shadow-3 rz-border-radius-3" Style="width: 100%; overflow: hidden; background-color:white;">
+				<RadzenRow Gap="0">
+					<RadzenColumn Size="12" SizeLG="2" class="rz-p-4 product-title" Style="display:flex; align-items:center; justify-content:center;">
+						<RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="rz-mb-0">@(meeting.Course.Name)</RadzenText>
+					</RadzenColumn>
+					<RadzenColumn Size="12" SizeLG="7" class="rz-p-4">
+						<RadzenRow Gap="0">
+							<RadzenColumn Size="12" SizeMD="6" SizeLG="2">
+								<RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="rz-mb-0">Dátum</RadzenText>
+								<RadzenText TextStyle="TextStyle.Body2" Style="font-size:1.1rem;">@($"{meeting.Beginning.ToString("d", new CultureInfo("sk-SK"))}")</RadzenText>
+							</RadzenColumn>
+							<RadzenColumn Size="12" SizeMD="6" SizeLG="2">
+								<RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="rz-mb-0">Čas</RadzenText>
+								<RadzenText TextStyle="TextStyle.Body2" Style="font-size:1.1rem;">@($"{meeting.Beginning.ToString("t", new CultureInfo("sk-SK"))}")</RadzenText>
+							</RadzenColumn>
+							<RadzenColumn Size="12" SizeMD="6" SizeLG="2">
+								<RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="rz-mb-0">Trvanie</RadzenText>
+								<RadzenText TextStyle="TextStyle.Body2" Style="font-size:1.1rem;">@($"{meeting.Duration} minút")</RadzenText>
+							</RadzenColumn>
+							<RadzenColumn Size="12" SizeMD="6" SizeLG="2">
+								<RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="rz-mb-0">Miestnosť</RadzenText>
+								<RadzenText TextStyle="TextStyle.Body2" Style="font-size:1.1rem;">@(meeting.Course.Room)</RadzenText>
+							</RadzenColumn>
+							<RadzenColumn Size="12" SizeMD="6" SizeLG="4">
+								<RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="rz-mb-0">Zapísaný</RadzenText>
+								@if (meeting.Student != null)
+								{
+									<RadzenLink href="javascript:void(0)" Style="font-size:1rem;" @onclick="async () => await OpenStudentModal(meeting.Student)">@($"{meeting.Student.FirstName} {meeting.Student.LastName}")</RadzenLink>
+								}
+								else
+								{
+									<RadzenText TextStyle="TextStyle.Body2" Style="font-size:1.1rem;">-</RadzenText>
+								}
+							</RadzenColumn>
+						</RadzenRow>
+					</RadzenColumn>
+					<RadzenColumn Size="12" SizeLG="3" class="rz-p-4" Style="display:flex; align-items:center; justify-content:center; gap:10px;">
+						@if (!showHistory)
+						{
+							<MudButton Variant="MudBlazor.Variant.Filled" StartIcon="@Icons.Material.Filled.Cancel" Color="MudBlazor.Color.Error" Style="width: 175px; border-radius:25px;" @onclick="async () => await RemoveTermin(meeting)">Zrušiť termín</MudButton>
+						}
+					</RadzenColumn>
+				</RadzenRow>
+			</RadzenCard>
+		</Template>
+	</RadzenDataList>
+</div>
+
+@code {
+	RadzenDataList<MeetingDto> dataList;
+	List<MeetingDto> meetingsList = new List<MeetingDto>();
+	List<MeetingDto> filteredMeetingsList = new List<MeetingDto>();
+
+	bool showHistory = false;
+	DateTime? selectedDate;
+	string? selectedSubject;
+
+	public DateTime? SelectDate
+	{
+		get
+		{
+			return selectedDate;
+		}
+		set
+		{
+			if (selectedDate == value)
+			{
+				return;
+			}
+
+			selectedDate = value;
+
+			ApplyFilters();
+		}
+	}
+
+	public string? SelectSubject
+	{
+		get
+		{
+			return selectedSubject;
+		}
+		set
+		{
+			if (selectedSubject == value)
+			{
+				return;
+			}
+
+			selectedSubject = value;
+
+			ApplyFilters();
+		}
+	}
+
+	string subjectSearchText = "";
+
+	public string SubjectSearchText
+	{
+		get
+		{
+			return subjectSearchText;
+		}
+		set
+		{
+			if (subjectSearchText != value)
+			{
+				subjectSearchText = value;
+			}
+		}
+	}
+
+	protected override async Task OnInitializedAsync()
+	{
+		// TODO: Fetch data from ENDPOINT
+
+		var httpClient = HttpClientFactory.CreateClient("API");
+
+		var userResponse = await httpClient.GetAsync("user");
+
+		UserDto? teacher = new();
+
+		if (userResponse.IsSuccessStatusCode)
+		{
+			var userJson = await userResponse.Content.ReadAsStringAsync();
+
+			teacher = JsonSerializer.Deserialize<UserDto>(userJson);
+		}
+
+		UserDto student = new UserDto
+			{
+				FirstName = "Franto",
+				LastName = "Potupák",
+				Email = "franto.potupak@gmail.com",
+				PhoneNumber = "+421 911 654 321"
+			};
+
+		CourseDto math = new CourseDto
+			{
+				Id = 1,
+				Name = "Matematika",
+				Price = 10,
+				Room = "AB-30",
+				Teacher = teacher,
+				Students = new List<UserDto>
+			{
+				student
+			}
+			};
+
+		CourseDto physics = new CourseDto
+			{
+				Id = 2,
+				Name = "Fyzika",
+				Price = 10,
+				Room = "BC-30",
+				Teacher = teacher,
+				Students = new List<UserDto>
+			{
+				student
+			}
+			};
+
+		CourseDto informatics = new CourseDto
+			{
+				Id = 3,
+				Name = "Informatika",
+				Price = 10,
+				Room = "CD-30",
+				Teacher = teacher,
+				Students = new List<UserDto>
+			{
+				student
+			}
+			};
+
+		meetingsList = new List<MeetingDto>
+		{
+			new MeetingDto
+			{
+				Beginning = new DateTime(2024, 3, 10, 12, 30, 0),
+				Duration = 60,
+				Course = math,
+				Teacher = teacher,
+				Student = student
+			},
+			new MeetingDto
+			{
+				Beginning = new DateTime(2024, 12, 12, 12, 5, 0),
+				Duration = 60,
+				Course = math,
+				Teacher = teacher,
+				Student = student
+			},
+			new MeetingDto
+			{
+				Beginning = new DateTime(2024, 1, 10, 12, 15, 0),
+				Duration = 75,
+				Course = physics,
+				Teacher = teacher,
+				Student = student
+			},
+			new MeetingDto
+			{
+				Beginning = new DateTime(2024, 11, 18, 8, 0, 0),
+				Duration = 75,
+				Course = physics,
+				Teacher = teacher,
+				Student = student
+			},
+			new MeetingDto
+			{
+				Beginning = new DateTime(2024, 10, 18, 15, 0, 0),
+				Duration = 120,
+				Course = informatics,
+				Teacher = teacher,
+				Student = null
+			}
+		};
+
+		filteredMeetingsList = meetingsList
+			.Where(x => x.Beginning.Date > DateTime.Now.Date)
+			.ToList(); ;
+	}
+
+	void ApplyFilters()
+	{
+		filteredMeetingsList = meetingsList.ToList();
+
+		if (!string.IsNullOrWhiteSpace(selectedSubject))
+		{
+			filteredMeetingsList = filteredMeetingsList
+				.Where(x => string.Equals(x.Course.Name, selectedSubject, StringComparison.OrdinalIgnoreCase))
+				.ToList();
+		}
+
+		if (selectedDate != null)
+		{
+			filteredMeetingsList = filteredMeetingsList
+				.Where(x => x.Beginning.Date == selectedDate.Value.Date)
+				.ToList();
+		}
+
+		if (string.IsNullOrWhiteSpace(selectedSubject) && selectedDate == null)
+		{
+			filteredMeetingsList = meetingsList;
+		}
+
+		if (showHistory)
+		{
+			filteredMeetingsList = filteredMeetingsList
+				.Where(x => x.Beginning.Date < DateTime.Now.Date)
+				.ToList();
+		}
+		else
+		{
+			filteredMeetingsList = filteredMeetingsList
+				.Where(x => x.Beginning.Date > DateTime.Now.Date)
+				.ToList();
+		}
+	}
+
+	async Task RemoveTermin(MeetingDto meeting)
+	{
+		// TODO: Remove via ENDPOINT
+
+		filteredMeetingsList.Remove(meeting);
+
+		Snackbar.Add("Termín bol úspešne zrušený.", Severity.Success);
+	}
+
+	async Task CreateTermin()
+	{
+		// TODO: ADD via ENDPOINT (ASSIGN TEACHER ON BACKEND)
+
+		var options = new Radzen.DialogOptions()
+			{
+				Resizable = false,
+				Draggable = false,
+				CloseDialogOnOverlayClick = true,
+				Width = "fit-content",
+				Height = "fit-content",
+			};
+
+		var result = await DialogService.OpenAsync<CreateMeetingModal>("Vytvorenie termínu", null, options);
+
+		if (result is MeetingDto newMeeting)
+		{
+			meetingsList.Add(newMeeting);
+
+			await dataList.Reload();
+
+			Snackbar.Add("Termín bol úspešne vytvorený.", Severity.Success);
+		}
+	}
+
+	async Task OpenStudentModal(UserDto student)
+	{
+		var options = new Radzen.DialogOptions()
+			{
+				Resizable = false,
+				Draggable = false,
+				CloseDialogOnOverlayClick = true,
+				Width = "fit-content",
+				Height = "fit-content",
+			};
+
+		var parameters = new Dictionary<string, object>
+		{
+			{ "Student", student }
+		};
+
+		await DialogService.OpenAsync<StudentInfoModal>("Informácie o študentovi", parameters, options);
+	}
+
+	void ShowHistory()
+	{
+		showHistory = true;
+
+		ApplyFilters();
+	}
+
+	void ShowUpcoming()
+	{
+		showHistory = false;
+
+		ApplyFilters();
+	}
+}
