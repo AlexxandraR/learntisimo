@@ -13,6 +13,91 @@
 		font-weight: 500;
 		box-shadow: var(--rz-shadow-5);
 	}
+
+	@@media only screen and (max-width: 1575px) {
+		div[name="meeting-row"] {
+			flex-direction: column;
+		}
+
+		div[name="meeting-details-row"] {
+			justify-content: center !important;
+		}
+	}
+
+	@@media only screen and (max-width: 1185px) {
+		div[name="main-row"] {
+			flex-direction: column;
+		}
+	}
+
+	@@media only screen and (max-width: 1115px) {
+		#page-container {
+			padding: 3% 3% 0 3% !important;
+		}
+	}
+
+	@@media only screen and (max-width: 990px) {
+		#sort-buttons {
+			margin: 0px 8px 0px 0px !important;
+		}
+	}
+
+	@@media only screen and (max-width: 895px) {
+		#sort-buttons {
+			margin: 0px 8px 0px 0px !important;
+		}
+	}
+
+	@@media only screen and (max-width: 820px) {
+		div[name="meeting-details-row"] {
+			flex-direction: column;
+			align-items: start !important;
+		}
+
+		div[name="meeting-details-row"] .rz-row {
+			margin: auto;
+		}
+
+		div[name="main-row"] .rz-stack * {
+			text-align: center;
+		}
+
+		div[name="meeting-card"] {
+			max-width: 325px !important;
+		}
+
+		.rz-g {
+			justify-content: center;
+		}
+	}
+
+	@@media only screen and (max-width: 726px) {
+		div[name="meeting-card"] {
+			max-width: unset !important;
+		}
+	}
+
+	@@media only screen and (max-width: 605px) {
+		div[name="meeting-details-row"] {
+			flex-direction: column;
+			align-items: start !important;
+		}
+	}
+
+	@@media only screen and (max-width: 360px) {
+		div[name="action-row"] {
+			flex-direction: column;
+			align-items: center !important;
+		}
+
+		div[name="main-row"] .rz-row {
+			min-width: 125px !important;
+		}
+
+		div[name="meeting-row"] {
+			width: 100%;
+		}
+	}	
 </style>
 
 <AuthorizeView Policy="TeacherOnly">

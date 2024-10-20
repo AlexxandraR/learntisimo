@@ -20,35 +20,42 @@
 
 <PageTitle>Prihlásenie</PageTitle>
 
-<div style="width:100%; height:100%; display:flex; justify-content:center; align-items:center;">
-	<RadzenRow Gap="0" Class="rz-border-radius-6 rz-shadow-10" Style="width: 100%; max-width: 800px; min-height:350px; overflow: hidden; z-index:100; row-gap:0;">
+<style>
+	@@media only screen and (max-width: 520px) {
+		#container {
+			height: 100%;
+			max-width: unset !important;
+		}
+
+		#login-card {
+			padding: 24px !important;
+		}
+	}
+</style>
+
+<div style="display:flex; height:100%; padding:12px;">
+	<RadzenRow id="container" Gap="0" Class="rz-my-auto rz-mx-auto rz-border-radius-6 rz-shadow-10" Style="width: 100%; max-width: 800px; min-height:350px; overflow: auto; z-index:100; row-gap:0;">
 		<RadzenColumn Size="12" SizeMD="6">
-			<RadzenCard Class="rz-shadow-0 rz-border-radius-0 rz-text-align-center rz-p-12" Style="height: 100%; background: var(--rz-primary-light); display:flex; flex-direction:column; justify-content:center;">
+			<RadzenCard Class="rz-shadow-0 rz-border-radius-0 rz-text-align-center rz-p-12" Style="height:100%; background: var(--rz-primary-light); display:flex; flex-direction:column; justify-content:center;">
 				<RadzenText TextStyle="TextStyle.DisplayH3" TagName="TagName.H2" Class="rz-color-white rz-mb-6">Vitajte!</RadzenText>
 				<RadzenText TextStyle="TextStyle.Body2" Class="rz-color-white">Pre pokračovanie do vzdelávacieho systému zadajte Vaše prihlasovacie údaje alebo vytvorte nové používateľské konto.</RadzenText>
 			</RadzenCard>
 		</RadzenColumn>
 		<RadzenColumn Size="12" SizeMD="6">
-			<RadzenCard Class="rz-shadow-0 rz-border-radius-0 rz-p-12" Style="height:100%; display:flex; align-items:center;">
+			<RadzenCard id="login-card" Class="rz-shadow-0 rz-border-radius-0 rz-p-12" Style="height:100%; display:flex; align-items:center;">
 				<EditForm EditContext="editContext" style="width:100%">
 					<DataAnnotationsValidator />
-
-					<h2>Prihlásenie</h2>
-					<hr />
-
-					<div class="form-floating mb-3">
+					<RadzenStack Gap="0.75rem">
+						<h2 class="rz-mb-0">Prihlásenie</h2>
 						<MudTextField T="string" Label="Email" Variant="MudBlazor.Variant.Filled" ShrinkLabel @bind-Value="Input.Email" For="@(() => Input.Email)" />
-					</div>
-					<div class="form-floating mb-3">
 						<MudTextField T="string" Label="Heslo" Variant="MudBlazor.Variant.Filled" InputType="@PasswordInput" ShrinkLabel
 									  Adornment="MudBlazor.Adornment.End" AdornmentIcon="@PasswordInputIcon" OnAdornmentClick="ShowPassword" AdornmentAriaLabel="Show Password"
 									  @bind-Value="Input.Password" For="@(() => Input.Password)" />
-					</div>
-
-					<RadzenRow JustifyContent="JustifyContent.SpaceBetween">
-						<MudButton Variant="MudBlazor.Variant.Filled" StartIcon="@Icons.Material.Filled.Login" Color="MudBlazor.Color.Info" Style="width: 145px;" @onclick="async () => await LoginUser()">Prihlásiť</MudButton>
-						<MudButton Variant="MudBlazor.Variant.Filled" StartIcon="@Icons.Material.Filled.AppRegistration" Color="MudBlazor.Color.Info" Style="width: 145px;" @onclick='() => NavigationManager.NavigateTo("/register")'>Registrácia</MudButton>
-					</RadzenRow>
+						<RadzenRow JustifyContent="JustifyContent.SpaceBetween" Gap="0" RowGap="0.75rem">
+							<MudButton Variant="MudBlazor.Variant.Filled" StartIcon="@Icons.Material.Filled.Login" Color="MudBlazor.Color.Info" Style="width: 145px;" @onclick="async () => await LoginUser()">Prihlásiť</MudButton>
+							<MudButton Variant="MudBlazor.Variant.Filled" StartIcon="@Icons.Material.Filled.AppRegistration" Color="MudBlazor.Color.Info" Style="width: 145px;" @onclick='() => NavigationManager.NavigateTo("/register")'>Registrácia</MudButton>
+						</RadzenRow>
+					</RadzenStack>
 				</EditForm>
 			</RadzenCard>
 		</RadzenColumn>
@@ -57,7 +64,6 @@
 
 
 @code {
-
 	bool isShow;
 	InputType PasswordInput = MudBlazor.InputType.Password;
 	string PasswordInputIcon = MudBlazor.Icons.Material.Filled.VisibilityOff;
@@ -72,7 +78,7 @@
 		var authState = await AuthStateProvider.GetAuthenticationStateAsync();
 		var user = authState.User;
 
-		if (user.Identity !=null && user.Identity.IsAuthenticated)
+		if (user.Identity != null && user.Identity.IsAuthenticated)
 		{
 			NavigationManager.NavigateTo("/#");
 		}
@@ -107,10 +113,10 @@
 		try
 		{
 			LoginDto loginDto = new LoginDto
-			{
-				Email = Input.Email,
-				Password = Input.Password
-			};
+				{
+					Email = Input.Email,
+					Password = Input.Password
+				};
 
 			await AuthService.LoginAsync(loginDto);
 
@@ -120,7 +126,7 @@
 		}
 		catch (UnauthorizedAccessException)
 		{
-			Snackbar.Add("Nesprávne meno alebo heslo!", Severity.Error);
+			Snackbar.Add("Nesprávny email/heslo!", Severity.Error);
 		}
 		catch (HttpRequestException)
 		{

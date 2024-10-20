@@ -6,9 +6,9 @@
     }
 </style>
 
-<div style="display:flex; flex-direction:column; gap:20px; min-width: 450px;">
+<RadzenStack Style="gap:20px; min-width: 250px;">
     <RadzenFieldset Text="Základné údaje">
-        <RadzenStack Orientation="Radzen.Orientation.Horizontal" JustifyContent="JustifyContent.Start" Gap="1rem">
+        <RadzenRow JustifyContent="JustifyContent.Start" Gap="1rem">
             <RadzenImage Style="width: 200px; height: 225px;" Path="/profile_picture.jpg" />
             <RadzenStack Gap="0">
                 <RadzenText TextStyle="TextStyle.Overline" class="rz-display-flex rz-mt-0 rz-my-0" Style="font-size:small;">Titul</RadzenText>
@@ -22,10 +22,9 @@
                 <RadzenText TextStyle="TextStyle.Overline" class="rz-display-flex rz-mt-0 rz-mb-0" Style="font-size:small;">Tel.číslo</RadzenText>
                 <RadzenText TextStyle="TextStyle.Body1" Style="font-size:large;"><b>@Student.PhoneNumber</b></RadzenText>
             </RadzenStack>
-        </RadzenStack>
+        </RadzenRow>
     </RadzenFieldset>
-</div>
-
+</RadzenStack>
 
 @code {
     //TODO: Assign student's picture

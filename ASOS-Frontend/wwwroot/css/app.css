@@ -6,12 +6,18 @@
     src: url("https://raw.githubusercontent.com/blaisck/sfwin/master/SFPro/TrueType/SFProDisplay-SemiBold.ttf");
 }
 
-html {
+html, body, #app {
     height: 100dvh;
     width: 100dvw;
+    min-height: 100dvh;
+    min-width: 100dvw;
+}
+
+html {
     background-color: #c7c9ea;
     background-image: linear-gradient(135deg, #c7c9ea 0%, #ccd2e4 33%, #ccd2e4 66%, #d4d6f7 100%);
     overscroll-behavior: none;
+    overflow: hidden;
 }
 
 body {
@@ -19,28 +25,10 @@ body {
 }
 
 main {
+    height: 100%;
     width: 100%;
     display: block;
-    /*-webkit-justify-content: inherit;
-    justify-content: inherit;
-    -webkit-align-items: center;
-    align-items: center;*/
-}
-
-html, body {
-    min-height: 100dvh;
-    min-width: 100dvw;
-}
-
-body component {
-    display: flex;
-    width: 100dvw;
-    height: 100dvh;
-}
-
-#app {
-    height: 100dvh;
-    width: 100dvw;
+    overflow: auto;
 }
 
 h1:focus {
@@ -102,26 +90,30 @@ div.validation-message {
     letter-spacing: .03333em;
 }
 
-/** {
-    -moz-box-sizing: inherit;
-    -webkit-box-sizing: inherit;
-    box-sizing: inherit;
+.rz-dialog-wrapper {
+    z-index: 1500 !important;
+}
 
-    outline: 3px solid limegreen !important;
-}*/
-
-@media only screen and (max-width: 1150px) {
-    #logo-nav-container {
-        display: none;
+@media only screen and (max-width: 768px) {
+    .rz-pager-pages {
+        justify-content: center;
     }
 }
 
-@media only screen and (max-width: 965px) {
-    #menu-toggler {
-        display: block !important;
+@media only screen and (max-width: 725px) {
+    #page-container {
+        padding: 3% 3% 0 3% !important;
     }
+}
 
-    #horizontal-navmenu {
-        display: none !important;
+@media (max-width: 600px) {
+    .mud-appbar .mud-toolbar-appbar {
+        height: var(--mud-appbar-height) !important;
+    }
+}
+
+@media only screen and (max-width: 355px) {
+    .rz-datepicker-popup-container {
+        left: 0 !important;
     }
 }

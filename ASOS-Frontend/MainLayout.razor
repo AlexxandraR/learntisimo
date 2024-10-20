@@ -12,15 +12,13 @@
 <AuthorizeView>
 	<Authorized>
 		<NavMenu />
-		<main style="height: calc(100% - 64px);">
+		<main style="padding-top: var(--mud-appbar-height);">
 			@Body
 		</main>
 	</Authorized>
-	<NotAuthorized>
-		<main style="height:100%">
+ 	<NotAuthorized>
+		<main>
 			@Body
 		</main>
-	</NotAuthorized>
+	</NotAuthorized> 
 </AuthorizeView>
-
-

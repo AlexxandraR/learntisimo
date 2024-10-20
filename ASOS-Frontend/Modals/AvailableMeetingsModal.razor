@@ -12,12 +12,12 @@
 	}
 
 	.rz-datalist-content .rz-card {
-		padding-bottom: 12px !important;
+		padding: 8px !important;
 		min-height: unset !important;
 	}
 </style>
 
-<div style="display:flex; flex-direction:column; gap:10px; min-width:350px; max-width:450px; height:100%;">
+<RadzenStack Style="gap:10px; min-width:350px; max-width:450px; height:100%;">
 	<RadzenRow Style="padding-left:8px">
 		<RadzenDatePicker @bind-Value=@SelectDate Name="RadzenDatePickerBindValue" ShowCalendarWeek AllowClear Placeholder="Dátum" DateFormat="dd.MM.yyyy" Culture='new CultureInfo("sk-SK")' class="rz-shadow-5" />
 	</RadzenRow>
@@ -27,8 +27,8 @@
 					ShowPagingSummary="true" PagingSummaryFormat="Strana {0} / {1}">
 		<Template Context="meeting">
 			<RadzenCard Variant="Radzen.Variant.Outlined" class="rz-p-0 rz-shadow-3 rz-border-radius-3" Style="width: 100%; overflow: hidden;">
-				<RadzenRow JustifyContent="JustifyContent.SpaceEvenly" Gap="0rem">
-					<RadzenStack Gap="0">
+				<RadzenRow JustifyContent="JustifyContent.SpaceEvenly" Gap="0.3rem">
+					<RadzenStack Gap="0.2rem">
 						<RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="rz-mb-0" Style="width:fit-content">Dátum a čas</RadzenText>
 						<RadzenText TextStyle="TextStyle.Body2" Style="font-size:1.1rem; width:fit-content">@(meeting.Beginning)</RadzenText>
 					</RadzenStack>
@@ -37,7 +37,7 @@
 			</RadzenCard>
 		</Template>
 	</RadzenDataList>
-</div>
+</RadzenStack>
 
 @code {
 	[Parameter]

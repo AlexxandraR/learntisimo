@@ -4,7 +4,7 @@
 
 @inject Radzen.DialogService DialogService
 
-<div style="display:flex; flex-direction:column; gap:20px; min-width:350px; max-width:300px;">
+<RadzenStack Style="gap:20px; min-width:250px; max-width:350px; margin:auto;">
 	<EditForm Model="formInputModel" OnValidSubmit="ReturnCreatedCourse">
 		<DataAnnotationsValidator />
 		<RadzenFieldset Text="Špecifikácia">
@@ -14,11 +14,11 @@
 				</RadzenFormField>
 				<ValidationMessage For="@(() => formInputModel.Subject)" />
 				<RadzenFormField Text="Miestnosť" Variant="Radzen.Variant.Outlined" AllowFloatingLabel="false">
-					<RadzenTextBox @bind-Value="formInputModel.Room"style ="width: 200px;" class="rz-shadow-5" />
+					<RadzenTextBox @bind-Value="formInputModel.Room" Style ="width: 200px;" class="rz-shadow-5" />
 				</RadzenFormField>
 				<ValidationMessage For="@(() => formInputModel.Room)" />
 				<RadzenFormField Text="Cena (€)" Variant="Radzen.Variant.Outlined" AllowFloatingLabel="false">
-					<RadzenNumeric @bind-Value="formInputModel.Price" TValue="double?"style ="width: 200px;" class="rz-shadow-5" />
+					<RadzenNumeric @bind-Value="formInputModel.Price" TValue="double?" Style ="width: 200px;" class="rz-shadow-5" />
 				</RadzenFormField>
 				<ValidationMessage For="@(() => formInputModel.Price)" />
 			</RadzenStack>
@@ -28,10 +28,9 @@
 			<MudButton Variant="MudBlazor.Variant.Filled" StartIcon="@Icons.Material.Filled.Cancel" Color="MudBlazor.Color.Error" Style="width: 145px;" @onclick='() => DialogService.Close()'>Zrušiť</MudButton>
 		</RadzenRow>
 	</EditForm>
-</div>
+</RadzenStack>
 
 @code {
-
 	CreateCourseInputModel formInputModel = new();
 
 	void ReturnCreatedCourse()

@@ -33,10 +33,23 @@
 		font-weight: bold;
 		font-size: medium;
 	}
+
+	@@media only screen and (max-width: 1000px) {
+		#profile-page {
+			height: 100%;
+			border-radius: 0 !important;
+		}
+	}
+
+	@@media only screen and (max-width: 590px) {
+		#profile-form {
+			justify-content: center !important;
+		}
+	}
 </style>
 
-<div style="width:100%; height:100%; display:flex; justify-content:center; align-items:center;">
-	<RadzenCard Variant="Radzen.Variant.Filled" class="rz-p-0 rz-shadow-3 rz-border-radius-3" Style="width: 50%; height:90%; overflow: auto;">
+<div style="width:100%; height:100%; display:flex; ">
+	<RadzenCard id="profile-page" Variant="Radzen.Variant.Filled" class="rz-p-0 rz-shadow-3 rz-border-radius-3" Style="max-width: 1000px; min-height:690px; flex:1 1; margin:auto; overflow: auto;">
 		@if (currentUser != null)
 		{
 			<MudTabs Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-5">
@@ -49,7 +62,7 @@
 									<MudText Typo="Typo.body2">Status:</MudText>
 									<MudChip T="string" Variant="MudBlazor.Variant.Text" Color="Color.Info" Icon="@Icons.Material.Filled.Person">@currentUser.Role</MudChip>
 								</RadzenRow>
-								<RadzenRow>
+								<RadzenRow id="profile-form">
 									<RadzenStack Style="width:48%; min-width:250px" Gap="0.2rem">
 										<MudTextField Label="Titul" Variant="MudBlazor.Variant.Outlined" ShrinkLabel @bind-Value="formInputModel.Degree" For="@(() => formInputModel.Degree)" Style="width:125px;" />
 										<MudTextField Label="Meno" Variant="MudBlazor.Variant.Outlined" ShrinkLabel @bind-Value="formInputModel.FirstName" For="@(() => formInputModel.FirstName)" Style="width:250px;" />

@@ -27,15 +27,25 @@
 		width: fit-content;
 	}
 
+	#horizontal-navmenu {
+		flex: 1;
+		flex-wrap: nowrap;
+	}
+
 	#logo-nav-container {
 		box-shadow: 0 0 4px 0 gray;
 		border-radius: 30px;
+		width: fit-content;
+		margin-right: auto;
 	}
 
 	#account-container {
 		box-shadow: 0 0 4px 0 gray;
 		border-radius: 30px;
 		padding: 8px 16px;
+		width: fit-content;
+		max-width: 250px;
+		flex-wrap: nowrap;
 	}
 
 	#account-container:hover {
@@ -45,29 +55,52 @@
 	.mud-menu p {
 		font-size: 1.0rem;
 		font-weight: bold;
+		overflow: hidden;
+	}
+
+	@@media only screen and (max-width: 1150px) {
+		#logo-nav-container {
+			display: none;
+		}
+	}
+
+	@@media only screen and (max-width: 970px) {
+		#menu-toggler {
+			display: block !important;
+		}
+
+		#horizontal-navmenu {
+			display: none !important;
+		}
+	}
+
+	@@media only screen and (max-width: 360px) {
+		#account-container {
+			padding: 8px !important;
+		}
 	}
 </style>
 
-<MudAppBar Fixed="false" Elevation="4">
+<MudAppBar Fixed="true" Elevation="4">
 	<MudIconButton id="menu-toggler" Icon="@Icons.Material.Filled.Menu" Color="Color.Dark" OnClick="ToggleDrawer" Style="display:none;" />
 
-	<MudNavLink id="logo-nav-container" IconColor="@Color.Dark" Icon="@Icons.Material.Filled.MenuBook" Style="width:fit-content; margin-right:auto">LEARNTISIMO</MudNavLink>
+	<MudNavLink id="logo-nav-container" IconColor="@Color.Dark" Icon="@Icons.Material.Filled.MenuBook">LEARNTISIMO</MudNavLink>
 
-	<RadzenRow id="horizontal-navmenu" JustifyContent="JustifyContent.Center" style="flex: 1; flex-wrap:nowrap;">
-		<MudNavLink Icon="@Icons.Material.Filled.Home" Href="#" Style="width:fit-content">Domov</MudNavLink>
-		<MudNavLink Icon="@Icons.Material.Filled.School" Href="courses" Style="">Doučovania</MudNavLink>
+	<RadzenRow id="horizontal-navmenu" JustifyContent="JustifyContent.Center">
+		<MudNavLink Icon="@Icons.Material.Filled.Home" Href="#">Domov</MudNavLink>
+		<MudNavLink Icon="@Icons.Material.Filled.School" Href="courses">Doučovania</MudNavLink>
 
 		<AuthorizeView Policy="StudentOnly">
 			<Authorized>
 				<MudNavLink Icon="@Icons.Material.Filled.Book" Href="mycourses">Moje doučovania</MudNavLink>
-				<MudNavLink Icon="@Icons.Material.Filled.Dashboard" Href="mymeetings">Moje termíny</MudNavLink>
+				<MudNavLink Icon="@Icons.Material.Filled.DateRange" Href="mymeetings">Moje termíny</MudNavLink>
 			</Authorized>
 		</AuthorizeView>
 
 		<AuthorizeView Policy="TeacherOnly">
 			<Authorized>
 				<MudNavLink Icon="@Icons.Material.Filled.Book" Href="mycourses">Moje doučovania</MudNavLink>
-				<MudNavLink Icon="@Icons.Material.Filled.Dashboard" Href="mymeetings">Moje termíny</MudNavLink>
+				<MudNavLink Icon="@Icons.Material.Filled.DateRange" Href="mymeetings">Moje termíny</MudNavLink>
 			</Authorized>
 		</AuthorizeView>
 
@@ -100,7 +133,7 @@
 	</AuthorizeView>
 </MudAppBar>
 
-<MudDrawer @bind-Open="_drawerOpen" Anchor="Anchor.Left" Variant="DrawerVariant.Temporary">
+<MudDrawer @bind-Open="drawerOpen" Anchor="Anchor.Left" Variant="DrawerVariant.Temporary">
 
 	<MudIconButton Icon="@Icons.Material.Filled.Close" OnClick="ToggleDrawer" Style="width:fit-content; margin-left:5px;"></MudIconButton>
 
@@ -110,14 +143,14 @@
 	<AuthorizeView Policy="StudentOnly">
 		<Authorized>
 			<MudNavLink Icon="@Icons.Material.Filled.Book" Href="mycourses">Moje doučovania</MudNavLink>
-			<MudNavLink Icon="@Icons.Material.Filled.Dashboard" Href="mymeetings">Moje termíny</MudNavLink>
+			<MudNavLink Icon="@Icons.Material.Filled.DateRange" Href="mymeetings">Moje termíny</MudNavLink>
 		</Authorized>
 	</AuthorizeView>
 
 	<AuthorizeView Policy="TeacherOnly">
 		<Authorized>
 			<MudNavLink Icon="@Icons.Material.Filled.Book" Href="mycourses">Moje doučovania</MudNavLink>
-			<MudNavLink Icon="@Icons.Material.Filled.Dashboard" Href="mymeetings">Moje termíny</MudNavLink>
+			<MudNavLink Icon="@Icons.Material.Filled.DateRange" Href="mymeetings">Moje termíny</MudNavLink>
 		</Authorized>
 	</AuthorizeView>
 
@@ -132,11 +165,10 @@
 </MudDrawer>
 
 @code {
-	private bool _drawerOpen = false;
+	private bool drawerOpen = false;
 
 	private void ToggleDrawer()
 	{
-		_drawerOpen = !_drawerOpen;
+		drawerOpen = !drawerOpen;
 	}
-
 }

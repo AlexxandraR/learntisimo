@@ -6,10 +6,10 @@
     }
 </style>
 
-<div style="display:flex; flex-direction:column; gap:20px; min-width: 450px;  max-width: 750px;">
+<RadzenStack Style="gap:20px; min-width:250px; max-width:750px;">
     <RadzenFieldset Text="Základné údaje">
-        <RadzenStack Orientation="Radzen.Orientation.Horizontal" JustifyContent="JustifyContent.Start" Gap="1rem">
-            <RadzenImage Style="width: 200px; height: 225px;" Path="/profile_picture.jpg" />
+        <RadzenRow JustifyContent="JustifyContent.Start" Gap="1rem">
+            <RadzenImage Style="width:200px; height:225px;" Path="/profile_picture.jpg" />
             <RadzenStack Gap="0">
                 <RadzenText TextStyle="TextStyle.Overline" class="rz-display-flex rz-mt-0 rz-my-0" Style="font-size:small;">Titul</RadzenText>
                 <RadzenText TextStyle="TextStyle.Body1" Style="font-size:large;"><b>@Teacher.Degree</b></RadzenText>
@@ -22,13 +22,17 @@
                 <RadzenText TextStyle="TextStyle.Overline" class="rz-display-flex rz-mt-0 rz-mb-0" Style="font-size:small;">Tel.číslo</RadzenText>
                 <RadzenText TextStyle="TextStyle.Body1" Style="font-size:large;"><b>@Teacher.PhoneNumber</b></RadzenText>
             </RadzenStack>
-        </RadzenStack>
+        </RadzenRow>
     </RadzenFieldset>
 
     <RadzenFieldset Text="Popis lektora">
-            <RadzenText TextStyle="TextStyle.Body1" class="">Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</RadzenText>
+            <RadzenText TextStyle="TextStyle.Body1" class="">Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has 
+                been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type 
+                specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. 
+                It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing 
+                software like Aldus PageMaker including versions of Lorem Ipsum.</RadzenText>
     </RadzenFieldset>
-</div>
+</RadzenStack>
 
 @code {
     //TODO: Assign teachers's picture

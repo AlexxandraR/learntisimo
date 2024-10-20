@@ -3,73 +3,43 @@
 <PageTitle>Domov</PageTitle>
 
 <style>
-    #logo-container {
-        width: 280px;
-        height: 240px;
-        background: rgba(255, 255, 255, 0.90);
-        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
-        backdrop-filter: blur(0px);
-        -webkit-backdrop-filter: blur(0px);
-    }
+	#logo-container {
+		width: 280px;
+		height: 240px;
+		background: rgba(255, 255, 255, 0.90);
+		backdrop-filter: blur(0px);
+		-webkit-backdrop-filter: blur(0px);
+	}
 
-    #fluid-bg {
-        position: absolute;
-        max-height: 575px;
-        object-fit: contain;
-        height: 90%;
-        width: 90%;
-        z-index: 0;
-    }
+	#logo-bg {
+		position: absolute;
+		object-fit: contain;
+		max-height: 575px;
+		height: 90%;
+		width: 90%;
+		z-index: 0;
+	}
 
-    .spin {
-        -webkit-animation: spin 40s linear infinite;
-        -moz-animation: spin 40s linear infinite;
-        animation: spin 40s linear infinite;
-    }
-
-    .glass {
-        border-radius: 0px;
-        border-left: 1px solid #f2f2f5;
-    }
-
-    .card-side {
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: space-evenly;
-    }
-
-    .logo-img {
-        height: 115px;
-        filter: drop-shadow(0px 0px 2px rgba(255,255,255,0.6));
-    }
-
-    .logo-text {
-        width: 225px;
-        color: dimgray;
-        text-shadow: white 0px 0px 2px !important;
-    }
-
-    .site-name {
-        font-family: 'SF Pro Display';
-        font-weight: 400;
-        font-style: normal;
-        font-size: 35px;
-        color: dimgray;
-        text-shadow: black 0px 0px 2px;
-    }
+	#logo-text {
+		width: 225px;
+		color: dimgray;
+		font-family: 'SF Pro Display';
+		font-weight: 400;
+		font-style: normal;
+		font-size: 2.19rem;
+		text-shadow: white 0px 0px 2px;
+	}
 </style>
 
-<div style="position:relative; height:100%; width:100%; display:flex; justify-content:center; align-items:center; overflow:hidden;">
-    <img id="fluid-bg" src="/daccord-static-grayscale.png" />
-	<div class="glass" style="display:flex; justify-content:center; align-items:center; width:100%; height:100%; z-index:1;">
-			<RadzenCard id="logo-container" Class="card-side rz-shadow-0 rz-border-radius-8 rz-text-align-center rz-p-6">
-                <RadzenIcon Icon="menu_book" Style="font-size:100px;" />
-                <div id="logo-text" class="logo-text site-name">LEARNTISIMO</div>
-			</RadzenCard>
-	</div>
-</div>
+<RadzenRow JustifyContent="JustifyContent.Center" AlignItems="Radzen.AlignItems.Center" Style="position:relative; height:100%; width:100%;">
+	<img id="logo-bg" src="/logo-bg.png" />
+	<RadzenCard id="logo-container" Class="rz-shadow-0 rz-border-radius-8 rz-p-6">
+		<RadzenStack JustifyContent="JustifyContent.Center" AlignItems="Radzen.AlignItems.Center" Style="height:100%">
+			<RadzenIcon Icon="menu_book" Style="font-size:6.25rem;" />
+			<p id="logo-text">LEARNTISIMO</p>
+		</RadzenStack>
+	</RadzenCard>
+</RadzenRow>
 
 @code {
 

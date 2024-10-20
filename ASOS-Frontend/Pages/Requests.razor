@@ -42,10 +42,53 @@
 		border-radius: 30px;
 	}
 
+	@@media only screen and (max-width: 1475px) {
+		div[name="request-row"] {
+			flex-direction: column;
+		}
+
+		div[name="request-details-row"] {
+			justify-content: center !important;
+		}
+	}
+
+	@@media only screen and (max-width: 1105px) {
+		div[name="main-row"] {
+			flex-direction: column;
+		}
+	}
+
+	@@media only screen and (max-width: 990px) {
+		#sort-buttons {
+			margin: 0px 8px 0px 0px !important;
+		}
+	}
+
+	@@media only screen and (max-width: 605px) {
+		div[name="request-details-row"] {
+			flex-direction: column;
+			align-items: start !important;
+		}
+	}
+
+	@@media only screen and (max-width: 375px) {
+		div[name="action-row"] {
+			flex-direction: column;
+			align-items: center !important;
+		}
+
+		div[name="request-row"] {
+			width: 100%;
+		}
+
+		div[name="request-row"] > div:nth-child(1) {
+			min-width: unset !important;
+		}
+	}
 </style>
 
-<div style="padding: 3% 11% 0 11%; overflow:auto;">
-	<RadzenRow Style="padding-left:8px">
+<div id="page-container" style="padding:3% 11% 0 11%;">
+	<RadzenRow RowGap="0.75rem" Style="padding-left:8px">
 		<RadzenDropDown @bind-SearchText=TeacherSearchText FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" FilterOperator="StringFilterOperator.Contains" AllowFiltering="true"
 						Data=@requestsList.Select(x => x.User.FirstName + " " + x.User.LastName).Distinct().ToList() AllowClear="true" @bind-Value=SelectTeacher Style="width: 200px; max-width: 400px;"
 						class="rz-shadow-5" Placeholder="Používateľ" />
@@ -54,33 +97,33 @@
 	<RadzenDataList AllowVirtualization="false" Style="padding-top:0.65%;"
 					WrapItems="true" AllowPaging="true" PagerAlwaysVisible="true" EmptyText="Zoznam je prázdny, skontrolujte zvolené filtre."
 					Data="@filteredRequestsList" TItem="RequestDto" PageSize="5" PagerHorizontalAlign="HorizontalAlign.Left"
-					ShowPagingSummary="true" PagingSummaryFormat="Strana {0} / {1} ({2} žiadostí)">
+					ShowPagingSummary="true" PagingSummaryFormat="Strana {0} / {1}">
 		<Template Context="request">
-			<RadzenCard Variant="Radzen.Variant.Outlined" class="rz-p-0 rz-shadow-3 rz-border-radius-3" Style="width: 100%; overflow: hidden;">
-				<RadzenRow Gap="0">
-					<RadzenColumn Size="12" SizeLG="3" class="rz-p-4 product-title" Style="display:flex; align-items:center; justify-content:center;">
-						<RadzenLink href="javascript:void(0)" Style="font-size:1.2rem;" @onclick="async () => await OpenUserModal(request.User)">@($"{request.User.Degree} {request.User.FirstName} {request.User.LastName}")</RadzenLink>
-					</RadzenColumn>
-					<RadzenColumn Size="12" SizeLG="6" class="rz-p-4">
-						<RadzenRow Gap="0">
-							<RadzenColumn Size="12" SizeMD="6" SizeLG="2">
+			<RadzenCard name="request-card" Variant="Radzen.Variant.Outlined" class="rz-p-4 rz-shadow-3 rz-border-radius-3" Style="width: 100%; overflow: hidden;">
+				<RadzenRow name="main-row" Gap="0" AlignItems="Radzen.AlignItems.Center">
+					<RadzenRow name="request-row" Style="flex:1;">
+						<RadzenRow JustifyContent="JustifyContent.Center" AlignItems="Radzen.AlignItems.Center" Style="min-width: 300px">
+							<RadzenLink href="javascript:void(0)" Style="font-size:1.2rem;" @onclick="async () => await OpenUserModal(request.User)">@($"{request.User.Degree} {request.User.FirstName} {request.User.LastName}")</RadzenLink>
+						</RadzenRow>
+						<RadzenRow name="request-details-row" JustifyContent="JustifyContent.Left" AlignItems="Radzen.AlignItems.Center" Gap="1rem" Style="flex:1;">
+							<RadzenStack Style="min-width:85px">
 								<RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="rz-mb-0">ID</RadzenText>
 								<RadzenText TextStyle="TextStyle.Body2" Style="font-size:1.1rem;">@(request.Id)</RadzenText>
-							</RadzenColumn>
-							<RadzenColumn Size="12" SizeMD="6" SizeLG="4">
+							</RadzenStack>
+							<RadzenStack Style="min-width:150px">
 								<RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="rz-mb-0">Dátum a čas</RadzenText>
 								<RadzenText TextStyle="TextStyle.Body2" Style="font-size:1.1rem;">@(request.RequestedAt)</RadzenText>
-							</RadzenColumn>
-							<RadzenColumn Size="12" SizeMD="6" SizeLG="5">
+							</RadzenStack>
+							<RadzenStack Style="min-width:225px">
 								<RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="rz-mb-0">Email</RadzenText>
 								<RadzenText TextStyle="TextStyle.Body2" Style="font-size:1.1rem;">@(request.User.Email)</RadzenText>
-							</RadzenColumn>				
+							</RadzenStack>
 						</RadzenRow>
-					</RadzenColumn>
-					<RadzenColumn Size="12" SizeLG="3" class="rz-p-4" Style="display:flex; align-items:center; justify-content:space-between;">
+					</RadzenRow>
+					<RadzenRow name="action-row" AlignItems="Radzen.AlignItems.Center" Gap="0.75rem" Style="height:fit-content;">
 						<MudButton Variant="MudBlazor.Variant.Filled" StartIcon="@Icons.Material.Filled.CheckCircle" Color="MudBlazor.Color.Success" Style="width: 145px;" @onclick="async () => await AcceptRequest(request)">Schváliť</MudButton>
 						<MudButton Variant="MudBlazor.Variant.Filled" StartIcon="@Icons.Material.Filled.Cancel" Color="MudBlazor.Color.Error" Style="width: 145px;" @onclick="async () => await DenyRequest(request)">Zamietnuť</MudButton>
-					</RadzenColumn>
+					</RadzenRow>
 				</RadzenRow>
 			</RadzenCard>
 		</Template>
@@ -134,58 +177,58 @@
 		// TODO: Fetch data from ENDPOINT
 
 		var user1 = new UserDto
-		{
-			Degree = "Ing.",
-			FirstName = "Peter",
-			LastName = "Dobrák",
-			Email = "peter.dobrak@gmail.com",
-			PhoneNumber = "+421 911 123 456"
-		};
+			{
+				Degree = "Ing.",
+				FirstName = "Peter",
+				LastName = "Dobrák",
+				Email = "peter.dobrak@gmail.com",
+				PhoneNumber = "+421 911 123 456"
+			};
 
 		var user2 = new UserDto
-		{
-			Degree = "doc.",
-			FirstName = "Lacikam",
-			LastName = "Dobrák",
-			Email = "lacikam.dobrak@gmail.com",
-			PhoneNumber = "+421 911 333 456"
-		};
+			{
+				Degree = "doc.",
+				FirstName = "Lacikam",
+				LastName = "Dobrák",
+				Email = "lacikam.dobrak@gmail.com",
+				PhoneNumber = "+421 911 333 456"
+			};
 
 		var user3 = new UserDto
-		{
-			Degree = "prof.",
-			FirstName = "Ján",
-			LastName = "Novák",
-			Email = "jan.novak@gmail.com",
-			PhoneNumber = "+421 911 444 456"
-		};
+			{
+				Degree = "prof.",
+				FirstName = "Ján",
+				LastName = "Novák",
+				Email = "jan.novak@gmail.com",
+				PhoneNumber = "+421 911 444 456"
+			};
 
 		var user4 = new UserDto
-		{
-			Degree = "Bc.",
-			FirstName = "Michal",
-			LastName = "Horváth",
-			Email = "michal.horvath@gmail.com",
-			PhoneNumber = "+421 911 555 456"
-		};
+			{
+				Degree = "Bc.",
+				FirstName = "Michal",
+				LastName = "Horváth",
+				Email = "michal.horvath@gmail.com",
+				PhoneNumber = "+421 911 555 456"
+			};
 
 		var user5 = new UserDto
-		{
-			Degree = "Phdr.",
-			FirstName = "Katarína",
-			LastName = "Kováčová",
-			Email = "katarina.kovacova@gmail.com",
-			PhoneNumber = "+421 911 666 456"
-		};
+			{
+				Degree = "Phdr.",
+				FirstName = "Katarína",
+				LastName = "Kováčová",
+				Email = "katarina.kovacova@gmail.com",
+				PhoneNumber = "+421 911 666 456"
+			};
 
 		var user6 = new UserDto
-		{
-			Degree = string.Empty,
-			FirstName = "Lukáš",
-			LastName = "Polák",
-			Email = "lukas.polak@gmail.com",
-			PhoneNumber = "+421 911 777 456"
-		};
+			{
+				Degree = string.Empty,
+				FirstName = "Lukáš",
+				LastName = "Polák",
+				Email = "lukas.polak@gmail.com",
+				PhoneNumber = "+421 911 777 456"
+			};
 
 		requestsList = new List<RequestDto>
 		{

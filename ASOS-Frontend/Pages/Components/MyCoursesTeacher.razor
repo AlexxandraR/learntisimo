@@ -5,8 +5,17 @@
 @inject ISnackbar Snackbar
 @inject IHttpClientFactory HttpClientFactory
 
-<div style="padding: 3% 11% 0 11%; overflow:auto;">
-	<RadzenRow Style="padding-left:8px">
+<style>
+	@@media only screen and (max-width: 445px) {
+		div[name="action-row"] {
+			flex-direction: column;
+			align-items: center !important;
+		}
+	}
+</style>
+
+<div id="page-container" style="padding:3% 11% 0 11%;">
+	<RadzenRow RowGap="0.75rem" Style="padding-left:8px">
 		<RadzenDropDown @bind-SearchText=SubjectSearchText FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" FilterOperator="StringFilterOperator.Contains" AllowFiltering="true"
 						Data=@myCoursesList.Select(x => x.Name).Distinct().ToList() AllowClear="true" @bind-Value=SelectSubject Style="width: 200px; max-width: 400px;"
 						class="rz-shadow-5" Placeholder="Predmet" />
@@ -17,33 +26,33 @@
 	<RadzenDataList @ref="dataList" AllowVirtualization="false" Style="padding-top:0.65%;"
 					WrapItems="true" AllowPaging="true" PagerAlwaysVisible="true" EmptyText="Zoznam je prázdny, skontrolujte zvolené filtre."
 					Data="@filteredMyCoursesList" TItem="CourseDto" PageSize="5" PagerHorizontalAlign="HorizontalAlign.Left"
-					ShowPagingSummary="true" PagingSummaryFormat="Strana {0} / {1} ({2} doučovaní)">
+					ShowPagingSummary="true" PagingSummaryFormat="Strana {0} / {1}">
 		<Template Context="myCourse">
-			<RadzenCard Variant="Radzen.Variant.Outlined" class="rz-p-0 rz-shadow-3 rz-border-radius-3" Style="width: 100%; overflow: hidden;">
-				<RadzenRow Gap="0">
-					<RadzenColumn Size="12" SizeLG="3" class="rz-p-4 product-title" Style="display:flex; align-items:center; justify-content:center;">
-						<RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="rz-mb-0">@(myCourse.Name)</RadzenText>
-					</RadzenColumn>
-					<RadzenColumn Size="12" SizeLG="5" class="rz-p-4">
-						<RadzenRow Gap="0">
-							<RadzenColumn Size="12" SizeMD="6" SizeLG="4">
+			<RadzenCard Variant="Radzen.Variant.Outlined" class="rz-p-4 rz-shadow-3 rz-border-radius-3" Style="width: 100%; overflow: hidden;">
+				<RadzenRow name="main-row" Gap="0" AlignItems="Radzen.AlignItems.Center">
+					<RadzenRow name="course-row" Style="flex:1;">
+						<RadzenRow JustifyContent="JustifyContent.Center" AlignItems="Radzen.AlignItems.Center" Style="min-width: 300px">
+							<RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="rz-mb-0">@(myCourse.Name)</RadzenText>
+						</RadzenRow>
+						<RadzenRow name="course-details-row" JustifyContent="JustifyContent.Left" AlignItems="Radzen.AlignItems.Center" Gap="2rem" Style="flex:1;">
+							<RadzenStack Gap="1rem" Style="min-width:100px">
 								<RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="rz-mb-0">Miestnosť</RadzenText>
 								<RadzenText TextStyle="TextStyle.Body2" Style="font-size:1.1rem;">@(myCourse.Room)</RadzenText>
-							</RadzenColumn>
-							<RadzenColumn Size="12" SizeMD="6" SizeLG="4">
+							</RadzenStack>
+							<RadzenStack Gap="1rem" Style="min-width:100px">
 								<RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="rz-mb-0">Sadzba</RadzenText>
 								<RadzenText TextStyle="TextStyle.Body2" Style="font-size:1.1rem;">@($"{String.Format(new System.Globalization.CultureInfo("sk-SK"), "{0:C}", myCourse.Price)} /hod")</RadzenText>
-							</RadzenColumn>
-							<RadzenColumn Size="12" SizeMD="6" SizeLG="4">
+							</RadzenStack>
+							<RadzenStack Gap="1rem" Style="min-width:100px">
 								<RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="rz-mb-0">Zapísaní</RadzenText>
-								<RadzenText TextStyle="TextStyle.Body2" Style="font-size:1.1rem; margin-left: 1.75rem">@(myCourse.Students.Count())</RadzenText>
-							</RadzenColumn>
+								<RadzenText TextStyle="TextStyle.Body2" Style="font-size:1.1rem; margin-left: 1.5rem">@(myCourse.Students.Count())</RadzenText>
+							</RadzenStack>
 						</RadzenRow>
-					</RadzenColumn>
-					<RadzenColumn Size="12" SizeLG="4" class="rz-p-4" Style="display:flex; align-items:center; justify-content:center; gap:10px;">
+					</RadzenRow>
+					<RadzenRow name="action-row" AlignItems="Radzen.AlignItems.Center" Gap="1rem" Style="height:fit-content;">
 						<MudButton Variant="MudBlazor.Variant.Filled" StartIcon="@Icons.Material.Filled.ListAlt" Color="MudBlazor.Color.Info" Style="width: 175px; border-radius:25px;" @onclick="async () => await ShowStudentList(myCourse)">Zoznam</MudButton>
 						<MudButton Variant="MudBlazor.Variant.Filled" StartIcon="@Icons.Material.Filled.Cancel" Color="MudBlazor.Color.Error" Style="width: 175px;" @onclick="async () => await RemoveDoucovanie(myCourse)">Zrušiť</MudButton>
-					</RadzenColumn>
+					</RadzenRow>
 				</RadzenRow>
 			</RadzenCard>
 		</Template>
@@ -111,40 +120,40 @@
 		}
 
 		UserDto student1 = new UserDto
-		{
-			Id = 2,
-			FirstName = "Janko",
-			LastName = "Hraško",
-			Email = "janko.hrasko@zoznam.sk",
-			PhoneNumber = "+421 911 123 456"
-		};
+			{
+				Id = 2,
+				FirstName = "Janko",
+				LastName = "Hraško",
+				Email = "janko.hrasko@zoznam.sk",
+				PhoneNumber = "+421 911 123 456"
+			};
 
 		UserDto student2 = new UserDto
-		{
-			Id = 2,
-			FirstName = "Peter",
-			LastName = "Marcinek",
-			Email = "peter.marcinek@protonmail.com",
-			PhoneNumber = "+421 911 654 321"
-		};
+			{
+				Id = 2,
+				FirstName = "Peter",
+				LastName = "Marcinek",
+				Email = "peter.marcinek@protonmail.com",
+				PhoneNumber = "+421 911 654 321"
+			};
 
 		UserDto student3 = new UserDto
-		{
-			Id = 2,
-			FirstName = "Alžbeta",
-			LastName = "Chudá",
-			Email = "alzbetka-chuda@azet.sk",
-			PhoneNumber = "+421 925 622 381"
-		};
+			{
+				Id = 2,
+				FirstName = "Alžbeta",
+				LastName = "Chudá",
+				Email = "alzbetka-chuda@azet.sk",
+				PhoneNumber = "+421 925 622 381"
+			};
 
 		UserDto student4 = new UserDto
-		{
-			Id = 2,
-			FirstName = "František",
-			LastName = "Poničan",
-			Email = "franto-pony@stuba.sk",
-			PhoneNumber = "+421 903 721 455"
-		};
+			{
+				Id = 2,
+				FirstName = "František",
+				LastName = "Poničan",
+				Email = "franto-pony@stuba.sk",
+				PhoneNumber = "+421 903 721 455"
+			};
 
 		myCoursesList = new List<CourseDto>
 		{

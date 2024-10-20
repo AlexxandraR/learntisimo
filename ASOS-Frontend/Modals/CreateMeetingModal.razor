@@ -4,7 +4,7 @@
 
 @inject Radzen.DialogService DialogService
 
-<div style="display:flex; flex-direction:column; gap:20px; min-width:350px; max-width:300px;">
+<RadzenStack Style="gap:20px; min-width:250px; max-width:350px; margin:auto;">
 	<EditForm Model="formInputModel" OnValidSubmit="ReturnCreatedMeeting">
 		<DataAnnotationsValidator />
 		<RadzenFieldset Text="Špecifikácia">
@@ -29,7 +29,7 @@
 			<MudButton Variant="MudBlazor.Variant.Filled" StartIcon="@Icons.Material.Filled.Cancel" Color="MudBlazor.Color.Error" Style="width: 145px;" @onclick='() => DialogService.Close()'>Zrušiť</MudButton>
 		</RadzenRow>
 	</EditForm>
-</div>
+</RadzenStack>
 
 @code {
 	//TODO: Show only courses of the teacher

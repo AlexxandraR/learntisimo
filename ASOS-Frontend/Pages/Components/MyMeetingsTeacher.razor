@@ -7,15 +7,15 @@
 @inject ISnackbar Snackbar
 @inject IHttpClientFactory HttpClientFactory
 
-<div style="padding: 3% 11% 0 11%; overflow:auto;">
-	<RadzenRow Style="padding-left:8px">
+<div id="page-container" style="padding:3% 11% 0 11%;">
+	<RadzenRow RowGap="0.75rem" Style="padding-left:8px">
 		<RadzenDropDown @bind-SearchText=SubjectSearchText FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" FilterOperator="StringFilterOperator.Contains" AllowFiltering="true"
 						Data=@meetingsList.Select(x => x.Course.Name).Distinct().ToList() AllowClear="true" @bind-Value=SelectSubject Style="width: 200px; max-width: 400px;"
 						class="rz-shadow-5" Placeholder="Predmet" />
 
-		<RadzenDatePicker @bind-Value=@SelectDate Name="RadzenDatePickerBindValue" ShowCalendarWeek AllowClear Placeholder="Dátum" DateFormat="dd.MM.yyyy" Culture='new CultureInfo("sk-SK")' class="rz-shadow-5" />
-		<MudButton Variant="MudBlazor.Variant.Filled" StartIcon="@Icons.Material.Filled.Add" Color="MudBlazor.Color.Success" Style="width: 175px;" @onclick="async () => await CreateTermin()">Pridať termín</MudButton>
-		<div style="display:flex; margin-left:auto; margin-right:10px; gap: 10px;">
+		<RadzenDatePicker @bind-Value=@SelectDate Name="RadzenDatePickerBindValue" ShowCalendarWeek AllowClear Placeholder="Dátum" DateFormat="dd.MM.yyyy" Culture='new CultureInfo("sk-SK")' class="rz-shadow-5" Style="width: 200px;" />
+		<MudButton Variant="MudBlazor.Variant.Filled" StartIcon="@Icons.Material.Filled.Add" Color="MudBlazor.Color.Success" Style="width: 200px;" @onclick="async () => await CreateTermin()">Pridať termín</MudButton>
+		<RadzenRow id="sort-buttons" Gap="10px" Style="margin-left:auto; margin-right:10px;">
 			@if (!showHistory)
 			{
 				<MudButton Variant="MudBlazor.Variant.Filled" StartIcon="@Icons.Material.Filled.History" Color="MudBlazor.Color.Inherit" Style="width: 200px; background-color:white;" @onclick="ShowHistory">Zobraziť históriu</MudButton>
@@ -24,56 +24,62 @@
 			{
 				<MudButton Variant="MudBlazor.Variant.Filled" StartIcon="@Icons.Material.Filled.HistoryToggleOff" Color="MudBlazor.Color.Inherit" Style="width: 200px; background-color:white;" @onclick="ShowUpcoming">Skryť históriu</MudButton>
 			}
-		</div>
+		</RadzenRow>
 	</RadzenRow>
 
 	<RadzenDataList @ref="dataList" AllowVirtualization="false" Style="padding-top:0.65%;"
 					WrapItems="true" AllowPaging="true" PagerAlwaysVisible="true" EmptyText="Zoznam je prázdny, skontrolujte zvolené filtre."
 					Data="@filteredMeetingsList" TItem="MeetingDto" PageSize="5" PagerHorizontalAlign="HorizontalAlign.Left"
-					ShowPagingSummary="true" PagingSummaryFormat="Strana {0} / {1} ({2} termíny)">
+					ShowPagingSummary="true" PagingSummaryFormat="Strana {0} / {1}">
 		<Template Context="meeting">
-			<RadzenCard Variant="Radzen.Variant.Outlined" class="rz-p-0 rz-shadow-3 rz-border-radius-3" Style="width: 100%; overflow: hidden; background-color:white;">
-				<RadzenRow Gap="0">
-					<RadzenColumn Size="12" SizeLG="2" class="rz-p-4 product-title" Style="display:flex; align-items:center; justify-content:center;">
-						<RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="rz-mb-0">@(meeting.Course.Name)</RadzenText>
-					</RadzenColumn>
-					<RadzenColumn Size="12" SizeLG="7" class="rz-p-4">
-						<RadzenRow Gap="0">
-							<RadzenColumn Size="12" SizeMD="6" SizeLG="2">
-								<RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="rz-mb-0">Dátum</RadzenText>
-								<RadzenText TextStyle="TextStyle.Body2" Style="font-size:1.1rem;">@($"{meeting.Beginning.ToString("d", new CultureInfo("sk-SK"))}")</RadzenText>
-							</RadzenColumn>
-							<RadzenColumn Size="12" SizeMD="6" SizeLG="2">
-								<RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="rz-mb-0">Čas</RadzenText>
-								<RadzenText TextStyle="TextStyle.Body2" Style="font-size:1.1rem;">@($"{meeting.Beginning.ToString("t", new CultureInfo("sk-SK"))}")</RadzenText>
-							</RadzenColumn>
-							<RadzenColumn Size="12" SizeMD="6" SizeLG="2">
-								<RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="rz-mb-0">Trvanie</RadzenText>
-								<RadzenText TextStyle="TextStyle.Body2" Style="font-size:1.1rem;">@($"{meeting.Duration} minút")</RadzenText>
-							</RadzenColumn>
-							<RadzenColumn Size="12" SizeMD="6" SizeLG="2">
-								<RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="rz-mb-0">Miestnosť</RadzenText>
-								<RadzenText TextStyle="TextStyle.Body2" Style="font-size:1.1rem;">@(meeting.Course.Room)</RadzenText>
-							</RadzenColumn>
-							<RadzenColumn Size="12" SizeMD="6" SizeLG="4">
-								<RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="rz-mb-0">Zapísaný</RadzenText>
-								@if (meeting.Student != null)
-								{
-									<RadzenLink href="javascript:void(0)" Style="font-size:1rem;" @onclick="async () => await OpenStudentModal(meeting.Student)">@($"{meeting.Student.FirstName} {meeting.Student.LastName}")</RadzenLink>
-								}
-								else
-								{
-									<RadzenText TextStyle="TextStyle.Body2" Style="font-size:1.1rem;">-</RadzenText>
-								}
-							</RadzenColumn>
+			<RadzenCard name="meeting-card" Variant="Radzen.Variant.Outlined" class="rz-p-4 rz-shadow-3 rz-border-radius-3" Style="width: 100%; overflow: hidden; background-color:white;">
+				<RadzenRow name="main-row" Gap="0" AlignItems="Radzen.AlignItems.Center">
+					<RadzenRow name="meeting-row" Style="flex:1;">
+						<RadzenRow JustifyContent="JustifyContent.Center" AlignItems="Radzen.AlignItems.Center" Style="min-width: 300px">
+							<RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="rz-mb-0">@(meeting.Course.Name)</RadzenText>
 						</RadzenRow>
-					</RadzenColumn>
-					<RadzenColumn Size="12" SizeLG="3" class="rz-p-4" Style="display:flex; align-items:center; justify-content:center; gap:10px;">
+						<RadzenRow name="meeting-details-row" JustifyContent="JustifyContent.Left" AlignItems="Radzen.AlignItems.Center" Gap="1rem" Style="flex:1;">
+							<RadzenRow>
+								<RadzenStack Style="min-width:115px">
+									<RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="rz-mb-0">Dátum</RadzenText>
+									<RadzenText TextStyle="TextStyle.Body2" Style="font-size:1.1rem;">@($"{meeting.Beginning.ToString("d", new CultureInfo("sk-SK"))}")</RadzenText>
+								</RadzenStack>
+								<RadzenStack Style="min-width:115px">
+									<RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="rz-mb-0">Čas</RadzenText>
+									<RadzenText TextStyle="TextStyle.Body2" Style="font-size:1.1rem;">@($"{meeting.Beginning.ToString("t", new CultureInfo("sk-SK"))}")</RadzenText>
+								</RadzenStack>
+							</RadzenRow>
+							<RadzenRow>
+								<RadzenStack Style="min-width:115px">
+									<RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="rz-mb-0">Trvanie</RadzenText>
+									<RadzenText TextStyle="TextStyle.Body2" Style="font-size:1.1rem;">@($"{meeting.Duration} minút")</RadzenText>
+								</RadzenStack>
+								<RadzenStack Style="min-width:115px">
+									<RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="rz-mb-0">Miestnosť</RadzenText>
+									<RadzenText TextStyle="TextStyle.Body2" Style="font-size:1.1rem;">@(meeting.Course.Room)</RadzenText>
+								</RadzenStack>
+							</RadzenRow>
+							<RadzenRow>
+								<RadzenStack Style="min-width:175px">
+									<RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="rz-mb-0">Zapísaný</RadzenText>
+									@if (meeting.Student != null)
+									{
+										<RadzenLink href="javascript:void(0)" Style="font-size:1rem;" @onclick="async () => await OpenStudentModal(meeting.Student)">@($"{meeting.Student.FirstName} {meeting.Student.LastName}")</RadzenLink>
+									}
+									else
+									{
+										<RadzenText TextStyle="TextStyle.Body2" Style="font-size:1.1rem;">-</RadzenText>
+									}
+								</RadzenStack>
+							</RadzenRow>
+						</RadzenRow>
+					</RadzenRow>
+					<RadzenRow name="action-row" AlignItems="Radzen.AlignItems.Center" Gap="1rem" Style="height:fit-content;">
 						@if (!showHistory)
 						{
 							<MudButton Variant="MudBlazor.Variant.Filled" StartIcon="@Icons.Material.Filled.Cancel" Color="MudBlazor.Color.Error" Style="width: 175px; border-radius:25px;" @onclick="async () => await RemoveTermin(meeting)">Zrušiť termín</MudButton>
 						}
-					</RadzenColumn>
+					</RadzenRow>
 				</RadzenRow>
 			</RadzenCard>
 		</Template>
@@ -245,6 +251,14 @@
 			new MeetingDto
 			{
 				Beginning = new DateTime(2024, 10, 18, 15, 0, 0),
+				Duration = 120,
+				Course = informatics,
+				Teacher = teacher,
+				Student = null
+			},
+			new MeetingDto
+			{
+				Beginning = new DateTime(2024, 10, 19, 17, 20, 0),
 				Duration = 120,
 				Course = informatics,
 				Teacher = teacher,

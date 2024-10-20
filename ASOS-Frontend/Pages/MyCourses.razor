@@ -8,7 +8,6 @@
 	.rz-datalist-content .rz-card {
 		background: white;
 		min-height: 100px;
-		padding-top: 12px !important;
 	}
 
 	.rz-badge {
@@ -37,6 +36,49 @@
 		border-radius: 30px;
 	}
 
+	@@media only screen and (max-width: 1475px) {
+		div[name="course-row"] {
+			flex-direction: column;
+		}
+
+		div[name="course-details-row"] {
+			justify-content: center !important;
+		}
+	}
+
+	@@media only screen and (max-width: 1105px) {
+		div[name="main-row"] {
+			flex-direction: column;
+		}
+	}
+
+	@@media only screen and (max-width: 990px) {
+		#sort-buttons {
+			margin: 0px 8px 0px 0px !important;
+		}
+	}
+
+	@@media only screen and (max-width: 605px) {
+		div[name="course-details-row"] {
+			flex-direction: column;
+			align-items: start !important;
+		}
+	}
+
+	@@media only screen and (max-width: 360px) {
+		div[name="action-row"] {
+			flex-direction: column;
+			align-items: center !important;
+		}
+
+		div[name="course-row"] {
+			width: 100%;
+		}
+
+		div[name="course-row"] > div:nth-child(1) {
+			min-width: unset !important;
+		}
+	}
 </style>
 
 <AuthorizeView Policy="TeacherOnly">
