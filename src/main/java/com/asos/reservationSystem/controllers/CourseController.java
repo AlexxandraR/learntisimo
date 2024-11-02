@@ -28,7 +28,7 @@ public class CourseController {
                 collect(Collectors.toList());
     }
 
-    @GetMapping(path = "/courseTeacher")
+    @PostMapping (path = "/courseTeacher")
     public List<CourseDto> getAllTeacherCourses(Long teacherId){
         return courseService.getAllTeacherCourses(teacherId).stream().map(courseMapper::mapToDto).
                 collect(Collectors.toList());
