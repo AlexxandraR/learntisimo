@@ -40,5 +40,10 @@ public class CourseController {
                 collect(Collectors.toList());
     }
 
+    @PostMapping(path = "/createCourse")
+    public void saveCourse(@RequestBody CourseDto courseDto){
+        courseService.saveCourse(courseMapper.mapFromDto(courseDto));
+    }
+
 
 }

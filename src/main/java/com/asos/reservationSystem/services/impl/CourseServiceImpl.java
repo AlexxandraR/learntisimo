@@ -3,6 +3,7 @@ package com.asos.reservationSystem.services.impl;
 import com.asos.reservationSystem.domain.entities.Course;
 import com.asos.reservationSystem.repositories.CourseRepository;
 import com.asos.reservationSystem.services.CourseService;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -41,5 +42,15 @@ public class CourseServiceImpl implements CourseService {
         } else {
             return courses.get();
         }
+    }
+
+    @Override
+    public void saveCourse(Course course) {
+        if (course == null) {
+            throw new AccessDeniedException("Access Denied: Course is null");
+        } else if (course.getTeacher() == null) {
+            throw new AccessDeniedException("Access Denied: Course teacher is null");
+        }
+        courseRepository.save(course);
     }
 }

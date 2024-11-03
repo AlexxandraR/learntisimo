@@ -10,4 +10,6 @@ public interface CourseService {
     List<Course> getAllTeacherCourses(Long teacherId);
 
     List<Course> getAllStudentCourses(Long l);
+
+    void saveCourse(Course course);
 }

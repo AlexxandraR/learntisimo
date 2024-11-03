@@ -110,47 +110,47 @@
 		var httpClient = HttpClientFactory.CreateClient("API");
 		var currentUser = await getcurrentUser(httpClient);
 
-	/* Netusim na co tu su ti studenti, na stranke mi ich neukazuje (alebo som retardovany a nevidim to)
-		UserDto student1 = new UserDto
-			{
-				Id = 2,
-				FirstName = "Janko",
-				LastName = "Hraško",
-				Email = "janko.hrasko@zoznam.sk",
-				PhoneNumber = "+421 911 123 456"
-			};
+		/* Netusim na co tu su ti studenti, na stranke mi ich neukazuje (alebo som retardovany a nevidim to)
+					UserDto student1 = new UserDto
+					{
+					Id = 2,
+					FirstName = "Janko",
+					LastName = "Hraško",
+					Email = "janko.hrasko@zoznam.sk",
+			PhoneNumber = "+421 911 123 456"
+					};
 
-		UserDto student2 = new UserDto
-			{
-				Id = 2,
-				FirstName = "Peter",
-				LastName = "Marcinek",
-				Email = "peter.marcinek@protonmail.com",
+					UserDto student2 = new UserDto
+					{
+					Id = 2,
+					FirstName = "Peter",
+					LastName = "Marcinek",
+					Email = "peter.marcinek@protonmail.com",
 				PhoneNumber = "+421 911 654 321"
+				};
+
+				UserDto student3 = new UserDto
+					{
+					Id = 2,
+					FirstName = "Alžbeta",
+					LastName = "Chudá",
+					Email = "alzbetka-chuda@azet.sk",
+					PhoneNumber = "+421 925 622 381"
 			};
 
-		UserDto student3 = new UserDto
-			{
-				Id = 2,
-				FirstName = "Alžbeta",
-				LastName = "Chudá",
-				Email = "alzbetka-chuda@azet.sk",
-				PhoneNumber = "+421 925 622 381"
-			};
-
-		UserDto student4 = new UserDto
-			{
-				Id = 2,
-				FirstName = "František",
-				LastName = "Poničan",
-				Email = "franto-pony@stuba.sk",
-				PhoneNumber = "+421 903 721 455"
-			};
-	*/
+			UserDto student4 = new UserDto
+					{
+					Id = 2,
+					FirstName = "František",
+					LastName = "Poničan",
+					Email = "franto-pony@stuba.sk",
+					PhoneNumber = "+421 903 721 455"
+				};
+		*/
 		var plainContent = new StringContent(currentUser.Id.ToString(), Encoding.UTF8, "text/plain");
 		var coursesResponse = await httpClient.PostAsync("courseTeacher", plainContent);
 		List<CourseDto> allCourses = new();
-		
+
 		if (coursesResponse.IsSuccessStatusCode)
 		{
 			var coursesJson = await coursesResponse.Content.ReadAsStringAsync();
@@ -216,23 +216,25 @@
 			var currentUser = await getcurrentUser(httpClient);
 
 			newCourse.Teacher = currentUser;
-			// Test
+			newCourse.Students = new List<UserDto>();
+		// Test
 			var jsonContent = new StringContent(
-				JsonSerializer.Serialize(newCourse), 
-				Encoding.UTF8, 
-				"text/plain");
-			var coursesResponse = await httpClient.PostAsync("courseTeacherCreate", jsonContent);
+				JsonSerializer.Serialize(newCourse),
+				Encoding.UTF8,
+				"application/json");
+				
+			var coursesResponse = await httpClient.PostAsync("createCourse", jsonContent);
 			// End test
 			if (coursesResponse.IsSuccessStatusCode)
 			{
 				myCoursesList.Add(newCourse);
+				Snackbar.Add("Doučovanie bolo úspešne vytvorené.", Severity.Success);
 			}else{
 				Snackbar.Add("Unable to create Course.", Severity.Error);
 			}
 
 			await dataList.Reload();
 
-			Snackbar.Add("Doučovanie bolo úspešne vytvorené.", Severity.Success);
 		}
 	}
 
