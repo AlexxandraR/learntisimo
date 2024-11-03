@@ -5,10 +5,7 @@ import com.asos.reservationSystem.repositories.CourseRepository;
 import com.asos.reservationSystem.services.CourseService;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.Scanner;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -30,6 +27,16 @@ public class CourseServiceImpl implements CourseService {
         var courses = courseRepository.findAllByTeacher_Id(teacherId);
         if (courses.isEmpty()) {
             System.out.println("No courses found for teacher with id " + teacherId);
+            return Collections.emptyList();
+        } else {
+            return courses.get();
+        }
+    }
+
+    public List<Course> getAllStudentCourses(Long studentId) {
+        var courses = courseRepository.findAllByStudents_Id(studentId);
+        if (courses.isEmpty()) {
+            System.out.println("No courses found for teacher with id " + studentId);
             return Collections.emptyList();
         } else {
             return courses.get();

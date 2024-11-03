@@ -33,4 +33,10 @@ public class CourseController {
         return courseService.getAllTeacherCourses(Long.parseLong(teacherId.trim())).stream().map(courseMapper::mapToDto).
                 collect(Collectors.toList());
     }
+
+    @PostMapping (path = "/courseStudent")
+    public List<CourseDto> getAllStudentCourses(@RequestBody String studentId) {
+        return courseService.getAllStudentCourses(Long.parseLong(studentId.trim())).stream().map(courseMapper::mapToDto).
+                collect(Collectors.toList());
+    }
 }
