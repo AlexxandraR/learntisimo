@@ -127,7 +127,7 @@ public class DBInitializer implements CommandLineRunner {
         var savedCourse1 = courseRepository.save(course1);
 
         var meeting = Meeting.builder()
-                .beginning(LocalDateTime.now())
+                .beginning(LocalDateTime.now().plusDays(4))
                 .duration(1)
                 .student(savedUser1)
                 .teacher(savedUser2)

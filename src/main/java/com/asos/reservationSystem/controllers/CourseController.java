@@ -39,4 +39,6 @@ public class CourseController {
         return courseService.getAllStudentCourses(Long.parseLong(studentId.trim())).stream().map(courseMapper::mapToDto).
                 collect(Collectors.toList());
     }
+
+
 }

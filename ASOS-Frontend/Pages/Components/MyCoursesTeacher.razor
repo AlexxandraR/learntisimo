@@ -211,18 +211,24 @@
 
 		if (result is CourseDto newCourse)
 		{
-			myCoursesList.Add(newCourse);
 
 			var httpClient = HttpClientFactory.CreateClient("API");
 			var currentUser = await getcurrentUser(httpClient);
 
+			newCourse.Teacher = currentUser;
 			// Test
 			var jsonContent = new StringContent(
-				currentUser.Id.ToString() + ASOS_Frontend.Shared.Constants.divider + JsonSerializer.Serialize(newCourse), 
+				JsonSerializer.Serialize(newCourse), 
 				Encoding.UTF8, 
 				"text/plain");
 			var coursesResponse = await httpClient.PostAsync("courseTeacherCreate", jsonContent);
 			// End test
+			if (coursesResponse.IsSuccessStatusCode)
+			{
+				myCoursesList.Add(newCourse);
+			}else{
+				Snackbar.Add("Unable to create Course.", Severity.Error);
+			}
 
 			await dataList.Reload();
 
@@ -251,15 +257,14 @@
 
 	async Task<UserDto?> getcurrentUser(HttpClient httpClient)
 	{
-		var userResponse = httpClient.GetAsync("user");
+		var userResponse = await httpClient.GetAsync("user");
 
 		UserDto? currentUser = new();
 
-		if (userResponse.Result.IsSuccessStatusCode)
+		if (userResponse.IsSuccessStatusCode)
 		{
-			var userJson = userResponse.Result.Content.ReadAsStringAsync();
-
-			currentUser = JsonSerializer.Deserialize<UserDto>(userJson.Result);
+			var userJson = await userResponse.Content.ReadAsStringAsync();
+			currentUser = JsonSerializer.Deserialize<UserDto>(userJson);
 		}
 
 		return currentUser;

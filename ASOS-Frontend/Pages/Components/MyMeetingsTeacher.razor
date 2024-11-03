@@ -1,6 +1,7 @@
 ﻿@using System.Globalization;
 @using System.Text.Json;
 @using DTOs.Account;
+@using System.Text
 
 @inject Radzen.DialogService DialogService
 @inject NotificationService notificationService
@@ -155,120 +156,138 @@
 		// TODO: Fetch data from ENDPOINT
 
 		var httpClient = HttpClientFactory.CreateClient("API");
+		var currentUser = await getcurrentUser(httpClient); 
 
-		var userResponse = await httpClient.GetAsync("user");
+		var plainContent = new StringContent(currentUser.Id.ToString(), Encoding.UTF8, "text/plain");
+		var meetingsResponse = await httpClient.PostAsync("meetingsTeacher", plainContent);
+		List<MeetingDto> allMeetings = new();
 
-		UserDto? teacher = new();
-
-		if (userResponse.IsSuccessStatusCode)
+		if (meetingsResponse.IsSuccessStatusCode)
 		{
-			var userJson = await userResponse.Content.ReadAsStringAsync();
+			var meetingsJson = await meetingsResponse.Content.ReadAsStringAsync();
 
-			teacher = JsonSerializer.Deserialize<UserDto>(userJson);
+			allMeetings = JsonSerializer.Deserialize<List<MeetingDto>>(meetingsJson);
 		}
 
-		UserDto student = new UserDto
-			{
-				FirstName = "Franto",
-				LastName = "Potupák",
-				Email = "franto.potupak@gmail.com",
-				PhoneNumber = "+421 911 654 321"
-			};
+		meetingsList = allMeetings;
+		
 
-		CourseDto math = new CourseDto
-			{
-				Id = 1,
-				Name = "Matematika",
-				Price = 10,
-				Room = "AB-30",
-				Teacher = teacher,
-				Students = new List<UserDto>
-			{
-				student
-			}
-			};
+		// var userResponse = await httpClient.GetAsync("user");
 
-		CourseDto physics = new CourseDto
-			{
-				Id = 2,
-				Name = "Fyzika",
-				Price = 10,
-				Room = "BC-30",
-				Teacher = teacher,
-				Students = new List<UserDto>
-			{
-				student
-			}
-			};
+		// UserDto? teacher = new();
 
-		CourseDto informatics = new CourseDto
-			{
-				Id = 3,
-				Name = "Informatika",
-				Price = 10,
-				Room = "CD-30",
-				Teacher = teacher,
-				Students = new List<UserDto>
-			{
-				student
-			}
-			};
+		// if (userResponse.IsSuccessStatusCode)
+		// {
+		// 	var userJson = await userResponse.Content.ReadAsStringAsync();
 
-		meetingsList = new List<MeetingDto>
-		{
-			new MeetingDto
-			{
-				Beginning = new DateTime(2024, 3, 10, 12, 30, 0),
-				Duration = 60,
-				Course = math,
-				Teacher = teacher,
-				Student = student
-			},
-			new MeetingDto
-			{
-				Beginning = new DateTime(2024, 12, 12, 12, 5, 0),
-				Duration = 60,
-				Course = math,
-				Teacher = teacher,
-				Student = student
-			},
-			new MeetingDto
-			{
-				Beginning = new DateTime(2024, 1, 10, 12, 15, 0),
-				Duration = 75,
-				Course = physics,
-				Teacher = teacher,
-				Student = student
-			},
-			new MeetingDto
-			{
-				Beginning = new DateTime(2024, 11, 18, 8, 0, 0),
-				Duration = 75,
-				Course = physics,
-				Teacher = teacher,
-				Student = student
-			},
-			new MeetingDto
-			{
-				Beginning = new DateTime(2024, 10, 18, 15, 0, 0),
-				Duration = 120,
-				Course = informatics,
-				Teacher = teacher,
-				Student = null
-			},
-			new MeetingDto
-			{
-				Beginning = new DateTime(2024, 10, 19, 17, 20, 0),
-				Duration = 120,
-				Course = informatics,
-				Teacher = teacher,
-				Student = null
-			}
-		};
+		// 	teacher = JsonSerializer.Deserialize<UserDto>(userJson);
+		// }
+
+		// UserDto student = new UserDto
+		// 	{
+		// 		FirstName = "Franto",
+		// 		LastName = "Potupák",
+		// 		Email = "franto.potupak@gmail.com",
+		// 		PhoneNumber = "+421 911 654 321"
+		// 	};
+
+		// CourseDto math = new CourseDto
+		// 	{
+		// 		Id = 1,
+		// 		Name = "Matematika",
+		// 		Price = 10,
+		// 		Room = "AB-30",
+		// 		Teacher = teacher,
+		// 		Students = new List<UserDto>
+		// 	{
+		// 		student
+		// 	}
+		// 	};
+
+		// CourseDto physics = new CourseDto
+		// 	{
+		// 		Id = 2,
+		// 		Name = "Fyzika",
+		// 		Price = 10,
+		// 		Room = "BC-30",
+		// 		Teacher = teacher,
+		// 		Students = new List<UserDto>
+		// 	{
+		// 		student
+		// 	}
+		// 	};
+
+		// CourseDto informatics = new CourseDto
+		// 	{
+		// 		Id = 3,
+		// 		Name = "Informatika",
+		// 		Price = 10,
+		// 		Room = "CD-30",
+		// 		Teacher = teacher,
+		// 		Students = new List<UserDto>
+		// 	{
+		// 		student
+		// 	}
+		// 	};
+
+		// meetingsList = new List<MeetingDto>
+		// {
+		// 	new MeetingDto
+		// 	{
+		// 		Beginning = new DateTime(2024, 3, 10, 12, 30, 0),
+		// 		Duration = 60,
+		// 		Course = math,
+		// 		Teacher = teacher,
+		// 		Student = student
+		// 	},
+		// 	new MeetingDto
+		// 	{
+		// 		Beginning = new DateTime(2024, 12, 12, 12, 5, 0),
+		// 		Duration = 60,
+		// 		Course = math,
+		// 		Teacher = teacher,
+		// 		Student = student
+		// 	},
+		// 	new MeetingDto
+		// 	{
+		// 		Beginning = new DateTime(2024, 1, 10, 12, 15, 0),
+		// 		Duration = 75,
+		// 		Course = physics,
+		// 		Teacher = teacher,
+		// 		Student = student
+		// 	},
+		// 	new MeetingDto
+		// 	{
+		// 		Beginning = new DateTime(2024, 11, 18, 8, 0, 0),
+		// 		Duration = 75,
+		// 		Course = physics,
+		// 		Teacher = teacher,
+		// 		Student = student
+		// 	},
+		// 	new MeetingDto
+		// 	{
+		// 		Beginning = new DateTime(2024, 10, 18, 15, 0, 0),
+		// 		Duration = 120,
+		// 		Course = informatics,
+		// 		Teacher = teacher,
+		// 		Student = null
+		// 	},
+		// 	new MeetingDto
+		// 	{
+		// 		Beginning = new DateTime(2024, 10, 19, 17, 20, 0),
+		// 		Duration = 120,
+		// 		Course = informatics,
+		// 		Teacher = teacher,
+		// 		Student = null
+		// 	}
+		// };
 
 		filteredMeetingsList = meetingsList
 			.Where(x => x.Beginning.Date > DateTime.Now.Date)
-			.ToList(); ;
+			.ToList();
+
+		// await dataList.Reload();
+		// int kk = dataList.Count;
 	}
 
 	void ApplyFilters()
@@ -373,5 +392,20 @@
 		showHistory = false;
 
 		ApplyFilters();
+	}
+
+	async Task<UserDto?> getcurrentUser(HttpClient httpClient)
+	{
+		var userResponse = await httpClient.GetAsync("user");
+
+		UserDto? currentUser = new();
+
+		if (userResponse.IsSuccessStatusCode)
+		{
+			var userJson = await userResponse.Content.ReadAsStringAsync();
+			currentUser = JsonSerializer.Deserialize<UserDto>(userJson);
+		}
+
+		return currentUser;
 	}
 }
