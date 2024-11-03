@@ -147,17 +147,9 @@
 		// TODO: Fetch data from ENDPOINT
 
 		var httpClient = HttpClientFactory.CreateClient("API");
+		var currentUser = await getcurrentUser(httpClient);
 
-		var userResponse = await httpClient.GetAsync("user");
-
-		UserDto? student = new();
-
-		if (userResponse.IsSuccessStatusCode)
-		{
-			var userJson = await userResponse.Content.ReadAsStringAsync();
-
-			student = JsonSerializer.Deserialize<UserDto>(userJson);
-		}
+		var student = currentUser;
 
 		UserDto teacher = new UserDto
 			{
@@ -314,6 +306,11 @@
 	async Task RemoveMeeting(MeetingDto meeting)
 	{
 		// TODO: Remove via ENDPOINT
+
+		var httpClient = HttpClientFactory.CreateClient("API");
+		var currentUser = await getcurrentUser(httpClient);
+
+
 		filteredMeetingsList.Remove(meeting);
 
 		Snackbar.Add("Termín bol úspešne zrušený.", Severity.Success);
@@ -350,5 +347,21 @@
 		showHistory = false;
 
 		ApplyFilters();
+	}
+
+	async Task<UserDto?> getcurrentUser(HttpClient httpClient)
+	{
+		var userResponse = httpClient.GetAsync("user");
+
+		UserDto? currentUser = new();
+
+		if (userResponse.Result.IsSuccessStatusCode)
+		{
+			var userJson = userResponse.Result.Content.ReadAsStringAsync();
+
+			currentUser = JsonSerializer.Deserialize<UserDto>(userJson.Result);
+		}
+
+		return currentUser;
 	}
 }

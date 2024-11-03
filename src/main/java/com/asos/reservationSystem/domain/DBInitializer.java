@@ -82,6 +82,23 @@ public class DBInitializer implements CommandLineRunner {
         authenticationService.saveUserToken(savedUser2, jwtToken2, true);
         authenticationService.saveUserToken(savedUser2, refreshedToken2, false);
 
+        var user3 = User.builder()
+                .firstName("Jakub")
+                .lastName("Gombala")
+                .email("kubinel47@gmail.com")
+                .phoneNumber("+421949000001")
+                .password(passwordEncoder.encode("Q1w2e3r4_"))
+                .role(Role.TEACHER)
+                .degree("Ing.")
+                .description("TOP")
+                .build();
+        var savedUser3 = userRepository.save(user3);
+        var jwtToken3 = jwtService.generateToken(user3);
+        var refreshedToken3 = jwtService.generateRefreshToken(user3);
+        authenticationService.saveUserToken(savedUser3, jwtToken3, true);
+        authenticationService.saveUserToken(savedUser3, refreshedToken3, false);
+
+
         var course = Course.builder()
                 .name("Fyzika")
                 .price(10.50)
@@ -90,6 +107,24 @@ public class DBInitializer implements CommandLineRunner {
                 .students(Arrays.asList(savedUser1))
                 .build();
         var savedCourse = courseRepository.save(course);
+
+        var course2 = Course.builder()
+                .name("Informatika")
+                .price(25.0)
+                .room("AB-150")
+                .teacher(savedUser3)
+                .students(Arrays.asList(savedUser1))
+                .build();
+        var savedCourse2 = courseRepository.save(course2);
+
+        var course1 = Course.builder()
+                .name("Matematika")
+                .price(12.50)
+                .room("BC-300")
+                .teacher(savedUser2)
+                .students(Arrays.asList(savedUser1))
+                .build();
+        var savedCourse1 = courseRepository.save(course1);
 
         var meeting = Meeting.builder()
                 .beginning(LocalDateTime.now())

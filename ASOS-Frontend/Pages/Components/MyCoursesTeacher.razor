@@ -1,4 +1,5 @@
 ﻿@using System.Text.Json
+@using System.Text
 
 @inject Radzen.DialogService DialogService
 @inject NotificationService notificationService
@@ -107,18 +108,9 @@
 		// TODO: Fetch data from ENDPOINT
 
 		var httpClient = HttpClientFactory.CreateClient("API");
+		var currentUser = await getcurrentUser(httpClient);
 
-		var userResponse = await httpClient.GetAsync("user");
-
-		UserDto? currentUser = new();
-
-		if (userResponse.IsSuccessStatusCode)
-		{
-			var userJson = await userResponse.Content.ReadAsStringAsync();
-
-			currentUser = JsonSerializer.Deserialize<UserDto>(userJson);
-		}
-
+	/* Netusim na co tu su ti studenti, na stranke mi ich neukazuje (alebo som retardovany a nevidim to)
 		UserDto student1 = new UserDto
 			{
 				Id = 2,
@@ -154,90 +146,19 @@
 				Email = "franto-pony@stuba.sk",
 				PhoneNumber = "+421 903 721 455"
 			};
-
-		myCoursesList = new List<CourseDto>
+	*/
+		var plainContent = new StringContent(currentUser.Id.ToString(), Encoding.UTF8, "text/plain");
+		var coursesResponse = await httpClient.PostAsync("courseTeacher", plainContent);
+		List<CourseDto> allCourses = new();
+		
+		if (coursesResponse.IsSuccessStatusCode)
 		{
-			new CourseDto
-			{
-				Id = 1,
-				Name = "Matematika",
-				Price = 10,
-				Room = "AB-30",
-				Teacher = currentUser,
-				Students = new List<UserDto>
-				{
-					student1,
-					student2,
-					student3,
-					student4
-				}
-			},
-			new CourseDto
-			{
-				Id = 2,
-				Name = "Fyzika",
-				Price = 10,
-				Room = "BC-30",
-				Teacher = currentUser,
-				Students = new List<UserDto>
-				{
-					student1,
-					student4
-				}
-			},
-			new CourseDto
-			{
-				Id = 3,
-				Name = "Informatika",
-				Price = 10,
-				Room = "CD-30",
-				Teacher = currentUser,
-				Students = new List<UserDto>
-				{
-					student1,
-					student2,
-					student3,
-				}
-			},
-			new CourseDto
-			{
-				Id = 4,
-				Name = "Angličtina",
-				Price = 10,
-				Room = "DE-30",
-				Teacher = currentUser,
-				Students = new List<UserDto>
-				{
-					student1,
-					student4
-				}
-			},
-			new CourseDto
-			{
-				Id = 5,
-				Name = "Dejepis",
-				Price = 10,
-				Room = "EF-30",
-				Teacher = currentUser,
-				Students = new List<UserDto>
-				{
-					student3,
-					student4
-				}
-			},
-			new CourseDto
-			{
-				Id = 6,
-				Name = "Biológia",
-				Price = 10,
-				Room = "FG-30",
-				Teacher = currentUser,
-				Students = new List<UserDto>
-				{
-					student2
-				}
-			}
-		};
+			var coursesJson = await coursesResponse.Content.ReadAsStringAsync();
+
+			allCourses = JsonSerializer.Deserialize<List<CourseDto>>(coursesJson);
+		}
+
+		myCoursesList = allCourses;
 
 		filteredMyCoursesList = myCoursesList;
 	}
@@ -257,6 +178,17 @@
 	async Task RemoveDoucovanie(CourseDto myDoucovanie)
 	{
 		// TODO: Remove via ENDPOINT
+
+		var httpClient = HttpClientFactory.CreateClient("API");
+		var currentUser = await getcurrentUser(httpClient);
+
+		// Test
+		var plainContent = new StringContent(currentUser.Id.ToString() + ASOS_Frontend.Shared.Constants.divider + myDoucovanie.Id, Encoding.UTF8, "text/plain");
+		var coursesResponse = await httpClient.PostAsync("courseTeacherRemove", plainContent);
+		// End test
+
+
+
 		filteredMyCoursesList.Remove(myDoucovanie);
 
 		Snackbar.Add("Doučovanie bolo úspešne zrušené.", Severity.Success);
@@ -281,6 +213,17 @@
 		{
 			myCoursesList.Add(newCourse);
 
+			var httpClient = HttpClientFactory.CreateClient("API");
+			var currentUser = await getcurrentUser(httpClient);
+
+			// Test
+			var jsonContent = new StringContent(
+				currentUser.Id.ToString() + ASOS_Frontend.Shared.Constants.divider + JsonSerializer.Serialize(newCourse), 
+				Encoding.UTF8, 
+				"text/plain");
+			var coursesResponse = await httpClient.PostAsync("courseTeacherCreate", jsonContent);
+			// End test
+
 			await dataList.Reload();
 
 			Snackbar.Add("Doučovanie bolo úspešne vytvorené.", Severity.Success);
@@ -304,5 +247,21 @@
 		};
 
 		await DialogService.OpenAsync<StudentListModal>("Zoznam zapísaných študentov", parameters, options);
+	}
+
+	async Task<UserDto?> getcurrentUser(HttpClient httpClient)
+	{
+		var userResponse = httpClient.GetAsync("user");
+
+		UserDto? currentUser = new();
+
+		if (userResponse.Result.IsSuccessStatusCode)
+		{
+			var userJson = userResponse.Result.Content.ReadAsStringAsync();
+
+			currentUser = JsonSerializer.Deserialize<UserDto>(userJson.Result);
+		}
+
+		return currentUser;
 	}
 }

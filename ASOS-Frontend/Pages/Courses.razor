@@ -1,7 +1,10 @@
 ﻿@page "/courses"
+@using System.Text.Json
+@using System.Text
 
 @inject Radzen.DialogService DialogService
 @inject ISnackbar Snackbar
+@inject IHttpClientFactory HttpClientFactory
 
 <PageTitle>Doučovania</PageTitle>
 
@@ -216,257 +219,20 @@
 
 	protected override async Task OnInitializedAsync()
 	{
-		// TODO: Fetch data from ENDPOINT
-		coursesList = new List<CourseDto>
+		var httpClient = HttpClientFactory.CreateClient("API");
+
+		var courseResponse = await httpClient.GetAsync("course");
+
+		List<CourseDto>? allCourses = new();
+
+		if (courseResponse.IsSuccessStatusCode)
 		{
-			new CourseDto
-			{
-				Id = 1,
-				Name = "Matematika",
-				Price = 10,
-				Room = "AB-30",
-				Teacher = new UserDto
-				{
-					Degree = "Ing.",
-					FirstName = "Peter",
-					LastName = "Dobrák",
-					Email = "peter.dobrak@gmail.com",
-					PhoneNumber = "+421 911 123 456"
-				},
-				Students = new List<UserDto>
-				{
+			var userJson = await courseResponse.Content.ReadAsStringAsync();
 
-				}
-			},
-			new CourseDto
-			{
-				Id = 2,
-				Name = "Fyzika",
-				Price = 7,
-				Room = "BC-30",
-				Teacher = new UserDto
-				{
-					Degree = "doc.",
-					FirstName = "Lacikam",
-					LastName = "Dobrák",
-					Email = "lacikam.dobrak@gmail.com",
-					PhoneNumber = "+421 911 333 456"
-				},
-				Students = new List<UserDto>
-				{
-
-				}
-			},
-			new CourseDto
-			{
-				Id = 3,
-				Name = "Informatika",
-				Price = 9,
-				Room = "CD-30",
-				Teacher = new UserDto
-				{
-					Degree = "prof.",
-					FirstName = "Ján",
-					LastName = "Novák",
-					Email = "jan.novak@gmail.com",
-					PhoneNumber = "+421 911 444 456"
-				},
-				Students = new List<UserDto>
-				{
-
-				}
-			},
-			new CourseDto
-			{
-				Id = 4,
-				Name = "Angličtina",
-				Price = 8,
-				Room = "DE-30",
-				Teacher = new UserDto
-				{
-					Degree = "Bc.",
-					FirstName = "Michal",
-					LastName = "Horváth",
-					Email = "michal.horvath@gmail.com",
-					PhoneNumber = "+421 911 555 456"
-				},
-				Students = new List<UserDto>
-				{
-
-				}
-			},
-			new CourseDto
-			{
-				Id = 5,
-				Name = "Dejepis",
-				Price = 12,
-				Room = "EF-30",
-				Teacher = new UserDto
-				{
-					Degree = "Phdr.",
-					FirstName = "Katarína",
-					LastName = "Kováčová",
-					Email = "katarina.kovacova@gmail.com",
-					PhoneNumber = "+421 911 666 456"
-				},
-				Students = new List<UserDto>
-				{
-
-				}
-			},
-			new CourseDto
-			{
-				Id = 6,
-				Name = "Biológia",
-				Price = 11,
-				Room = "FG-30",
-				Teacher = new UserDto
-				{
-					Degree = string.Empty,
-					FirstName = "Lukáš",
-					LastName = "Polák",
-					Email = "lukas.polak@gmail.com",
-					PhoneNumber = "+421 911 777 456"
-				},
-				Students = new List<UserDto>
-				{
-
-				}
-			}
+			allCourses = JsonSerializer.Deserialize<List<CourseDto>>(userJson);
 		};
-
-		/*doucovanieList = new List<Doucovanie>
-		{
-		new Doucovanie
-		{
-		Degree = "Ing.",
-		Name = "Peter",
-		LastName = "Marcinek",
-		Email = "peter.marcinek@gmail.com",
-	PhoneNumber = "0905123456",
-	Subject = "Matematika",
-		Price = 10.5m
-		},
-		new Doucovanie
-		{
-		Degree = "Ing.",
-		Name = "Peter",
-		LastName = "Dobrák",
-		Email = "peter.dobrak@gmail.com",
-		PhoneNumber = "0905123455",
-	Subject = "Matematika",
-	Price = 8.75m
-		},
-		new Doucovanie
-		{
-		Degree = "doc.",
-		Name = "Lacikam",
-		LastName = "Dobrák",
-		Email = "lacikam.dobrak@gmail.com",
-		PhoneNumber = "0905734055",
-		Subject = "Matematika",
-	Price = 12.20m
-	},
-	new Doucovanie
-		{
-		Degree = "Phd.",
-		Name = "Jana",
-		LastName = "Nováková",
-		Email = "jana.novakova@gmail.com",
-		PhoneNumber = "0905123478",
-		Subject = "Fyzika",
-		Price = 9.5m
-	},
-	new Doucovanie
-	{
-		Degree = "prof.",
-		Name = "Ján",
-		LastName = "Novák",
-		Email = "jan.novak@gmail.com",
-		PhoneNumber = "0911123478",
-		Subject = "Fyzika",
-		Price = 12m
-		},
-		new Doucovanie
-	{
-	Degree = "Bc.",
-	Name = "Michal",
-		LastName = "Horváth",
-		Email = "michal.horvath@gmail.com",
-		PhoneNumber = "0905123489",
-		Subject = "Chémia",
-		Price = 11.22m
-		},
-		new Doucovanie
-		{
-		Degree = "Phdr.",
-	Name = "Katarína",
-	LastName = "Kováčová",
-		Email = "katarina.kovacova@gmail.com",
-		PhoneNumber = "0905123490",
-		Subject = "Biológia",
-		Price = 8.40m
-		},
-		new Doucovanie
-		{
-		Name = "Lukáš",
-	LastName = "Polák",
-	Email = "lukas.polak@gmail.com",
-		PhoneNumber = "0905123501",
-		Subject = "Geografia",
-		Price = 10m
-		},
-		new Doucovanie
-		{
-		Degree = "Mgr.",
-		Name = "Simona",
-		LastName = "Rybáriková",
-	Email = "simona.rybarikova@gmail.com",
-		PhoneNumber = "0905123512",
-		Subject = "Dejepis",
-		Price = 5.5m
-		},
-		new Doucovanie
-		{
-		Degree = "Mgr.",
-		Name = "Marek",
-		LastName = "Tóth",
-		Email = "marek.toth@gmail.com",
-	PhoneNumber = "0905123523",
-		Subject = "Angličtina",
-		Price = 7m
-		},
-		new Doucovanie
-		{
-		Degree = "Mgr.",
-		Name = "Eva",
-		LastName = "Slováková",
-		Email = "eva.slovakova@gmail.com",
-		PhoneNumber = "0905123534",
-	Subject = "Francúzština",
-		Price = 9.8m
-		},
-		new Doucovanie
-		{
-		Degree = "Mgr.",
-		Name = "Tomáš",
-		LastName = "Ďuriš",
-		Email = "tomas.duris@gmail.com",
-		PhoneNumber = "0905123545",
-		Subject = "Nemčina",
-	Price = 13.3m
-	},
-		new Doucovanie
-		{
-		Degree = "Mgr.",
-		Name = "Lenka",
-		LastName = "Urbanová",
-		Email = "lenka.urbanova@gmail.com",
-		PhoneNumber = "0905123556",
-		Subject = "Informatika",
-		Price = 20m
-	}
-	};*/
+		
+		coursesList = allCourses;
 
 		filteredCoursesList = coursesList;
 	}
@@ -524,6 +290,16 @@
 	async Task JoinCourse(CourseDto course)
 	{
 		//TODO: Add user to course
+		var httpClient = HttpClientFactory.CreateClient("API");
+		var currentUser = await getcurrentUser(httpClient);
+
+		// Test
+		var plainContent = new StringContent(currentUser.Id.ToString() + ASOS_Frontend.Shared.Constants.divider + course.Id.ToString(), Encoding.UTF8, "text/plain");
+		var coursesResponse = await httpClient.PostAsync("courseStudentAdd", plainContent);
+
+		await httpClient.PostAsync("addCourse", plainContent);
+		// End test
+
 
 		Snackbar.Add("Zápis prebehol úspešne!", Severity.Success);
 	}
@@ -545,5 +321,21 @@
 		};
 
 		await DialogService.OpenAsync<TeacherInfoModal>("Informácie o lektorovi", parameters, options);
+	}
+	
+	async Task<UserDto?> getcurrentUser(HttpClient httpClient)
+	{
+		var userResponse = httpClient.GetAsync("user");
+
+		UserDto? currentUser = new();
+
+		if (userResponse.Result.IsSuccessStatusCode)
+		{
+			var userJson = userResponse.Result.Content.ReadAsStringAsync();
+
+			currentUser = JsonSerializer.Deserialize<UserDto>(userJson.Result);
+		}
+
+		return currentUser;
 	}
 }

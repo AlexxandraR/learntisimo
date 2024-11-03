@@ -1,4 +1,5 @@
 ﻿@using System.Text.Json
+@using System.Text
 
 @inject Radzen.DialogService DialogService
 @inject NotificationService notificationService
@@ -140,19 +141,24 @@
 		// TODO: Fetch data from ENDPOINT
 
 		var httpClient = HttpClientFactory.CreateClient("API");
+		var currentUser = await getcurrentUser(httpClient);
 
-		var userResponse = await httpClient.GetAsync("user");
 
-		UserDto? currentUser = new();
-
-		if (userResponse.IsSuccessStatusCode)
+		// Test
+		var plainContent = new StringContent(currentUser.Id.ToString(), Encoding.UTF8, "text/plain");
+		var coursesResponse = await httpClient.PostAsync("courseStudent", plainContent);
+		List<CourseDto> allCourses = new();
+		
+		if (coursesResponse.IsSuccessStatusCode)
 		{
-			var userJson = await userResponse.Content.ReadAsStringAsync();
+			var coursesJson = await coursesResponse.Content.ReadAsStringAsync();
 
-			currentUser = JsonSerializer.Deserialize<UserDto>(userJson);
+			allCourses = JsonSerializer.Deserialize<List<CourseDto>>(coursesJson);
 		}
+		// End test
+		myCoursesList = allCourses;
 
-		myCoursesList = new List<CourseDto>
+		/*myCoursesList = new List<CourseDto>
 		{
 			new CourseDto
 			{
@@ -269,7 +275,7 @@
 				}
 			}
 		};
-
+		*/
 		filteredMyCoursesList = myCoursesList;
 	}
 
@@ -309,6 +315,15 @@
 	async Task RemoveDoucovanie(CourseDto myCourse)
 	{
 		// TODO: Remove student from course via ENDPOINT
+
+		var httpClient = HttpClientFactory.CreateClient("API");
+		var currentUser = await getcurrentUser(httpClient);
+
+		// Test
+		var plainContent = new StringContent(currentUser.Id.ToString() + ASOS_Frontend.Shared.Constants.divider + myCourse.Id, Encoding.UTF8, "text/plain");
+		var coursesResponse = await httpClient.PostAsync("courseStudentRemove", plainContent);
+		// End test
+
 		filteredMyCoursesList.Remove(myCourse);
 
 		Snackbar.Add("Doučovanie bolo úspešne zrušené.", Severity.Success);
@@ -355,7 +370,32 @@
 		{
 			//TODO: Add student to meeting via ENDPOINT
 
+			var httpClient = HttpClientFactory.CreateClient("API");
+			var currentUser = await getcurrentUser(httpClient);
+
+			// Test
+			var plainContent = new StringContent(currentUser.Id.ToString() + ASOS_Frontend.Shared.Constants.divider + myCourse.Id + ASOS_Frontend.Shared.Constants.divider + meeting.Id, Encoding.UTF8, "text/plain");
+			var coursesResponse = await httpClient.PostAsync("meetingStudentAdd", plainContent);
+			// End test
+
+
 			Snackbar.Add("Doučovanie bolo úspešne naplánované.", Severity.Success);
 		}
+	}
+
+	async Task<UserDto?> getcurrentUser(HttpClient httpClient)
+	{
+		var userResponse = httpClient.GetAsync("user");
+
+		UserDto? currentUser = new();
+
+		if (userResponse.Result.IsSuccessStatusCode)
+		{
+			var userJson = userResponse.Result.Content.ReadAsStringAsync();
+
+			currentUser = JsonSerializer.Deserialize<UserDto>(userJson.Result);
+		}
+
+		return currentUser;
 	}
 }
