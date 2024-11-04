@@ -4,9 +4,13 @@ import com.asos.reservationSystem.domain.dto.CourseDto;
 import com.asos.reservationSystem.domain.entities.Course;
 import com.asos.reservationSystem.mappers.Mapper;
 import com.asos.reservationSystem.services.CourseService;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 @RestController
@@ -20,6 +24,9 @@ public class CourseController {
         this.courseService = courseService;
         this.courseMapper = courseMapper;
     }
+
+//    TODO: Rework response to return a response entity
+
 
     @GetMapping(path = "/course")
     public List<CourseDto> getAll(){
@@ -43,6 +50,20 @@ public class CourseController {
     @PostMapping(path = "/createCourse")
     public void saveCourse(@RequestBody CourseDto courseDto){
         courseService.saveCourse(courseMapper.mapFromDto(courseDto));
+    }
+
+    @DeleteMapping(path = "/removeCourse/{courseId}")
+    public ResponseEntity<Void> removeCourse(@PathVariable String courseId) {
+        try {
+            courseService.removeCourse(Long.parseLong(courseId.trim()));
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (NoSuchElementException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        } catch (DataIntegrityViolationException e) {
+            return new ResponseEntity<>(HttpStatus.CONFLICT);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
 

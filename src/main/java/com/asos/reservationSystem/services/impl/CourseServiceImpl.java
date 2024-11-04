@@ -46,11 +46,19 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     public void saveCourse(Course course) {
+//        TODO: handle same course being created, handle missing values
         if (course == null) {
             throw new AccessDeniedException("Access Denied: Course is null");
         } else if (course.getTeacher() == null) {
             throw new AccessDeniedException("Access Denied: Course teacher is null");
         }
         courseRepository.save(course);
+    }
+
+    @Override
+    public void removeCourse(Long courseId) {
+//        TODO: handle course not found
+//        TODO: handle User removing course they are not teaching
+        courseRepository.deleteById(courseId);
     }
 }

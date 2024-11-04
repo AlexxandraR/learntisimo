@@ -1,5 +1,6 @@
 ﻿@using System.Text.Json
 @using System.Text
+@using System.Net
 
 @inject Radzen.DialogService DialogService
 @inject NotificationService notificationService
@@ -177,21 +178,30 @@
 
 	async Task RemoveDoucovanie(CourseDto myDoucovanie)
 	{
-		// TODO: Remove via ENDPOINT
-
 		var httpClient = HttpClientFactory.CreateClient("API");
-		var currentUser = await getcurrentUser(httpClient);
 
-		// Test
-		var plainContent = new StringContent(currentUser.Id.ToString() + ASOS_Frontend.Shared.Constants.divider + myDoucovanie.Id, Encoding.UTF8, "text/plain");
-		var coursesResponse = await httpClient.PostAsync("courseTeacherRemove", plainContent);
-		// End test
+		// Send DELETE request with course ID in the URL
+		var coursesResponse = await httpClient.DeleteAsync($"removeCourse/{myDoucovanie.Id}");
 
+		if (coursesResponse.IsSuccessStatusCode)
+		{
+			filteredMyCoursesList.Remove(myDoucovanie);
+			Snackbar.Add("Doučovanie bolo úspešne zrušené.", Severity.Success);
+		}
+		else if (coursesResponse.StatusCode == HttpStatusCode.NotFound)
+		{
+			Snackbar.Add("Doučovanie neexistuje.", Severity.Error);
+		}
+		else if (coursesResponse.StatusCode == HttpStatusCode.Conflict)
+		{
+			Snackbar.Add("Doucovanie má naplánované stretnutia, ktoré musíte zrušiť na jeho odstránenie.", Severity.Error);
+		}
+		else
+		{
+			Snackbar.Add("Chyba na strane servera", Severity.Error);
+		}
 
-
-		filteredMyCoursesList.Remove(myDoucovanie);
-
-		Snackbar.Add("Doučovanie bolo úspešne zrušené.", Severity.Success);
+		await dataList.Reload();
 	}
 
 	async Task CreateDoucovanie()

@@ -10,4 +10,6 @@ public interface MeetingService {
     List<Meeting> getAllTeacherMeetings(Long teacherId);
 
     List<Meeting> getAllStudentMeetings(Long studentId);
+
+    void removeMeeting(Long meetingId);
 }

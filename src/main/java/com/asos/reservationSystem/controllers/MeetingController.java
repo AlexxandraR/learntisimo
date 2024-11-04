@@ -5,12 +5,13 @@ import com.asos.reservationSystem.domain.dto.MeetingDto;
 import com.asos.reservationSystem.domain.entities.Meeting;
 import com.asos.reservationSystem.mappers.Mapper;
 import com.asos.reservationSystem.services.MeetingService;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 @RestController
@@ -35,6 +36,20 @@ public class MeetingController {
     public List<MeetingDto> getAllStudentCourses(@RequestBody String studentId) {
         return meetingService.getAllStudentMeetings(Long.parseLong(studentId.trim())).stream().map(meetingMapper::mapToDto).
                 collect(Collectors.toList());
+    }
+
+    @DeleteMapping(path = "/removeMeeting/{meetingId}")
+    public ResponseEntity<Void> removeCourse(@PathVariable String meetingId) {
+        try {
+            meetingService.removeMeeting(Long.parseLong(meetingId.trim()));
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (NoSuchElementException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        } catch (DataIntegrityViolationException e) {
+            return new ResponseEntity<>(HttpStatus.CONFLICT);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
 

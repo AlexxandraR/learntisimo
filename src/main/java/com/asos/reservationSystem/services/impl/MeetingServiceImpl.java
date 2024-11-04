@@ -38,4 +38,9 @@ public class MeetingServiceImpl implements MeetingService {
             return courses.get();
         }
     }
+
+    @Override
+    public void removeMeeting(Long meetingId) {
+        meetingRepository.deleteById(meetingId);
+    }
 }
