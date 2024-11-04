@@ -61,4 +61,15 @@ public class CourseServiceImpl implements CourseService {
 //        TODO: handle User removing course they are not teaching
         courseRepository.deleteById(courseId);
     }
+
+    @Override
+    public List<Course> getAllTeacherCoursesByEmail(String teacherEmail) {
+        var courses = courseRepository.findAllByTeacher_Email(teacherEmail);
+        if (courses.isEmpty()) {
+            System.out.println("No courses found for teacher with email " + teacherEmail);
+            return Collections.emptyList();
+        } else {
+            return courses.get();
+        }
+    }
 }

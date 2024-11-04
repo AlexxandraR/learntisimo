@@ -7,4 +7,5 @@ import java.util.Optional;
 
 public interface UserService {
     Optional<User> getUser(Principal connectedCustomer);
+    Optional<User> getUserByEmail(String email);
 }

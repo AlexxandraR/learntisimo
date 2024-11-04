@@ -66,6 +66,35 @@ public class DBInitializer implements CommandLineRunner {
         authenticationService.saveUserToken(savedUser1, jwtToken1, true);
         authenticationService.saveUserToken(savedUser1, refreshedToken1, false);
 
+        var user11 = User.builder()
+                .firstName("Pepek")
+                .lastName("Namornik")
+                .email("studen1t@student1.com")
+                .phoneNumber("+421949000000")
+                .password(passwordEncoder.encode("student"))
+                .role(Role.STUDENT)
+                .build();
+        var savedUser11 = userRepository.save(user11);
+        var jwtToken11 = jwtService.generateToken(user11);
+        var refreshedToken11 = jwtService.generateRefreshToken(user11);
+        authenticationService.saveUserToken(savedUser11, jwtToken11, true);
+        authenticationService.saveUserToken(savedUser11, refreshedToken11, false);
+
+        var user12 = User.builder()
+                .firstName("Bulanec")
+                .lastName("Bulancakovsky")
+                .email("studen2t@student2.com")
+                .phoneNumber("+421949000000")
+                .password(passwordEncoder.encode("student"))
+                .role(Role.STUDENT)
+                .build();
+        var savedUser12 = userRepository.save(user12);
+        var jwtToken12 = jwtService.generateToken(user12);
+        var refreshedToken12 = jwtService.generateRefreshToken(user12);
+        authenticationService.saveUserToken(savedUser12, jwtToken12, true);
+        authenticationService.saveUserToken(savedUser12, refreshedToken12, false);
+
+
         var user2 = User.builder()
                 .firstName("Sanne")
                 .lastName("Boe")
@@ -104,7 +133,7 @@ public class DBInitializer implements CommandLineRunner {
                 .price(10.50)
                 .room("AB-300")
                 .teacher(savedUser2)
-                .students(Arrays.asList(savedUser1))
+                .students(Arrays.asList(savedUser1, savedUser11))
                 .build();
         var savedCourse = courseRepository.save(course);
 
@@ -113,7 +142,7 @@ public class DBInitializer implements CommandLineRunner {
                 .price(25.0)
                 .room("AB-150")
                 .teacher(savedUser3)
-                .students(Arrays.asList(savedUser1))
+                .students(Arrays.asList(savedUser1, savedUser12))
                 .build();
         var savedCourse2 = courseRepository.save(course2);
 
@@ -122,7 +151,7 @@ public class DBInitializer implements CommandLineRunner {
                 .price(12.50)
                 .room("BC-300")
                 .teacher(savedUser2)
-                .students(Arrays.asList(savedUser1))
+                .students(Arrays.asList(savedUser1, savedUser12))
                 .build();
         var savedCourse1 = courseRepository.save(course1);
 

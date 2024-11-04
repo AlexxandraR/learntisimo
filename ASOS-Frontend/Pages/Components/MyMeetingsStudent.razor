@@ -2,6 +2,7 @@
 @using System.Text.Json;
 @using DTOs.Account;
 @using System.Text
+@using System.Net
 
 @inject Radzen.DialogService DialogService
 @inject NotificationService notificationService
@@ -319,16 +320,31 @@
 
 	async Task RemoveMeeting(MeetingDto meeting)
 	{
-		// TODO: Remove via ENDPOINT
-
 		var httpClient = HttpClientFactory.CreateClient("API");
-		var currentUser = await getcurrentUser(httpClient);
 
+		// Send DELETE request with meeting ID in the URL
+		var response = await httpClient.DeleteAsync($"removeMeeting/{meeting.Id}");
 
-		filteredMeetingsList.Remove(meeting);
-
-		Snackbar.Add("Termín bol úspešne zrušený.", Severity.Success);
+		if (response.IsSuccessStatusCode)
+		{
+			filteredMeetingsList.Remove(meeting);
+			Snackbar.Add("Termín bol úspešne zrušený.", Severity.Success);
+			await dataList.Reload();
+		}
+		else if (response.StatusCode == HttpStatusCode.NotFound)
+		{
+			Snackbar.Add("Termín neexistuje.", Severity.Error);
+		}
+		else if (response.StatusCode == HttpStatusCode.Conflict)
+		{
+			Snackbar.Add("Meeting cannot be removed due to data integrity violation.", Severity.Error);
+		}
+		else
+		{
+			Snackbar.Add("Chyba na strane servera", Severity.Error);
+		}
 	}
+
 
 	async Task OpenTeacherModal(UserDto teacher)
 	{

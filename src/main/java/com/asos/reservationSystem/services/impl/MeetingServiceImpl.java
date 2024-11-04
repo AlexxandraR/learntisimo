@@ -43,4 +43,9 @@ public class MeetingServiceImpl implements MeetingService {
     public void removeMeeting(Long meetingId) {
         meetingRepository.deleteById(meetingId);
     }
+
+    @Override
+    public void createMeeting(Meeting meeting) {
+        meetingRepository.save(meeting);
+    }
 }

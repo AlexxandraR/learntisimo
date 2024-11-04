@@ -372,11 +372,22 @@
 
 		if (result is MeetingDto newMeeting)
 		{
-			meetingsList.Add(newMeeting);
+			var httpClient = HttpClientFactory.CreateClient("API");
+			var jsonContent = new StringContent(JsonSerializer.Serialize(newMeeting), Encoding.UTF8, "application/json");
+			var response = await httpClient.PostAsync("createMeeting", jsonContent);
 
-			await dataList.Reload();
-
-			Snackbar.Add("Termín bol úspešne vytvorený.", Severity.Success);
+			if (response.IsSuccessStatusCode)
+			{
+				meetingsList.Add(newMeeting);
+				ApplyFilters(); // Apply filters to update the filteredMeetingsList
+				await dataList.Reload();
+				Snackbar.Add("Termín bol úspešne vytvorený.", Severity.Success);
+				StateHasChanged();
+			}
+			else
+			{
+				Snackbar.Add("Chyba pri vytváraní termínu.", Severity.Error);
+			}
 		}
 	}
 

@@ -39,7 +39,7 @@ public class MeetingController {
     }
 
     @DeleteMapping(path = "/removeMeeting/{meetingId}")
-    public ResponseEntity<Void> removeCourse(@PathVariable String meetingId) {
+    public ResponseEntity<Void> removeMeeting(@PathVariable String meetingId) {
         try {
             meetingService.removeMeeting(Long.parseLong(meetingId.trim()));
             return new ResponseEntity<>(HttpStatus.OK);
@@ -50,6 +50,11 @@ public class MeetingController {
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    @PostMapping(path = "/createMeeting")
+    public void saveMeeting(@RequestBody MeetingDto meetingDto){
+        meetingService.createMeeting(meetingMapper.mapFromDto(meetingDto));
     }
 
 

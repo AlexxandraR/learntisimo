@@ -12,4 +12,6 @@ public interface MeetingService {
     List<Meeting> getAllStudentMeetings(Long studentId);
 
     void removeMeeting(Long meetingId);
+
+    void createMeeting(Meeting meeting);
 }

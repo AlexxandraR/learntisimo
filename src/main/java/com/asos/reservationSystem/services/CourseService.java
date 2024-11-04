@@ -14,4 +14,6 @@ public interface CourseService {
     void saveCourse(Course course);
 
     void removeCourse(Long courseId);
+
+    List<Course> getAllTeacherCoursesByEmail(String teacherEmail);
 }

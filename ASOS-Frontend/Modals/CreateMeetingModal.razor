@@ -1,56 +1,161 @@
 ﻿@using System.Globalization;
 @using System.ComponentModel.DataAnnotations;
 @using Microsoft.AspNetCore.Components.Forms;
+@using Microsoft.AspNetCore.Components.Authorization;
+@using System.Security.Claims
+@using System.Text
+@using System.Text.Json
 
 @inject Radzen.DialogService DialogService
+@inject IHttpClientFactory HttpClientFactory
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 <RadzenStack Style="gap:20px; min-width:250px; max-width:350px; margin:auto;">
-	<EditForm Model="formInputModel" OnValidSubmit="ReturnCreatedMeeting">
-		<DataAnnotationsValidator />
-		<RadzenFieldset Text="Špecifikácia">
-			<RadzenStack Orientation="Radzen.Orientation.Vertical" JustifyContent="JustifyContent.Center" AlignItems="Radzen.AlignItems.Center" Gap="1rem">
-				<RadzenFormField Text="Predmet" Variant="Radzen.Variant.Outlined" AllowFloatingLabel="false">
-					<RadzenDropDown FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" FilterOperator="StringFilterOperator.Contains" AllowFiltering="true"
-									Data=@subjects AllowClear="true" @bind-Value=formInputModel.Subject Style="width: 200px;" class="rz-shadow-5" />
-				</RadzenFormField>
-				<ValidationMessage For="@(() => formInputModel.Subject)" />
-				<RadzenFormField Text="Dátum a čas" Variant="Radzen.Variant.Outlined" AllowFloatingLabel="false">
-					<RadzenDatePicker @bind-Value="formInputModel.CombinedDateTime" ShowCalendarWeek AllowClear ShowTime="true" DateFormat="dd.MM.yyyy HH:mm" Culture='new CultureInfo("sk-SK")' Style="width: 200px;" class="rz-shadow-5" />
-				</RadzenFormField>
-				<ValidationMessage For="@(() => formInputModel.CombinedDateTime)" />
-				<RadzenFormField Text="Trvanie (minút)" Variant="Radzen.Variant.Outlined" AllowFloatingLabel="false">
-					<RadzenNumeric @bind-Value="formInputModel.Duration" Style="width: 200px;" class="rz-shadow-5" />
-				</RadzenFormField>
-				<ValidationMessage For="@(() => formInputModel.Duration)" />
-			</RadzenStack>
-		</RadzenFieldset>
-		<RadzenRow JustifyContent="JustifyContent.Center" Gap="20px" Style="margin-top:20px;">
-			<MudButton ButtonType="MudBlazor.ButtonType.Submit" Variant="MudBlazor.Variant.Filled" StartIcon="@Icons.Material.Filled.Login" Color="MudBlazor.Color.Success" Style="width: 145px;">Potvrdiť</MudButton>
-			<MudButton Variant="MudBlazor.Variant.Filled" StartIcon="@Icons.Material.Filled.Cancel" Color="MudBlazor.Color.Error" Style="width: 145px;" @onclick='() => DialogService.Close()'>Zrušiť</MudButton>
-		</RadzenRow>
-	</EditForm>
+    <EditForm Model="formInputModel" OnValidSubmit="ReturnCreatedMeeting">
+        <DataAnnotationsValidator />
+        <RadzenFieldset Text="Špecifikácia">
+            <RadzenStack Orientation="Radzen.Orientation.Vertical" JustifyContent="JustifyContent.Center" AlignItems="Radzen.AlignItems.Center" Gap="1rem">
+                <RadzenFormField Text="Predmet" Variant="Radzen.Variant.Outlined" AllowFloatingLabel="false">
+                    <RadzenDropDown FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" FilterOperator="StringFilterOperator.Contains" AllowFiltering="true"
+                                    Data=@subjects AllowClear="true" @bind-Value=formInputModel.Subject Change="OnSubjectChanged" Style="width: 200px;" class="rz-shadow-5" />
+                </RadzenFormField>
+                <ValidationMessage For="@(() => formInputModel.Subject)" />
+				<RadzenFormField Text="Student" Variant="Radzen.Variant.Outlined" AllowFloatingLabel="false">
+                    <RadzenDropDown FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" FilterOperator="StringFilterOperator.Contains" AllowFiltering="true"
+                                    Data=@students AllowClear="true" @bind-Value=formInputModel.Student Style="width: 200px;" class="rz-shadow-5" />
+                </RadzenFormField>
+                <ValidationMessage For="@(() => formInputModel.Student)" />
+                <RadzenFormField Text="Dátum a čas" Variant="Radzen.Variant.Outlined" AllowFloatingLabel="false">
+                    <RadzenDatePicker @bind-Value="formInputModel.CombinedDateTime" ShowCalendarWeek AllowClear ShowTime="true" DateFormat="dd.MM.yyyy HH:mm" Culture='new CultureInfo("sk-SK")' Style="width: 200px;" class="rz-shadow-5" />
+                </RadzenFormField>
+                <ValidationMessage For="@(() => formInputModel.CombinedDateTime)" />
+                <RadzenFormField Text="Trvanie (minút)" Variant="Radzen.Variant.Outlined" AllowFloatingLabel="false">
+                    <RadzenNumeric @bind-Value="formInputModel.Duration" Style="width: 200px;" class="rz-shadow-5" />
+                </RadzenFormField>
+                <ValidationMessage For="@(() => formInputModel.Duration)" />
+            </RadzenStack>
+        </RadzenFieldset>
+        <RadzenRow JustifyContent="JustifyContent.Center" Gap="20px" Style="margin-top:20px;">
+            <MudButton ButtonType="MudBlazor.ButtonType.Submit" Variant="MudBlazor.Variant.Filled" StartIcon="@Icons.Material.Filled.Login" Color="MudBlazor.Color.Success" Style="width: 145px;">Potvrdiť</MudButton>
+            <MudButton Variant="MudBlazor.Variant.Filled" StartIcon="@Icons.Material.Filled.Cancel" Color="MudBlazor.Color.Error" Style="width: 145px;" @onclick='() => DialogService.Close()'>Zrušiť</MudButton>
+        </RadzenRow>
+    </EditForm>
 </RadzenStack>
 
 @code {
-	//TODO: Show only courses of the teacher
-	List<string> subjects = new() { "Matematika", "Angličtina", "Biológia", "Chémia", "Dejepis", "Slovenčina", "Nemčina", "Informatika" };
+    List<string> subjects = new();
+	List<string> students = new();
+	List<CourseDto> courses = new();
+    CreateMeetingInputModel formInputModel = new();
 
-	CreateMeetingInputModel formInputModel = new();
+    protected override async Task OnInitializedAsync()
+    {
+        Console.WriteLine("OnInitializedAsync triggered");
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
 
-	void ReturnCreatedMeeting()
+        if (user.Identity != null && user.Identity.IsAuthenticated)
+        {
+            Console.WriteLine("User is authenticated");
+            foreach (var claim in user.Claims)
+            {
+                Console.WriteLine($"Claim Type: {claim.Type}, Claim Value: {claim.Value}");
+            }
+
+            var userIdClaim = user.FindFirst(c => c.Type == ClaimTypes.Email);
+            if (userIdClaim != null)
+            {
+                Console.WriteLine($"User ID Claim found: {userIdClaim.Value}");
+                var httpClient = HttpClientFactory.CreateClient("API");
+                var plainContent = new StringContent(userIdClaim.Value, Encoding.UTF8, "text/plain");
+                var coursesResponse = await httpClient.PostAsync("courseTeacherEmail", plainContent);
+
+                if (coursesResponse.IsSuccessStatusCode)
+                {
+                    var coursesJson = await coursesResponse.Content.ReadAsStringAsync();
+                    courses = System.Text.Json.JsonSerializer.Deserialize<List<CourseDto>>(coursesJson);
+                    subjects = courses.Select(c => c.Name).Distinct().ToList();
+                    students = courses.SelectMany(c => c.Students)
+                                                   .Select(s => s.Email)
+                                                   .Distinct()
+                                                   .ToList();
+                    Console.WriteLine("Subjects fetched: " + string.Join(", ", subjects));
+                }
+                else
+                {
+                    Console.WriteLine("Failed to fetch courses: " + coursesResponse.StatusCode);
+                }
+            }
+            else
+            {
+                Console.WriteLine("User ID claim not found");
+            }
+        }
+        else
+        {
+            Console.WriteLine("User is not authenticated");
+        }
+    }
+
+    async void ReturnCreatedMeeting()
+    {
+        MeetingDto newMeeting = new MeetingDto
+        {
+            Beginning = (DateTime)formInputModel.CombinedDateTime!,
+            Duration = (int)formInputModel.Duration!,
+			Teacher = await getcurrentUser(HttpClientFactory.CreateClient("API")),
+			Student = await getStudent(formInputModel.Student),
+            Course = courses.Find(c => c.Name == formInputModel.Subject)
+        };
+        DialogService.Close(newMeeting);
+    }
+
+	async Task<UserDto> getStudent(string email)
 	{
-		//TODO: Match the course that teacher selected on backend based on subject name
-		// Match teacher on backend via jwt token
-		MeetingDto newMeeting = new MeetingDto
-			{
-				Beginning = (DateTime)formInputModel.CombinedDateTime!,
-				Duration = (int)formInputModel.Duration!,
-				Course = new CourseDto
-				{
-					Name = formInputModel.Subject,
-				}
-			};
+		var httpClient = HttpClientFactory.CreateClient("API");
+		var plainContent = new StringContent(email, Encoding.UTF8, "text/plain");
+		var studentResponse = await httpClient.PostAsync("userEmail", plainContent);
 
-		DialogService.Close(newMeeting);
+		UserDto student = new();
+
+		if (studentResponse.IsSuccessStatusCode)
+		{
+			var studentJson = await studentResponse.Content.ReadAsStringAsync();
+			student = JsonSerializer.Deserialize<UserDto>(studentJson);
+		}
+
+		return student;
 	}
+
+	async Task<UserDto?> getcurrentUser(HttpClient httpClient)
+	{
+		var userResponse = await httpClient.GetAsync("user");
+
+		UserDto? currentUser = new();
+
+		if (userResponse.IsSuccessStatusCode)
+		{
+			var userJson = await userResponse.Content.ReadAsStringAsync();
+			currentUser = JsonSerializer.Deserialize<UserDto>(userJson);
+		}
+
+		return currentUser;
+	}
+
+	private void OnSubjectChanged(Object subject)
+    {
+		Console.WriteLine("OnSubjectChanged triggered");
+		Console.WriteLine("Selected subject: " + subject.ToString());
+        var selectedSubject = subject.ToString();
+		var selectedCourse = courses.Find(c => c.Name == selectedSubject);
+
+
+        if (selectedCourse != null)
+        {
+			formInputModel.Student = null;
+			students = selectedCourse.Students.Select(s => s.Email).Distinct().ToList();
+			StateHasChanged();
+		}
+    }
+	
 }

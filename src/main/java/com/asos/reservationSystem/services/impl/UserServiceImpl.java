@@ -24,4 +24,9 @@ public class UserServiceImpl implements UserService {
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
         return userRepository.findById(user.getId());
     }
+
+    @Override
+    public Optional<User> getUserByEmail(String email) {
+        return userRepository.findUserByEmail(email);
+    }
 }
