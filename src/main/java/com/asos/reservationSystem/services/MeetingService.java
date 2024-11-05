@@ -14,4 +14,6 @@ public interface MeetingService {
     void removeMeeting(Long meetingId);
 
     void createMeeting(Meeting meeting);
+
+    void removeStudentMeeting(Long meetingId);
 }

@@ -9,9 +9,6 @@ namespace FormInputModels
 		public string Subject { get; set; }
 
 		[Required(ErrorMessage = "Toto pole je povinné!")]
-		public string Student { get; set; }
-
-		[Required(ErrorMessage = "Toto pole je povinné!")]
 		[Range(1, int.MaxValue, ErrorMessage = "Trvanie musí byť kladné číslo!")]
 		public int? Duration { get; set; }
 

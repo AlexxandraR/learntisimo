@@ -323,7 +323,9 @@
 		var httpClient = HttpClientFactory.CreateClient("API");
 
 		// Send DELETE request with meeting ID in the URL
-		var response = await httpClient.DeleteAsync($"removeMeeting/{meeting.Id}");
+		// TODO: Do not remove whole meeting only student from it
+		var plainContent = new StringContent(meeting.Id.ToString(), Encoding.UTF8, "text/plain");
+		var response = await httpClient.PutAsync($"removeStudentMeeting", plainContent);
 
 		if (response.IsSuccessStatusCode)
 		{

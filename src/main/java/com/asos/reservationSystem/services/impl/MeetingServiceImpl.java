@@ -48,4 +48,15 @@ public class MeetingServiceImpl implements MeetingService {
     public void createMeeting(Meeting meeting) {
         meetingRepository.save(meeting);
     }
+
+    @Override
+    public void removeStudentMeeting(Long meetingId) {
+        var meeting = meetingRepository.findById(meetingId);
+        if (meeting.isEmpty()) {
+            System.out.println("No meeting found with id " + meetingId);
+        } else {
+            meeting.get().setStudent(null);
+            meetingRepository.save(meeting.get());
+        }
+    }
 }

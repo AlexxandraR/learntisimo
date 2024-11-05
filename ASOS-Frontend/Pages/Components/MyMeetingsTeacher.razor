@@ -89,6 +89,8 @@
 </div>
 
 @code {
+	@* TODO: Delete the student logic it is unnecessary .... 
+	Teacher can plan appointments to which students will join later by themselves *@
 	RadzenDataList<MeetingDto> dataList;
 	List<MeetingDto> meetingsList = new List<MeetingDto>();
 	List<MeetingDto> filteredMeetingsList = new List<MeetingDto>();
@@ -173,122 +175,10 @@
 		meetingsList = allMeetings;
 		
 
-		// var userResponse = await httpClient.GetAsync("user");
-
-		// UserDto? teacher = new();
-
-		// if (userResponse.IsSuccessStatusCode)
-		// {
-		// 	var userJson = await userResponse.Content.ReadAsStringAsync();
-
-		// 	teacher = JsonSerializer.Deserialize<UserDto>(userJson);
-		// }
-
-		// UserDto student = new UserDto
-		// 	{
-		// 		FirstName = "Franto",
-		// 		LastName = "Potupák",
-		// 		Email = "franto.potupak@gmail.com",
-		// 		PhoneNumber = "+421 911 654 321"
-		// 	};
-
-		// CourseDto math = new CourseDto
-		// 	{
-		// 		Id = 1,
-		// 		Name = "Matematika",
-		// 		Price = 10,
-		// 		Room = "AB-30",
-		// 		Teacher = teacher,
-		// 		Students = new List<UserDto>
-		// 	{
-		// 		student
-		// 	}
-		// 	};
-
-		// CourseDto physics = new CourseDto
-		// 	{
-		// 		Id = 2,
-		// 		Name = "Fyzika",
-		// 		Price = 10,
-		// 		Room = "BC-30",
-		// 		Teacher = teacher,
-		// 		Students = new List<UserDto>
-		// 	{
-		// 		student
-		// 	}
-		// 	};
-
-		// CourseDto informatics = new CourseDto
-		// 	{
-		// 		Id = 3,
-		// 		Name = "Informatika",
-		// 		Price = 10,
-		// 		Room = "CD-30",
-		// 		Teacher = teacher,
-		// 		Students = new List<UserDto>
-		// 	{
-		// 		student
-		// 	}
-		// 	};
-
-		// meetingsList = new List<MeetingDto>
-		// {
-		// 	new MeetingDto
-		// 	{
-		// 		Beginning = new DateTime(2024, 3, 10, 12, 30, 0),
-		// 		Duration = 60,
-		// 		Course = math,
-		// 		Teacher = teacher,
-		// 		Student = student
-		// 	},
-		// 	new MeetingDto
-		// 	{
-		// 		Beginning = new DateTime(2024, 12, 12, 12, 5, 0),
-		// 		Duration = 60,
-		// 		Course = math,
-		// 		Teacher = teacher,
-		// 		Student = student
-		// 	},
-		// 	new MeetingDto
-		// 	{
-		// 		Beginning = new DateTime(2024, 1, 10, 12, 15, 0),
-		// 		Duration = 75,
-		// 		Course = physics,
-		// 		Teacher = teacher,
-		// 		Student = student
-		// 	},
-		// 	new MeetingDto
-		// 	{
-		// 		Beginning = new DateTime(2024, 11, 18, 8, 0, 0),
-		// 		Duration = 75,
-		// 		Course = physics,
-		// 		Teacher = teacher,
-		// 		Student = student
-		// 	},
-		// 	new MeetingDto
-		// 	{
-		// 		Beginning = new DateTime(2024, 10, 18, 15, 0, 0),
-		// 		Duration = 120,
-		// 		Course = informatics,
-		// 		Teacher = teacher,
-		// 		Student = null
-		// 	},
-		// 	new MeetingDto
-		// 	{
-		// 		Beginning = new DateTime(2024, 10, 19, 17, 20, 0),
-		// 		Duration = 120,
-		// 		Course = informatics,
-		// 		Teacher = teacher,
-		// 		Student = null
-		// 	}
-		// };
-
 		filteredMeetingsList = meetingsList
 			.Where(x => x.Beginning.Date > DateTime.Now.Date)
 			.ToList();
 
-		// await dataList.Reload();
-		// int kk = dataList.Count;
 	}
 
 	void ApplyFilters()
@@ -438,4 +328,5 @@
 
 		return currentUser;
 	}
+
 }

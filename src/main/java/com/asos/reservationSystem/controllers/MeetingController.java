@@ -52,6 +52,20 @@ public class MeetingController {
         }
     }
 
+    @PutMapping (path = "/removeStudentMeeting")
+    public ResponseEntity<Void> removeStudentMeeting(@RequestBody String meetingId) {
+        try {
+            meetingService.removeStudentMeeting(Long.parseLong(meetingId.trim()));
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (NoSuchElementException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        } catch (DataIntegrityViolationException e) {
+            return new ResponseEntity<>(HttpStatus.CONFLICT);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
     @PostMapping(path = "/createMeeting")
     public void saveMeeting(@RequestBody MeetingDto meetingDto){
         meetingService.createMeeting(meetingMapper.mapFromDto(meetingDto));
