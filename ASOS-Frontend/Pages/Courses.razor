@@ -289,19 +289,38 @@
 
 	async Task JoinCourse(CourseDto course)
 	{
-		//TODO: Add user to course
-		var httpClient = HttpClientFactory.CreateClient("API");
-		var currentUser = await getcurrentUser(httpClient);
+		try
+            {
+                var httpClient = HttpClientFactory.CreateClient("API");
 
-		// Test
-		var plainContent = new StringContent(currentUser.Id.ToString() + ASOS_Frontend.Shared.Constants.divider + course.Id.ToString(), Encoding.UTF8, "text/plain");
-		var coursesResponse = await httpClient.PostAsync("courseStudentAdd", plainContent);
+                var response = await httpClient.PatchAsync($"assignToCourse/{course.Id}", new StringContent(string.Empty));
 
-		await httpClient.PostAsync("addCourse", plainContent);
-		// End test
-
-
-		Snackbar.Add("Zápis prebehol úspešne!", Severity.Success);
+                if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                {
+                    var errorMessage = await response.Content.ReadAsStringAsync();
+                    if(errorMessage == "Course does not exist."){
+                        Snackbar.Add("Kurz neexistuje.", Severity.Error);
+                    }
+                    else if(errorMessage == "User does not exist."){
+                        Snackbar.Add("Používateľ neexistuje.", Severity.Error);
+                    }
+                    else if(errorMessage == "User has already been assigned to this course."){
+                        Snackbar.Add("Používateľ už bol do daného kurzu zapísaný.", Severity.Error);
+                    }
+                }
+                else if (response.IsSuccessStatusCode)
+                {
+                    Snackbar.Add("Zápis prebehol úspešne!", Severity.Success);
+                }
+                else
+                {
+                    Snackbar.Add("Nastala chyba pri zápise do kurzu. Skúste to znova neskôr.", Severity.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Došlo k chybe: {ex.Message}", Severity.Error);
+            }
 	}
 
 	async Task OpenTeacherModal(CourseDto course)

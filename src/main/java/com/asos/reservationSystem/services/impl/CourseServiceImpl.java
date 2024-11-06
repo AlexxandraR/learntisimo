@@ -1,6 +1,8 @@
 package com.asos.reservationSystem.services.impl;
 
 import com.asos.reservationSystem.domain.entities.Course;
+import com.asos.reservationSystem.domain.entities.User;
+import com.asos.reservationSystem.exception.CustomException;
 import com.asos.reservationSystem.repositories.CourseRepository;
 import com.asos.reservationSystem.services.CourseService;
 import org.springframework.security.access.AccessDeniedException;
@@ -22,6 +24,28 @@ public class CourseServiceImpl implements CourseService {
     public List<Course> getAll() {
         return StreamSupport.stream(courseRepository.findAll().spliterator(), false)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public Optional<Course> assignToCourse(Optional<User> user, Long courseId) {
+        Optional<Course> course = courseRepository.findById(courseId);
+        if(course.isEmpty()){
+            throw new CustomException("Course does not exist.",
+                    "Assignment to course: Course with id: " + courseId + " does not exist.");
+        }
+        if(user.isEmpty()){
+            throw new CustomException("User does not exist.",
+                    "Assignment to course: User does not exist.");
+        }
+        if (course.get().getStudents().stream().noneMatch(student -> student.getId().equals(user.get().getId()))){
+            course.get().getStudents().add(user.get());
+            courseRepository.save(course.get());
+        }
+        else{
+            throw new CustomException("User has already been assigned to this course.",
+                    "Assignment to course: User has already been assigned to this course: " + courseId + ".");
+        }
+        return course;
     }
 
     public List<Course> getAllTeacherCourses(Long teacherId) {

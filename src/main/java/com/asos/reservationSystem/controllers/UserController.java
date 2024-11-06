@@ -4,10 +4,11 @@ import com.asos.reservationSystem.domain.dto.UserDto;
 import com.asos.reservationSystem.domain.entities.User;
 import com.asos.reservationSystem.mappers.Mapper;
 import com.asos.reservationSystem.services.UserService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.security.Principal;
 import java.util.Optional;
@@ -19,9 +20,12 @@ public class UserController {
 
     private final Mapper<User, UserDto> userMapper;
 
+    private final Logger logger;
+
     public UserController(UserService userService, Mapper<User, UserDto> userMapper) {
         this.userService = userService;
         this.userMapper = userMapper;
+        this.logger = LoggerFactory.getLogger(UserController.class);
     }
 
     @GetMapping(path = "/user")

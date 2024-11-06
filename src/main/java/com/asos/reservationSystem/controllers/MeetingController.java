@@ -1,10 +1,11 @@
 package com.asos.reservationSystem.controllers;
 
-import com.asos.reservationSystem.domain.dto.CourseDto;
 import com.asos.reservationSystem.domain.dto.MeetingDto;
 import com.asos.reservationSystem.domain.entities.Meeting;
 import com.asos.reservationSystem.mappers.Mapper;
 import com.asos.reservationSystem.services.MeetingService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,9 +22,12 @@ public class MeetingController {
 
     private final Mapper<Meeting, MeetingDto> meetingMapper;
 
+    private final Logger logger;
+
     public MeetingController(MeetingService meetingService, Mapper<Meeting, MeetingDto> meetingMapper) {
         this.meetingService = meetingService;
         this.meetingMapper = meetingMapper;
+        this.logger = LoggerFactory.getLogger(MeetingController.class);
     }
 
     @PostMapping(path = "/meetingsTeacher")
