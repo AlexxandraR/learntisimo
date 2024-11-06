@@ -59,6 +59,18 @@ public class CourseController {
         }).orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
+    @DeleteMapping(path = "/deleteFromCourse/{courseId}")
+    public ResponseEntity<CourseDto> deleteFromCourse(Principal connectedCustomer, @PathVariable Long courseId){
+        Optional<User> user = userService.getUser(connectedCustomer);
+        Optional<Course> course = courseService.deleteFromCourse(user, courseId);
+        logger.info("User with id: " + user.get().getId() + " removed from course with id: " + course.get().getId()
+                + " at: " + LocalDateTime.now());
+        return course.map(courseEntity -> {
+            CourseDto courseDto = courseMapper.mapToDto(courseEntity);
+            return new ResponseEntity<>(courseDto, HttpStatus.OK);
+        }).orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    }
+
     @PostMapping (path = "/courseTeacher")
     public List<CourseDto> getAllTeacherCourses(@RequestBody String teacherId){
         return courseService.getAllTeacherCourses(Long.parseLong(teacherId.trim())).stream().map(courseMapper::mapToDto).

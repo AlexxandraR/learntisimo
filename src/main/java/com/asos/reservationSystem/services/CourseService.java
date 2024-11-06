@@ -10,6 +10,7 @@ public interface CourseService {
     List<Course> getAll();
 
     Optional<Course> assignToCourse(Optional<User> user, Long courseId);
+    Optional<Course> deleteFromCourse(Optional<User> user, Long courseId);
     List<Course> getAllTeacherCourses(Long teacherId);
 
     List<Course> getAllStudentCourses(Long l);

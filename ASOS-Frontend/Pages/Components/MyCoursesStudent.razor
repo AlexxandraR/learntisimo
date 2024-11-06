@@ -313,21 +313,47 @@
 	}
 
 	async Task RemoveDoucovanie(CourseDto myCourse)
-	{
-		// TODO: Remove student from course via ENDPOINT
+    {
+        try
+        {
+            var httpClient = HttpClientFactory.CreateClient("API");
 
-		var httpClient = HttpClientFactory.CreateClient("API");
-		var currentUser = await getcurrentUser(httpClient);
+            var response = await httpClient.DeleteAsync($"deleteFromCourse/{myCourse.Id}");
 
-		// Test
-		var plainContent = new StringContent(currentUser.Id.ToString() + ASOS_Frontend.Shared.Constants.divider + myCourse.Id, Encoding.UTF8, "text/plain");
-		var coursesResponse = await httpClient.PostAsync("courseStudentRemove", plainContent);
-		// End test
+            if (response.IsSuccessStatusCode)
+            {
+                Snackbar.Add("Odpísanie prebehlo úspešne!", Severity.Success);
 
-		filteredMyCoursesList.Remove(myCourse);
-
-		Snackbar.Add("Doučovanie bolo úspešne zrušené.", Severity.Success);
-	}
+                filteredMyCoursesList.Remove(myCourse);
+                return;
+            }
+            var errorMessage = await response.Content.ReadAsStringAsync();
+            if (errorMessage == "Course does not exist.")
+            {
+                Snackbar.Add("Kurz neexistuje.", Severity.Error);
+            }
+            else if (errorMessage == "User does not exist.")
+            {
+                Snackbar.Add("Používateľ neexistuje.", Severity.Error);
+            }
+            else if (errorMessage == "User was not assigned to this course.")
+            {
+                Snackbar.Add("Používateľ nebol do daného kurzu zapísaný.", Severity.Error);
+            }
+            else if(errorMessage == "Only student can be removed from a course.")
+            {
+                Snackbar.Add("Iba študent sa môže odpísať z kurzu.", Severity.Error);
+            }
+            else
+            {
+                Snackbar.Add("Nastala chyba pri odpísaní z kurzu. Skúste to znova neskôr.", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Došlo ku neočakávanej chybe.");
+        }
+    }
 
 	async Task OpenTeacherModal(UserDto teacher)
 	{

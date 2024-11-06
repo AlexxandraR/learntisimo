@@ -20,7 +20,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(CustomException.class)
     public ResponseEntity handleCustomException(final CustomException ex){
         logger.error(ex.getLoggingMessage() + " Time: " + LocalDateTime.now());
-        return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(ex.getMessage(), ex.getStatus());
     }
 
 }

@@ -1,10 +1,12 @@
 package com.asos.reservationSystem.services.impl;
 
 import com.asos.reservationSystem.domain.entities.Course;
+import com.asos.reservationSystem.domain.entities.Role;
 import com.asos.reservationSystem.domain.entities.User;
 import com.asos.reservationSystem.exception.CustomException;
 import com.asos.reservationSystem.repositories.CourseRepository;
 import com.asos.reservationSystem.services.CourseService;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
@@ -31,11 +33,16 @@ public class CourseServiceImpl implements CourseService {
         Optional<Course> course = courseRepository.findById(courseId);
         if(course.isEmpty()){
             throw new CustomException("Course does not exist.",
-                    "Assignment to course: Course with id: " + courseId + " does not exist.");
+                    "Assignment to course: Course with id: " + courseId + " does not exist.", HttpStatus.NOT_FOUND);
         }
         if(user.isEmpty()){
             throw new CustomException("User does not exist.",
-                    "Assignment to course: User does not exist.");
+                    "Assignment to course: User does not exist.", HttpStatus.NOT_FOUND);
+        }
+        if(user.get().getRole() != Role.STUDENT){
+            throw new CustomException("Only student can assign to a course.",
+                    "Assignment from course: Only student can assign to a course: " + courseId + ".",
+                    HttpStatus.BAD_REQUEST);
         }
         if (course.get().getStudents().stream().noneMatch(student -> student.getId().equals(user.get().getId()))){
             course.get().getStudents().add(user.get());
@@ -43,7 +50,36 @@ public class CourseServiceImpl implements CourseService {
         }
         else{
             throw new CustomException("User has already been assigned to this course.",
-                    "Assignment to course: User has already been assigned to this course: " + courseId + ".");
+                    "Assignment to course: User has already been assigned to this course: " + courseId + ".",
+                    HttpStatus.BAD_REQUEST);
+        }
+        return course;
+    }
+
+    @Override
+    public Optional<Course> deleteFromCourse(Optional<User> user, Long courseId) {
+        Optional<Course> course = courseRepository.findById(courseId);
+        if(course.isEmpty()){
+            throw new CustomException("Course does not exist.",
+                    "Removal from course: Course with id: " + courseId + " does not exist.", HttpStatus.NOT_FOUND);
+        }
+        if(user.isEmpty()){
+            throw new CustomException("User does not exist.",
+                    "Removal from course: User does not exist.", HttpStatus.NOT_FOUND);
+        }
+        if(user.get().getRole() != Role.STUDENT){
+            throw new CustomException("Only student can be removed from a course.",
+                    "Removal from course: Only student can be removed from a course: " + courseId + ".",
+                    HttpStatus.BAD_REQUEST);
+        }
+        if (course.get().getStudents().stream().noneMatch(student -> student.getId().equals(user.get().getId()))){
+            throw new CustomException("User was not assigned to this course.",
+                    "Removal from course: User was not assigned to this course: " + courseId + ".",
+                    HttpStatus.BAD_REQUEST);
+        }
+        else{
+            course.get().getStudents().remove(user.get());
+            courseRepository.save(course.get());
         }
         return course;
     }

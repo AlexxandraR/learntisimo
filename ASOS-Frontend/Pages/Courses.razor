@@ -1,6 +1,8 @@
 ﻿@page "/courses"
 @using System.Text.Json
 @using System.Text
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
 
 @inject Radzen.DialogService DialogService
 @inject ISnackbar Snackbar
@@ -129,7 +131,11 @@
 					</RadzenRow>
 					<RadzenRow name="action-row" AlignItems="Radzen.AlignItems.Center" Gap="1rem" Style="height:fit-content;">
 						<RadzenBadge BadgeStyle="BadgeStyle.Secondary" style="font-size:1.2rem; height:fit-content;" Shade="Shade.Lighter" class="price-badge" Text=@($"{String.Format(new System.Globalization.CultureInfo("sk-SK"), "{0:C}", course.Price)} /hod") />
-						<MudButton Variant="MudBlazor.Variant.Filled" StartIcon="@Icons.Material.Filled.AddCircle" Color="MudBlazor.Color.Info" Style="width: 145px; min-width:145px;" @onclick="async () => await JoinCourse(course)">Zapísať sa</MudButton>
+						<AuthorizeView Policy="StudentOnly">
+                            <Authorized>
+                                <MudButton Variant="MudBlazor.Variant.Filled" StartIcon="@Icons.Material.Filled.AddCircle" Color="MudBlazor.Color.Info" Style="width: 145px; min-width:145px;" @onclick="async () => await JoinCourse(course)">Zapísať sa</MudButton>
+                            </Authorized>
+                        </AuthorizeView>
 					</RadzenRow>
 				</RadzenRow>
 			</RadzenCard>
@@ -290,37 +296,38 @@
 	async Task JoinCourse(CourseDto course)
 	{
 		try
-            {
-                var httpClient = HttpClientFactory.CreateClient("API");
+        {
+            var httpClient = HttpClientFactory.CreateClient("API");
 
-                var response = await httpClient.PatchAsync($"assignToCourse/{course.Id}", new StringContent(string.Empty));
+            var response = await httpClient.PatchAsync($"assignToCourse/{course.Id}", new StringContent(string.Empty));
 
-                if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
-                {
-                    var errorMessage = await response.Content.ReadAsStringAsync();
-                    if(errorMessage == "Course does not exist."){
-                        Snackbar.Add("Kurz neexistuje.", Severity.Error);
-                    }
-                    else if(errorMessage == "User does not exist."){
-                        Snackbar.Add("Používateľ neexistuje.", Severity.Error);
-                    }
-                    else if(errorMessage == "User has already been assigned to this course."){
-                        Snackbar.Add("Používateľ už bol do daného kurzu zapísaný.", Severity.Error);
-                    }
-                }
-                else if (response.IsSuccessStatusCode)
-                {
-                    Snackbar.Add("Zápis prebehol úspešne!", Severity.Success);
-                }
-                else
-                {
-                    Snackbar.Add("Nastala chyba pri zápise do kurzu. Skúste to znova neskôr.", Severity.Error);
-                }
-            }
-            catch (Exception ex)
+            if (response.IsSuccessStatusCode)
             {
-                Snackbar.Add($"Došlo k chybe: {ex.Message}", Severity.Error);
+                Snackbar.Add("Zápis prebehol úspešne!", Severity.Success);
+                return;
             }
+            var errorMessage = await response.Content.ReadAsStringAsync();
+            if(errorMessage == "Course does not exist."){
+                Snackbar.Add("Kurz neexistuje.", Severity.Error);
+            }
+            else if(errorMessage == "User does not exist."){
+                Snackbar.Add("Používateľ neexistuje.", Severity.Error);
+            }
+            else if(errorMessage == "User has already been assigned to this course."){
+                Snackbar.Add("Používateľ už bol do daného kurzu zapísaný.", Severity.Error);
+            }
+            else if(errorMessage == "Only student can assign to a course."){
+                Snackbar.Add("Iba študent sa môže zapísať do kurzu.", Severity.Error);
+            }
+            else
+            {
+                Snackbar.Add("Nastala chyba pri zápise do kurzu. Skúste to znova neskôr.", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Došlo ku neučakávanej chybe.");
+        }
 	}
 
 	async Task OpenTeacherModal(CourseDto course)
