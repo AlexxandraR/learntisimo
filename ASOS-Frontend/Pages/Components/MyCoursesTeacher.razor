@@ -227,17 +227,19 @@
 
 			newCourse.Teacher = currentUser;
 			newCourse.Students = new List<UserDto>();
-		// Test
+			// Test
 			var jsonContent = new StringContent(
 				JsonSerializer.Serialize(newCourse),
 				Encoding.UTF8,
 				"application/json");
-				
+
 			var coursesResponse = await httpClient.PostAsync("createCourse", jsonContent);
 			// End test
 			if (coursesResponse.IsSuccessStatusCode)
 			{
-				myCoursesList.Add(newCourse);
+				var jsonResponse = await coursesResponse.Content.ReadAsStringAsync();
+				var courseResponse = JsonSerializer.Deserialize<CourseDto>(jsonResponse);
+				myCoursesList.Add(courseResponse);
 				Snackbar.Add("Doučovanie bolo úspešne vytvorené.", Severity.Success);
 			}else{
 				Snackbar.Add("Unable to create Course.", Severity.Error);

@@ -6,6 +6,7 @@ import com.asos.reservationSystem.domain.entities.User;
 import com.asos.reservationSystem.exception.CustomException;
 import com.asos.reservationSystem.repositories.CourseRepository;
 import com.asos.reservationSystem.services.CourseService;
+import com.asos.reservationSystem.services.MeetingService;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -17,9 +18,11 @@ import java.util.stream.StreamSupport;
 @Service
 public class CourseServiceImpl implements CourseService {
     private final CourseRepository courseRepository;
+    private final MeetingService meetingService;
 
-    public CourseServiceImpl(CourseRepository courseRepository) {
+    public CourseServiceImpl(CourseRepository courseRepository, MeetingService meetingService) {
         this.courseRepository = courseRepository;
+        this.meetingService = meetingService;
     }
 
     @Override
@@ -78,6 +81,7 @@ public class CourseServiceImpl implements CourseService {
                     HttpStatus.BAD_REQUEST);
         }
         else{
+            meetingService.removeStudentFromCourseMeetings(courseId, user.get().getId());
             course.get().getStudents().remove(user.get());
             courseRepository.save(course.get());
         }
@@ -105,14 +109,14 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
-    public void saveCourse(Course course) {
+    public Course saveCourse(Course course) {
 //        TODO: handle same course being created, handle missing values
         if (course == null) {
             throw new AccessDeniedException("Access Denied: Course is null");
         } else if (course.getTeacher() == null) {
             throw new AccessDeniedException("Access Denied: Course teacher is null");
         }
-        courseRepository.save(course);
+        return courseRepository.save(course);
     }
 
     @Override

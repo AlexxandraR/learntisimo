@@ -148,7 +148,7 @@
 		var plainContent = new StringContent(currentUser.Id.ToString(), Encoding.UTF8, "text/plain");
 		var coursesResponse = await httpClient.PostAsync("courseStudent", plainContent);
 		List<CourseDto> allCourses = new();
-		
+
 		if (coursesResponse.IsSuccessStatusCode)
 		{
 			var coursesJson = await coursesResponse.Content.ReadAsStringAsync();
@@ -158,122 +158,122 @@
 		// End test
 		myCoursesList = allCourses;
 
-		/*myCoursesList = new List<CourseDto>
+			/*myCoursesList = new List<CourseDto>
+			{
+			new CourseDto
 		{
-			new CourseDto
+		Id = 1,
+		Name = "Matematika",
+		Price = 10,
+		Room = "AB-30",
+		Teacher = new UserDto
 			{
-				Id = 1,
-				Name = "Matematika",
-				Price = 10,
-				Room = "AB-30",
-				Teacher = new UserDto
-				{
-					Degree = "Ing.",
-					FirstName = "Peter",
-					LastName = "Dobrák",
-					Email = "peter.dobrak@gmail.com",
-					PhoneNumber = "+421 911 123 456"
-				},
-				Students = new List<UserDto>
-				{
-					currentUser
-				}
-			},
-			new CourseDto
-			{
-				Id = 2,
-				Name = "Fyzika",
-				Price = 10,
-				Room = "BC-30",
-				Teacher = new UserDto
-				{
-					Degree = "doc.",
-					FirstName = "Lacikam",
-					LastName = "Dobrák",
-					Email = "lacikam.dobrak@gmail.com",
-					PhoneNumber = "+421 911 333 456"
-				},
-				Students = new List<UserDto>
-				{
-					currentUser
-				}
-			},
-			new CourseDto
-			{
-				Id = 3,
-				Name = "Informatika",
-				Price = 10,
-				Room = "CD-30",
-				Teacher = new UserDto
-				{
-					Degree = "prof.",
-					FirstName = "Ján",
-					LastName = "Novák",
-					Email = "jan.novak@gmail.com",
-					PhoneNumber = "+421 911 444 456"
-				},
-				Students = new List<UserDto>
-				{
-					currentUser
-				}
-			},
-			new CourseDto
-			{
-				Id = 4,
-				Name = "Angličtina",
-				Price = 10,
-				Room = "DE-30",
-				Teacher = new UserDto
-				{
-					Degree = "Bc.",
-					FirstName = "Michal",
-					LastName = "Horváth",
-					Email = "michal.horvath@gmail.com",
-					PhoneNumber = "+421 911 555 456"
-				},
-				Students = new List<UserDto>
-				{
-					currentUser
-				}
-			},
-			new CourseDto
-			{
-				Id = 5,
-				Name = "Dejepis",
-				Price = 10,
-				Room = "EF-30",
-				Teacher = new UserDto
-				{
-					Degree = "Phdr.",
-					FirstName = "Katarína",
-					LastName = "Kováčová",
-					Email = "katarina.kovacova@gmail.com",
-					PhoneNumber = "+421 911 666 456"
-				},
-				Students = new List<UserDto>
-				{
-					currentUser
-				}
-			},
-			new CourseDto
-			{
-				Id = 6,
-				Name = "Biológia",
-				Price = 10,
-				Room = "FG-30",
-				Teacher = new UserDto
-				{
-					Degree = string.Empty,
-					FirstName = "Lukáš",
-					LastName = "Polák",
-					Email = "lukas.polak@gmail.com",
-					PhoneNumber = "+421 911 777 456"
-				},
-				Students = new List<UserDto>
-				{
-					currentUser
-				}
+			Degree = "Ing.",
+			FirstName = "Peter",
+			LastName = "Dobrák",
+			Email = "peter.dobrak@gmail.com",
+			PhoneNumber = "+421 911 123 456"
+		},
+		Students = new List<UserDto>
+		{
+		currentUser
 			}
+			},
+			new CourseDto
+	{
+		Id = 2,
+		Name = "Fyzika",
+		Price = 10,
+		Room = "BC-30",
+		Teacher = new UserDto
+			{
+			Degree = "doc.",
+			FirstName = "Lacikam",
+			LastName = "Dobrák",
+			Email = "lacikam.dobrak@gmail.com",
+			PhoneNumber = "+421 911 333 456"
+			},
+		Students = new List<UserDto>
+		{
+		currentUser
+		}
+		},
+	new CourseDto
+	{
+	Id = 3,
+		Name = "Informatika",
+		Price = 10,
+		Room = "CD-30",
+		Teacher = new UserDto
+			{
+			Degree = "prof.",
+			FirstName = "Ján",
+			LastName = "Novák",
+			Email = "jan.novak@gmail.com",
+			PhoneNumber = "+421 911 444 456"
+			},
+			Students = new List<UserDto>
+		{
+		currentUser
+			}
+		},
+		new CourseDto
+		{
+		Id = 4,
+		Name = "Angličtina",
+		Price = 10,
+		Room = "DE-30",
+		Teacher = new UserDto
+			{
+			Degree = "Bc.",
+			FirstName = "Michal",
+			LastName = "Horváth",
+			Email = "michal.horvath@gmail.com",
+			PhoneNumber = "+421 911 555 456"
+			},
+		Students = new List<UserDto>
+		{
+			currentUser
+			}
+			},
+			new CourseDto
+	{
+		Id = 5,
+		Name = "Dejepis",
+		Price = 10,
+		Room = "EF-30",
+		Teacher = new UserDto
+			{
+			Degree = "Phdr.",
+			FirstName = "Katarína",
+			LastName = "Kováčová",
+			Email = "katarina.kovacova@gmail.com",
+			PhoneNumber = "+421 911 666 456"
+			},
+			Students = new List<UserDto>
+		{
+		currentUser
+		}
+	},
+	new CourseDto
+	{
+	Id = 6,
+		Name = "Biológia",
+		Price = 10,
+		Room = "FG-30",
+		Teacher = new UserDto
+		{
+			Degree = string.Empty,
+			FirstName = "Lukáš",
+			LastName = "Polák",
+			Email = "lukas.polak@gmail.com",
+			PhoneNumber = "+421 911 777 456"
+			},
+		Students = new List<UserDto>
+			{
+			currentUser
+	}
+		}
 		};
 		*/
 		filteredMyCoursesList = myCoursesList;
@@ -313,47 +313,48 @@
 	}
 
 	async Task RemoveDoucovanie(CourseDto myCourse)
-    {
-        try
-        {
-            var httpClient = HttpClientFactory.CreateClient("API");
+	{
+		try
+		{
+			//TODO Remove student from all the course meetings if he is assigned to any for this course
+			var httpClient = HttpClientFactory.CreateClient("API");
 
-            var response = await httpClient.DeleteAsync($"deleteFromCourse/{myCourse.Id}");
+			var response = await httpClient.DeleteAsync($"deleteFromCourse/{myCourse.Id}");
 
-            if (response.IsSuccessStatusCode)
-            {
-                Snackbar.Add("Odpísanie prebehlo úspešne!", Severity.Success);
+			if (response.IsSuccessStatusCode)
+			{
+				Snackbar.Add("Odpísanie prebehlo úspešne!", Severity.Success);
 
-                filteredMyCoursesList.Remove(myCourse);
-                return;
-            }
-            var errorMessage = await response.Content.ReadAsStringAsync();
-            if (errorMessage == "Course does not exist.")
-            {
-                Snackbar.Add("Kurz neexistuje.", Severity.Error);
-            }
-            else if (errorMessage == "User does not exist.")
-            {
-                Snackbar.Add("Používateľ neexistuje.", Severity.Error);
-            }
-            else if (errorMessage == "User was not assigned to this course.")
-            {
-                Snackbar.Add("Používateľ nebol do daného kurzu zapísaný.", Severity.Error);
-            }
-            else if(errorMessage == "Only student can be removed from a course.")
-            {
-                Snackbar.Add("Iba študent sa môže odpísať z kurzu.", Severity.Error);
-            }
-            else
-            {
-                Snackbar.Add("Nastala chyba pri odpísaní z kurzu. Skúste to znova neskôr.", Severity.Error);
-            }
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add($"Došlo ku neočakávanej chybe.");
-        }
-    }
+				filteredMyCoursesList.Remove(myCourse);
+				return;
+			}
+			var errorMessage = await response.Content.ReadAsStringAsync();
+			if (errorMessage == "Course does not exist.")
+			{
+				Snackbar.Add("Kurz neexistuje.", Severity.Error);
+			}
+			else if (errorMessage == "User does not exist.")
+			{
+				Snackbar.Add("Používateľ neexistuje.", Severity.Error);
+			}
+			else if (errorMessage == "User was not assigned to this course.")
+			{
+				Snackbar.Add("Používateľ nebol do daného kurzu zapísaný.", Severity.Error);
+			}
+			else if(errorMessage == "Only student can be removed from a course.")
+			{
+				Snackbar.Add("Iba študent sa môže odpísať z kurzu.", Severity.Error);
+			}
+			else
+			{
+				Snackbar.Add("Nastala chyba pri odpísaní z kurzu. Skúste to znova neskôr.", Severity.Error);
+			}
+		}
+		catch (Exception ex)
+		{
+			Snackbar.Add($"Došlo ku neočakávanej chybe.");
+		}
+	}
 
 	async Task OpenTeacherModal(UserDto teacher)
 	{
@@ -400,12 +401,18 @@
 			var currentUser = await getcurrentUser(httpClient);
 
 			// Test
-			var plainContent = new StringContent(currentUser.Id.ToString() + ASOS_Frontend.Shared.Constants.divider + myCourse.Id + ASOS_Frontend.Shared.Constants.divider + meeting.Id, Encoding.UTF8, "text/plain");
-			var coursesResponse = await httpClient.PostAsync("meetingStudentAdd", plainContent);
+			var coursesResponse = await httpClient.GetAsync($"meetingStudentAdd/{meeting.Id}");
+			if(coursesResponse.IsSuccessStatusCode)
+			{
+				Snackbar.Add("Doučovanie bolo úspešne naplánované.", Severity.Success);
+			}
+			else
+			{
+				Snackbar.Add("Doučovanie sa nepodarilo naplánovať", Severity.Success);
+			}
 			// End test
 
 
-			Snackbar.Add("Doučovanie bolo úspešne naplánované.", Severity.Success);
 		}
 	}
 

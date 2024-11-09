@@ -90,8 +90,9 @@ public class CourseController {
     }
 
     @PostMapping(path = "/createCourse")
-    public void saveCourse(@RequestBody CourseDto courseDto){
-        courseService.saveCourse(courseMapper.mapFromDto(courseDto));
+    public CourseDto saveCourse(@RequestBody CourseDto courseDto){
+        var newCourse = courseService.saveCourse(courseMapper.mapFromDto(courseDto));
+        return courseMapper.mapToDto(newCourse);
     }
 
     @DeleteMapping(path = "/removeCourse/{courseId}")

@@ -1,6 +1,10 @@
 ﻿@using System.Globalization
+@using System.Text.Json
+@using System.Text
+@using System.Net
 
 @inject Radzen.DialogService DialogService
+@inject IHttpClientFactory HttpClientFactory
 
 <style>
 	.rz-pager-summary {
@@ -69,45 +73,54 @@
 
 	protected override async Task OnInitializedAsync()
 	{
-		meetingsList = new List<MeetingDto>
+		var httpClient = HttpClientFactory.CreateClient("API");
+		var meetingsResponse = await httpClient.GetAsync($"listMeetingsCourse/{Course.Id}");
+
+		if (meetingsResponse.IsSuccessStatusCode)
 		{
-			new MeetingDto
-			{
-				Id = 1,
-				Beginning = new DateTime(2024,12,20,8,0,0),
-				Course = Course
-			},
-			new MeetingDto
-			{
-				Id = 2,
-				Beginning = new DateTime(2024,12,20,13,30,0),
-				Course = Course
-			},
-			new MeetingDto
-			{
-				Id = 3,
-				Beginning = new DateTime(2024,12,21,8,0,0),
-				Course = Course
-			},
-			new MeetingDto
-			{
-				Id = 4,
-				Beginning = new DateTime(2024,12,21,13,30,0),
-				Course = Course
-			},
-			new MeetingDto
-			{
-				Id = 5,
-				Beginning = new DateTime(2024,12,21,16,0,0),
-				Course = Course
-			},
-			new MeetingDto
-			{
-				Id = 6,
-				Beginning = new DateTime(2024,10,10,10,0,0),
-				Course = Course
-			}
-		};
+			var meetingsJson = await meetingsResponse.Content.ReadAsStringAsync();
+			meetingsList = JsonSerializer.Deserialize<List<MeetingDto>>(meetingsJson);
+		}
+
+		// meetingsList = new List<MeetingDto>
+		// {
+		// 	new MeetingDto
+		// 	{
+		// 		Id = 1,
+		// 		Beginning = new DateTime(2024,12,20,8,0,0),
+		// 		Course = Course
+		// 	},
+		// 	new MeetingDto
+		// 	{
+		// 		Id = 2,
+		// 		Beginning = new DateTime(2024,12,20,13,30,0),
+		// 		Course = Course
+		// 	},
+		// 	new MeetingDto
+		// 	{
+		// 		Id = 3,
+		// 		Beginning = new DateTime(2024,12,21,8,0,0),
+		// 		Course = Course
+		// 	},
+		// 	new MeetingDto
+		// 	{
+		// 		Id = 4,
+		// 		Beginning = new DateTime(2024,12,21,13,30,0),
+		// 		Course = Course
+		// 	},
+		// 	new MeetingDto
+		// 	{
+		// 		Id = 5,
+		// 		Beginning = new DateTime(2024,12,21,16,0,0),
+		// 		Course = Course
+		// 	},
+		// 	new MeetingDto
+		// 	{
+		// 		Id = 6,
+		// 		Beginning = new DateTime(2024,10,10,10,0,0),
+		// 		Course = Course
+		// 	}
+		// };
 
 		filteredMeetingsList = meetingsList;
 	}

@@ -268,7 +268,9 @@
 
 			if (response.IsSuccessStatusCode)
 			{
-				meetingsList.Add(newMeeting);
+				var jsonResponse = await response.Content.ReadAsStringAsync();
+				var meetingResponse = JsonSerializer.Deserialize<MeetingDto>(jsonResponse);
+				meetingsList.Add(meetingResponse);
 				ApplyFilters(); // Apply filters to update the filteredMeetingsList
 				await dataList.Reload();
 				Snackbar.Add("Termín bol úspešne vytvorený.", Severity.Success);

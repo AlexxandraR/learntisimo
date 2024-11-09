@@ -13,4 +13,8 @@ public interface MeetingRepository extends CrudRepository<Meeting, Long> {
     Optional<List<Meeting>> findAllByTeacher_Id(Long teacherId);
     Optional<List<Meeting>> findAllByStudent_Id(Long studentId);
     Optional<Meeting> findById(Long meetingId);
+
+    Optional<List<Meeting>> findAllByCourse_IdAndStudentIsNull(Long courseId);
+
+    Optional<List<Meeting>> findAllByCourse_IdAndStudent_Id(Long courseId, Long studentId);
 }

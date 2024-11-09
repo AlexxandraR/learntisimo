@@ -1,7 +1,9 @@
 package com.asos.reservationSystem.services.impl;
 
+import com.asos.reservationSystem.domain.dto.MeetingDto;
 import com.asos.reservationSystem.domain.entities.Course;
 import com.asos.reservationSystem.domain.entities.Meeting;
+import com.asos.reservationSystem.domain.entities.User;
 import com.asos.reservationSystem.repositories.MeetingRepository;
 import com.asos.reservationSystem.services.MeetingService;
 import org.springframework.stereotype.Service;
@@ -45,8 +47,8 @@ public class MeetingServiceImpl implements MeetingService {
     }
 
     @Override
-    public void createMeeting(Meeting meeting) {
-        meetingRepository.save(meeting);
+    public Meeting createMeeting(Meeting meeting) {
+        return meetingRepository.save(meeting);
     }
 
     @Override
@@ -57,6 +59,43 @@ public class MeetingServiceImpl implements MeetingService {
         } else {
             meeting.get().setStudent(null);
             meetingRepository.save(meeting.get());
+        }
+    }
+
+
+
+    @Override
+    public List<Meeting> listMeetingsCourse(Long courseId) {
+        var meetings = meetingRepository.findAllByCourse_IdAndStudentIsNull(courseId);
+        if (meetings.isEmpty()) {
+            return Collections.emptyList();
+        } else {
+            return meetings.get();
+        }
+    }
+
+    @Override
+    public void removeStudentFromCourseMeetings(Long courseId, Long studentId) {
+        var meetings = meetingRepository.findAllByCourse_IdAndStudent_Id(courseId, studentId);
+        if (meetings.isEmpty()) {
+            System.out.println("No meetings found for course with id " + courseId + " and student with id " + studentId);
+        } else {
+            for (var meeting : meetings.get()) {
+                meeting.setStudent(null);
+                meetingRepository.save(meeting);
+            }
+        }
+    }
+
+    @Override
+    public void addStudentToMeeting(Long meetingId, User student) {
+        var meeting = meetingRepository.findById(meetingId);
+        if (meeting.isEmpty()) {
+            System.out.println("No meeting found with id " + meetingId);
+        } else {
+            var updatedMeeting = meeting.get();
+            updatedMeeting.setStudent(student);
+            meetingRepository.save(updatedMeeting);
         }
     }
 }

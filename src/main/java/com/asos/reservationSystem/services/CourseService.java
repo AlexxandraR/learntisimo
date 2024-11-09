@@ -15,7 +15,7 @@ public interface CourseService {
 
     List<Course> getAllStudentCourses(Long l);
 
-    void saveCourse(Course course);
+    Course saveCourse(Course course);
 
     void removeCourse(Long courseId);
 
