@@ -1,11 +1,14 @@
 ﻿@page "/requests"
 
 @using Microsoft.AspNetCore.Authorization
+@using System.Text.Json
+@using System.Text
 
 @attribute [Authorize(Policy = "AdminOnly")]
 
 @inject Radzen.DialogService DialogService
 @inject ISnackbar Snackbar
+@inject IHttpClientFactory HttpClientFactory
 
 <PageTitle>Doučovania</PageTitle>
 
@@ -92,8 +95,9 @@
 		<RadzenDropDown @bind-SearchText=TeacherSearchText FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" FilterOperator="StringFilterOperator.Contains" AllowFiltering="true"
 						Data=@requestsList.Select(x => x.User.FirstName + " " + x.User.LastName).Distinct().ToList() AllowClear="true" @bind-Value=SelectTeacher Style="width: 200px; max-width: 400px;"
 						class="rz-shadow-5" Placeholder="Používateľ" />
+		<RadzenDropDown Data=@statuses AllowClear="true" @bind-Value=SelectStatus Style="width: 200px; max-width: 400px;" class="rz-shadow-5" Placeholder="Status" />
+		<RadzenDropDown Data=@sortOrders AllowClear="true" @bind-Value=SelectSortOrder Style="width: 200px; max-width: 400px;" class="rz-shadow-5" Placeholder="Zoradiť podľa času" />
 	</RadzenRow>
-
 	<RadzenDataList AllowVirtualization="false" Style="padding-top:0.65%;"
 					WrapItems="true" AllowPaging="true" PagerAlwaysVisible="true" EmptyText="Zoznam je prázdny, skontrolujte zvolené filtre."
 					Data="@filteredRequestsList" TItem="RequestDto" PageSize="5" PagerHorizontalAlign="HorizontalAlign.Left"
@@ -118,6 +122,10 @@
 								<RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="rz-mb-0">Email</RadzenText>
 								<RadzenText TextStyle="TextStyle.Body2" Style="font-size:1.1rem;">@(request.User.Email)</RadzenText>
 							</RadzenStack>
+							<RadzenStack Style="min-width:225px">
+								<RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="rz-mb-0">Status</RadzenText>
+								<RadzenText TextStyle="TextStyle.Body2" Style="font-size:1.1rem;">@(request.Status)</RadzenText>
+							</RadzenStack>
 						</RadzenRow>
 					</RadzenRow>
 					<RadzenRow name="action-row" AlignItems="Radzen.AlignItems.Center" Gap="0.75rem" Style="height:fit-content;">
@@ -133,8 +141,12 @@
 @code {
 	List<RequestDto> requestsList = new List<RequestDto>();
 	List<RequestDto> filteredRequestsList = new List<RequestDto>();
+	List<string> statuses = new List<string> { "PENDING", "APPROVED", "REJECTED" };
+	List<string> sortOrders = new List<string> { "Newest to Oldest", "Oldest to Newest" };
 
 	string? selectedTeacher;
+	string? selectedStatus;
+	string? selectedSortOrder;
 
 	public string? SelectTeacher
 	{
@@ -150,6 +162,44 @@
 			}
 
 			selectedTeacher = value;
+
+			ApplyFilters();
+		}
+	}
+
+	public string? SelectStatus
+	{
+		get
+		{
+			return selectedStatus;
+		}
+		set
+		{
+			if (selectedStatus == value)
+			{
+				return;
+			}
+
+			selectedStatus = value;
+
+			ApplyFilters();
+		}
+	}
+
+	public string? SelectSortOrder
+	{
+		get
+		{
+			return selectedSortOrder;
+		}
+		set
+		{
+			if (selectedSortOrder == value)
+			{
+				return;
+			}
+
+			selectedSortOrder = value;
 
 			ApplyFilters();
 		}
@@ -176,100 +226,17 @@
 	{
 		// TODO: Fetch data from ENDPOINT
 
-		var user1 = new UserDto
-			{
-				Degree = "Ing.",
-				FirstName = "Peter",
-				LastName = "Dobrák",
-				Email = "peter.dobrak@gmail.com",
-				PhoneNumber = "+421 911 123 456"
-			};
+		var httpClient = HttpClientFactory.CreateClient("API");
+		var response = await httpClient.GetAsync("/getTeachingRequests");
+		List<RequestDto> parsedRequestList = new();
 
-		var user2 = new UserDto
-			{
-				Degree = "doc.",
-				FirstName = "Lacikam",
-				LastName = "Dobrák",
-				Email = "lacikam.dobrak@gmail.com",
-				PhoneNumber = "+421 911 333 456"
-			};
-
-		var user3 = new UserDto
-			{
-				Degree = "prof.",
-				FirstName = "Ján",
-				LastName = "Novák",
-				Email = "jan.novak@gmail.com",
-				PhoneNumber = "+421 911 444 456"
-			};
-
-		var user4 = new UserDto
-			{
-				Degree = "Bc.",
-				FirstName = "Michal",
-				LastName = "Horváth",
-				Email = "michal.horvath@gmail.com",
-				PhoneNumber = "+421 911 555 456"
-			};
-
-		var user5 = new UserDto
-			{
-				Degree = "Phdr.",
-				FirstName = "Katarína",
-				LastName = "Kováčová",
-				Email = "katarina.kovacova@gmail.com",
-				PhoneNumber = "+421 911 666 456"
-			};
-
-		var user6 = new UserDto
-			{
-				Degree = string.Empty,
-				FirstName = "Lukáš",
-				LastName = "Polák",
-				Email = "lukas.polak@gmail.com",
-				PhoneNumber = "+421 911 777 456"
-			};
-
-		requestsList = new List<RequestDto>
+		if (response.IsSuccessStatusCode)
 		{
-			new RequestDto
-			{
-				Id = 25664,
-				RequestedAt = new DateTime(2024,12,24,8,32,0),
-				User = user1
-			},
-			new RequestDto
-			{
-				Id = 25665,
-				RequestedAt = new DateTime(2024,12,25,9,04,0),
-				User = user2
-			},
-			new RequestDto
-			{
-				Id = 25666,
-				RequestedAt = new DateTime(2024,12,26,9,44,0),
-				User = user3
-			},
-			new RequestDto
-			{
-				Id = 25667,
-				RequestedAt = new DateTime(2024,12,27,11,17,0),
-				User = user4
-			},
-			new RequestDto
-			{
-				Id = 25668,
-				RequestedAt = new DateTime(2024,12,28,12,59,0),
-				User = user5
-			},
-			new RequestDto
-			{
-				Id = 25669,
-				RequestedAt = new DateTime(2024,12,29,13,46,0),
-				User = user6
-			}
-		};
+			var jsonStringData = await response.Content.ReadAsStringAsync();
+			parsedRequestList = JsonSerializer.Deserialize<List<RequestDto>>(jsonStringData);		
+		}
 
+		requestsList = parsedRequestList;
 		filteredRequestsList = requestsList;
 	}
 
@@ -293,7 +260,32 @@
 			}
 		}
 
-		if (string.IsNullOrWhiteSpace(selectedTeacher))
+		if (!string.IsNullOrWhiteSpace(selectedStatus))
+		{
+			filteredRequestsList = filteredRequestsList
+				.Where(x => string.Equals(x.Status, selectedStatus, StringComparison.OrdinalIgnoreCase))
+				.ToList();
+		}
+
+		if (!string.IsNullOrWhiteSpace(selectedSortOrder))
+		{
+			if (selectedSortOrder == "Newest to Oldest")
+			{
+				filteredRequestsList = filteredRequestsList
+					.OrderByDescending(x => x.RequestedAt)
+					.ToList();
+			}
+			else if (selectedSortOrder == "Oldest to Newest")
+			{
+				filteredRequestsList = filteredRequestsList
+					.OrderBy(x => x.RequestedAt)
+					.ToList();
+			}
+		}
+
+		if (string.IsNullOrWhiteSpace(selectedTeacher) 
+		&& string.IsNullOrWhiteSpace(selectedStatus) 
+		&& string.IsNullOrWhiteSpace(selectedSortOrder))
 		{
 			filteredRequestsList = requestsList;
 		}
@@ -321,18 +313,61 @@
 	async Task AcceptRequest(RequestDto request)
 	{
 		//TODO: Elevate privilege to be a teacher
+		var jsonContent = new StringContent(
+				JsonSerializer.Serialize(request.User),
+				Encoding.UTF8,
+				"application/json");
 
-		filteredRequestsList.Remove(request);
+		var httpClient = HttpClientFactory.CreateClient("API");
+		var response = await httpClient.PatchAsync($"/acceptRequest/{request.Id}", jsonContent);
 
-		Snackbar.Add("Žiadosť bola schválená.", Severity.Success);
+		if (response.IsSuccessStatusCode)
+		{
+			Snackbar.Add("Žiadosť bola schválená.", Severity.Success);
+			var requestToUpdate = requestsList.FirstOrDefault(r => r.Id == request.Id);
+			if (requestToUpdate != null)
+			{
+				requestToUpdate.Status = "APPROVED";
+			}
+			ApplyFilters();
+		}
+		else
+		{
+			
+			Snackbar.Add("Akcia nebola spracovaná.", Severity.Error);
+		}
+
+
+
 	}
 
 	async Task DenyRequest(RequestDto request)
 	{
 		//TODO: Deny request to be a teacher
+		var jsonContent = new StringContent(
+				JsonSerializer.Serialize(request.User),
+				Encoding.UTF8,
+				"application/json");
 
-		filteredRequestsList.Remove(request);
+		var httpClient = HttpClientFactory.CreateClient("API");
+		var response = await httpClient.PatchAsync($"/denyRequest/{request.Id}", jsonContent);
 
-		Snackbar.Add("Žiadosť bola zamietnutá.", Severity.Success);
+		if (response.IsSuccessStatusCode)
+		{
+			Snackbar.Add("Žiadosť bola zamietnutá.", Severity.Success);
+			var requestToUpdate = requestsList.FirstOrDefault(r => r.Id == request.Id);
+			if (requestToUpdate != null)
+			{
+				requestToUpdate.Status = "REJECTED";
+			}
+			ApplyFilters();
+		}
+		else
+		{
+			Snackbar.Add("Akcia nebola spracovaná.", Severity.Error);
+		}
+
+
+		
 	}
 }

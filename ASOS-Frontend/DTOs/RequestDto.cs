@@ -8,10 +8,13 @@ namespace DTOs
         [JsonPropertyName("id")]
         public long? Id { get; set; }
 
-        [JsonPropertyName("requestedAt")]
+        [JsonPropertyName("dateTime")]
         public DateTime RequestedAt { get; set; }
 
-        [JsonPropertyName("user")]
+        [JsonPropertyName("teacher")]
         public UserDto? User { get; set; }
-    }
+
+		[JsonPropertyName("status")]
+		public string? Status { get; set; }
+	}
 }

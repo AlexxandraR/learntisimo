@@ -232,11 +232,20 @@
 	{
 		//TODO: Create the request via endpoint
 
-		// var client = HttpClientFactory.CreateClient("API");
-		// var response = client.GetAsync("/applyTeacher");
+		var client = HttpClientFactory.CreateClient("API");
+		var response = await client.GetAsync("/applyTeacher");
+
+		if (response.IsSuccessStatusCode)
+		{
+			Snackbar.Add("Žiadosť o učitela bolo úspešne podaná!", Severity.Success);
+		}
+		else
+		{
+			Snackbar.Add("Žiadosť už bola zaslaná na spracovanie alebo nastala chyba pri jej spracovaní.", Severity.Error);
+		}
 
 
 
-		Snackbar.Add("Žiadosť o učitela bolo úspešne podaná!", Severity.Success);
+		
 	}
 }
