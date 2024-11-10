@@ -45,4 +45,23 @@ public class UserController {
             return new ResponseEntity<>(userDto, HttpStatus.OK);
         }).orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
+
+    @PutMapping(path = "/updateUserProfile")
+    public ResponseEntity<UserDto> updateUserProfile(@RequestBody UserDto userDto, Principal connectedUser){
+        User user = userMapper.mapFromDto(userDto);
+        userService.updateProfile(user, connectedUser);
+        return new ResponseEntity<>(userDto, HttpStatus.OK);
+    }
+
+    @PatchMapping(path = "/updateEmail")
+    public ResponseEntity<UserDto> updateEmail(@RequestBody String newEmail, Principal connectedUser){
+        userService.udpateEmail(connectedUser, newEmail.trim());
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @PatchMapping(path = "/updatePassword")
+    public ResponseEntity<UserDto> updatePassword(@RequestBody String newPassword, Principal connectedUser){
+        userService.updatePassword(connectedUser, newPassword.trim());
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 }

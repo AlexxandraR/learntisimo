@@ -6,6 +6,7 @@
 @using FormInputModels.Account;
 @using FormInputModels.ManageAccount;
 @using Microsoft.AspNetCore.Components.Authorization
+@using System.Text
 
 @inject ISnackbar Snackbar
 @inject NavigationManager NavigationManager
@@ -184,6 +185,7 @@
 
 		ProfileChangeDto profileChangeDto = new()
 		{
+			Email = currentUser.Email,
 			Degree = formInputModel.Degree,
 			FirstName = formInputModel.FirstName,
 			LastName = formInputModel.LastName,
@@ -191,7 +193,24 @@
 			Description = formInputModel.Description
 		};
 
-		Snackbar.Add("Profil bol úspešne upravený!", Severity.Success);
+		var jsonContent = new StringContent(
+				JsonSerializer.Serialize(profileChangeDto),
+				Encoding.UTF8,
+				"application/json");
+
+		var httpClient = HttpClientFactory.CreateClient("API");
+		var response = await httpClient.PutAsync("/updateUserProfile", jsonContent);
+
+		if (response.IsSuccessStatusCode)
+		{
+			Snackbar.Add("Profil bol úspešne upravený!", Severity.Success);
+		}
+		else
+		{
+			Snackbar.Add("Nastala chyba servera.", Severity.Error);
+		}
+
+
 	}
 
 	async Task UpdateEmail()
@@ -204,14 +223,55 @@
 			return;
 		}
 
-		Snackbar.Add("Email bol úspešne zmenený!", Severity.Success);
+		var plainContent = new StringContent(emailChangeInputModel.NewEmail.ToString(), Encoding.UTF8, "text/plain");
+
+
+		var httpClient = HttpClientFactory.CreateClient("API");
+		var response = await httpClient.PatchAsync("updateEmail", plainContent);
+
+		if (response.IsSuccessStatusCode)
+		{
+			Snackbar.Add("Email bol úspešne zmenený!", Severity.Success);
+		}
+		else
+		{
+			Snackbar.Add("Nastala chyba servera.", Severity.Error);
+
+		}
+
 	}
 
 	async Task UpdatePassword()
 	{
-		//TODO: Update user's password via endpoint
+		if (!string.Equals(passwordChangeInputModel.NewPassword, passwordChangeInputModel.ConfirmNewPassword))
+		{
+			Snackbar.Add("Nové heslá sa nezhodujú.", Severity.Warning);
+			return;
+		}
 
-		Snackbar.Add("Heslo bolo úspešne zmenené!", Severity.Success);
+		if (string.Equals(passwordChangeInputModel.NewPassword, passwordChangeInputModel.Password))
+		{
+			Snackbar.Add("Nové heslo sa nemôže rovnať starému heslu.", Severity.Warning);
+			return;
+		}
+
+		var plainContent = new StringContent(passwordChangeInputModel.NewPassword.ToString(), Encoding.UTF8, "text/plain");
+
+
+		var httpClient = HttpClientFactory.CreateClient("API");
+		var response = await httpClient.PatchAsync("/updatePassword", plainContent);
+
+		if (response.IsSuccessStatusCode)
+		{
+			Snackbar.Add("Heslo bolo úspešne zmenené!", Severity.Success);
+		}
+		else
+		{
+			Snackbar.Add("Nastala chyba servera.", Severity.Error);
+
+		}
+
+		
 	}
 
 	async Task UploadProfilePicture(IBrowserFile e)
