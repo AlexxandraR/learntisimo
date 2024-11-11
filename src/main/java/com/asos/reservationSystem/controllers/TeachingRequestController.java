@@ -31,7 +31,7 @@ public class TeachingRequestController {
     private final Mapper<User, UserDto> userMapper;
 
 
-    private Logger logger;
+    private final Logger logger;
 
     public TeachingRequestController(TeachingRequestService requestService, Mapper<TeachingRequest, TeachingRequestDto> requestMapper, UserService userService, Mapper<User, UserDto> userMapper) {
         this.requestService = requestService;

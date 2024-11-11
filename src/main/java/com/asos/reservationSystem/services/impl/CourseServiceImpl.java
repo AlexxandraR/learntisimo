@@ -9,11 +9,9 @@ import com.asos.reservationSystem.services.CourseService;
 import com.asos.reservationSystem.services.MeetingService;
 import com.asos.reservationSystem.services.UserService;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.security.Principal;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;

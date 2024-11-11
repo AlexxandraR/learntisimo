@@ -1,7 +1,5 @@
 package com.asos.reservationSystem.services.impl;
 
-import com.asos.reservationSystem.domain.dto.MeetingDto;
-import com.asos.reservationSystem.domain.entities.Course;
 import com.asos.reservationSystem.domain.entities.Meeting;
 import com.asos.reservationSystem.domain.entities.Role;
 import com.asos.reservationSystem.domain.entities.User;
@@ -13,7 +11,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.security.Principal;
-import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 

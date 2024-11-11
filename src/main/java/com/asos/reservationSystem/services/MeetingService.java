@@ -1,7 +1,5 @@
 package com.asos.reservationSystem.services;
 
-import com.asos.reservationSystem.domain.dto.MeetingDto;
-import com.asos.reservationSystem.domain.entities.Course;
 import com.asos.reservationSystem.domain.entities.Meeting;
 import com.asos.reservationSystem.domain.entities.User;
 
