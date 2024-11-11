@@ -5,6 +5,7 @@ import com.asos.reservationSystem.domain.entities.Course;
 import com.asos.reservationSystem.domain.entities.Meeting;
 import com.asos.reservationSystem.domain.entities.User;
 
+import java.security.Principal;
 import java.util.List;
 
 public interface MeetingService {
@@ -13,11 +14,11 @@ public interface MeetingService {
 
     List<Meeting> getAllStudentMeetings(Long studentId);
 
-    void removeMeeting(Long meetingId);
+    void removeMeeting(Long meetingId, Principal connectedUser);
 
     Meeting createMeeting(Meeting meeting);
 
-    void removeStudentMeeting(Long meetingId);
+    void removeStudentMeeting(Long meetingId, Principal connectedUser);
     List<Meeting> listMeetingsCourse(Long courseId);
 
     void removeStudentFromCourseMeetings(Long courseId, Long studentId);

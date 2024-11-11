@@ -223,11 +223,23 @@
 			return;
 		}
 
-		var plainContent = new StringContent(emailChangeInputModel.NewEmail.ToString(), Encoding.UTF8, "text/plain");
+		EmailChangeDto emailChangeDto = new()
+		{
+			Email = emailChangeInputModel.Email,
+			NewEmail = emailChangeInputModel.NewEmail,
+			Password = emailChangeInputModel.Password,
+		};
+
+		var jsonContent = new StringContent(
+				JsonSerializer.Serialize(emailChangeDto),
+				Encoding.UTF8,
+				"application/json");
+
+		// var plainContent = new StringContent(emailChangeInputModel.NewEmail.ToString(), Encoding.UTF8, "text/plain");
 
 
 		var httpClient = HttpClientFactory.CreateClient("API");
-		var response = await httpClient.PatchAsync("updateEmail", plainContent);
+		var response = await httpClient.PatchAsync("updateEmail", jsonContent);
 
 		if (response.IsSuccessStatusCode)
 		{
@@ -254,12 +266,22 @@
 			Snackbar.Add("Nové heslo sa nemôže rovnať starému heslu.", Severity.Warning);
 			return;
 		}
+		PasswordChangeDto passwordDto = new()
+		{
+				Password = passwordChangeInputModel.Password,
+				NewPassword = passwordChangeInputModel.NewPassword
+		};
 
-		var plainContent = new StringContent(passwordChangeInputModel.NewPassword.ToString(), Encoding.UTF8, "text/plain");
+		var jsonContent = new StringContent(
+				JsonSerializer.Serialize(passwordDto),
+				Encoding.UTF8,
+				"application/json");
+
+		// var plainContent = new StringContent(passwordChangeInputModel.NewPassword.ToString(), Encoding.UTF8, "text/plain");
 
 
 		var httpClient = HttpClientFactory.CreateClient("API");
-		var response = await httpClient.PatchAsync("/updatePassword", plainContent);
+		var response = await httpClient.PatchAsync("/updatePassword", jsonContent);
 
 		if (response.IsSuccessStatusCode)
 		{
