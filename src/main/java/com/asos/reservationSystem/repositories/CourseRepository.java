@@ -9,7 +9,6 @@ import java.util.Optional;
 
 @Repository
 public interface CourseRepository extends CrudRepository<Course, Long> {
-    Optional<List<Course>> findAllByTeacher_Id(Long teacherId);
-    Optional<List<Course>> findAllByTeacher_Email(String teacherEmail);
-    Optional<List<Course>> findAllByStudents_Id(Long studentId);
+    List<Course> findByTeacherId(Long teacherId);
+    List<Course> findByStudentsId(Long studentId);
 }

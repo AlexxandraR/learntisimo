@@ -156,21 +156,28 @@
 
 	protected override async Task OnInitializedAsync()
 	{
-		// TODO: Fetch data from ENDPOINT
-
 		var httpClient = HttpClientFactory.CreateClient("API");
-		var currentUser = await getcurrentUser(httpClient); 
-
-		var plainContent = new StringContent(currentUser.Id.ToString(), Encoding.UTF8, "text/plain");
-		var meetingsResponse = await httpClient.PostAsync("meetingsTeacher", plainContent);
+		var meetingsResponse = await httpClient.GetAsync("teacherMeetings");
 		List<MeetingDto> allMeetings = new();
-
+        var errorMessage = await meetingsResponse.Content.ReadAsStringAsync();
 		if (meetingsResponse.IsSuccessStatusCode)
 		{
 			var meetingsJson = await meetingsResponse.Content.ReadAsStringAsync();
 
 			allMeetings = JsonSerializer.Deserialize<List<MeetingDto>>(meetingsJson);
 		}
+		else if (errorMessage == "User does not exist.")
+        {
+            Snackbar.Add("Učiteľ neexistuje.", Severity.Error);
+        }
+        else if (errorMessage == "Only teacher can use this endpoint: /teacherMeetings.")
+        {
+            Snackbar.Add("Iba učiteľ môže pristupovať na tento endpoint: /teacherMeetings.", Severity.Error);
+        }
+        else
+        {
+            Snackbar.Add("Nastala chyba pri zobrazení vašich termínov. Skúste to znova neskôr.", Severity.Error);
+        }
 
 		meetingsList = allMeetings;
 		
@@ -221,34 +228,35 @@
 	async Task RemoveTermin(MeetingDto meeting)
 	{
 		var httpClient = HttpClientFactory.CreateClient("API");
-
-		// Send DELETE request with meeting ID in the URL
 		var response = await httpClient.DeleteAsync($"removeMeeting/{meeting.Id}");
-
+        var errorMessage = await response.Content.ReadAsStringAsync();
 		if (response.IsSuccessStatusCode)
 		{
+		    meetingsList.Remove(meeting);
 			filteredMeetingsList.Remove(meeting);
 			Snackbar.Add("Termín bol úspešne zrušený.", Severity.Success);
 			await dataList.Reload();
 		}
-		else if (response.StatusCode == HttpStatusCode.NotFound)
-		{
-			Snackbar.Add("Termín neexistuje.", Severity.Error);
-		}
-		else if (response.StatusCode == HttpStatusCode.Conflict)
-		{
-			Snackbar.Add("Meeting cannot be removed due to data integrity violation.", Severity.Error);
-		}
-		else
-		{
-			Snackbar.Add("Chyba na strane servera", Severity.Error);
-		}
+		else if (errorMessage == "Teacher does not exist.")
+        {
+            Snackbar.Add("Učiteľ neexistuje.", Severity.Error);
+        }
+        else if (errorMessage == "Meeting does not exist.")
+        {
+            Snackbar.Add("Termín neexistuje.", Severity.Error);
+        }
+        else if (errorMessage == "Only teacher can delete meeting.")
+        {
+            Snackbar.Add("Iba učiteľ môže odstrániť termín.", Severity.Error);
+        }
+        else
+        {
+            Snackbar.Add("Nastala chyba pri zrušení termínu. Skúste to znova neskôr.", Severity.Error);
+        }
 	}
 
 	async Task CreateTermin()
 	{
-		// TODO: ADD via ENDPOINT (ASSIGN TEACHER ON BACKEND)
-
 		var options = new Radzen.DialogOptions()
 			{
 				Resizable = false,
@@ -265,7 +273,7 @@
 			var httpClient = HttpClientFactory.CreateClient("API");
 			var jsonContent = new StringContent(JsonSerializer.Serialize(newMeeting), Encoding.UTF8, "application/json");
 			var response = await httpClient.PostAsync("createMeeting", jsonContent);
-
+            var errorMessage = await response.Content.ReadAsStringAsync();
 			if (response.IsSuccessStatusCode)
 			{
 				var jsonResponse = await response.Content.ReadAsStringAsync();
@@ -274,12 +282,32 @@
 				ApplyFilters(); // Apply filters to update the filteredMeetingsList
 				await dataList.Reload();
 				Snackbar.Add("Termín bol úspešne vytvorený.", Severity.Success);
-				StateHasChanged();
+				//StateHasChanged();
 			}
-			else
-			{
-				Snackbar.Add("Chyba pri vytváraní termínu.", Severity.Error);
-			}
+			else if (errorMessage == "Meeting is null.")
+            {
+                Snackbar.Add("Nesprávne vyplnené dáta pre vytvorenie termínu.", Severity.Error);
+            }
+            else if (errorMessage == "Teacher does not exist.")
+            {
+                Snackbar.Add("Učiteľ neexistuje.", Severity.Error);
+            }
+            else if (errorMessage == "Only teacher can create meeting.")
+            {
+                Snackbar.Add("Iba učiteľ môže vytvárať termín.", Severity.Error);
+            }
+            else if (errorMessage == "Cannot schedule meeting in the past.")
+                {
+                    Snackbar.Add("Nemôžete vytvoriť termín so začiatkom v minulosti.", Severity.Error);
+                }
+            else if (errorMessage == "Teacher has another meeting at this time.")
+                {
+                    Snackbar.Add("V tomto čase už máte naplánovaný termín", Severity.Error);
+                }
+            else
+            {
+                Snackbar.Add("Nastala chyba pri vytvorení termínu. Skúste to znova neskôr.", Severity.Error);
+            }
 		}
 	}
 

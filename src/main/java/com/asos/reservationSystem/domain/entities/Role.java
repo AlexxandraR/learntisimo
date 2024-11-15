@@ -9,19 +9,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.asos.reservationSystem.domain.entities.Permission.*;
-
 @RequiredArgsConstructor
 public enum Role {
     STUDENT(Collections.emptySet()),
     TEACHER(Collections.emptySet()),
-    ADMIN( Collections.emptySet()
-//            Set.of(
-//                    ADMIN_READ,
-//                    ADMIN_UPDATE,
-//                    ADMIN_DELETE,
-//                    ADMIN_CREATE
-//            )
+    ADMIN(Collections.emptySet()
     );
 
     @Getter

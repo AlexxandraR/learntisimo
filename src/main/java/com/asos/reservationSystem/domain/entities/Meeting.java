@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name="meetings")
+@Table(name = "meetings")
 public class Meeting {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "meeting_id_seq")

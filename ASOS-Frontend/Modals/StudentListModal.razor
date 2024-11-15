@@ -16,6 +16,8 @@
 
 <RadzenStack Style="gap:20px; min-width:250px; max-width:900px; height:100%;">
 	<RadzenDataGrid Data="@Course.Students" PagerPosition="PagerPosition.Bottom" PagerAlwaysVisible AllowColumnResize AllowPaging="true" AllowSorting="true" Style="height:100%">
+		<EmptyTemplate>
+		</EmptyTemplate>
 		<Columns>
 			<RadzenDataGridColumn Property="FirstName" Title="Meno" MinWidth="100px" />
 			<RadzenDataGridColumn Property="LastName" Title="Priezvisko" MinWidth="100px" />

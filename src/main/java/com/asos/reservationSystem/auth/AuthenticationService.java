@@ -119,9 +119,8 @@ public class AuthenticationService {
                         .refreshToken(refreshToken)
                         .build();
                 new ObjectMapper().writeValue(response.getOutputStream(), authResponse);
-            }
-            else{
-                //TODO: vynimka
+            } else {
+                //throw new CustomException("Authorization has expired.", "Authorization: Authorization has expired.", HttpStatus.FORBIDDEN);
                 return;
             }
         }

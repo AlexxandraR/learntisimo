@@ -106,58 +106,29 @@
 
 	protected override async Task OnInitializedAsync()
 	{
-		// TODO: Fetch data from ENDPOINT
-
 		var httpClient = HttpClientFactory.CreateClient("API");
-		var currentUser = await getcurrentUser(httpClient);
 
-		/* Netusim na co tu su ti studenti, na stranke mi ich neukazuje (alebo som retardovany a nevidim to)
-					UserDto student1 = new UserDto
-					{
-					Id = 2,
-					FirstName = "Janko",
-					LastName = "Hraško",
-					Email = "janko.hrasko@zoznam.sk",
-			PhoneNumber = "+421 911 123 456"
-					};
-
-					UserDto student2 = new UserDto
-					{
-					Id = 2,
-					FirstName = "Peter",
-					LastName = "Marcinek",
-					Email = "peter.marcinek@protonmail.com",
-				PhoneNumber = "+421 911 654 321"
-				};
-
-				UserDto student3 = new UserDto
-					{
-					Id = 2,
-					FirstName = "Alžbeta",
-					LastName = "Chudá",
-					Email = "alzbetka-chuda@azet.sk",
-					PhoneNumber = "+421 925 622 381"
-			};
-
-			UserDto student4 = new UserDto
-					{
-					Id = 2,
-					FirstName = "František",
-					LastName = "Poničan",
-					Email = "franto-pony@stuba.sk",
-					PhoneNumber = "+421 903 721 455"
-				};
-		*/
-		var plainContent = new StringContent(currentUser.Id.ToString(), Encoding.UTF8, "text/plain");
-		var coursesResponse = await httpClient.PostAsync("courseTeacher", plainContent);
+		var coursesResponse = await httpClient.GetAsync("teacherCourses");
 		List<CourseDto> allCourses = new();
-
+        var errorMessage = await coursesResponse.Content.ReadAsStringAsync();
 		if (coursesResponse.IsSuccessStatusCode)
 		{
 			var coursesJson = await coursesResponse.Content.ReadAsStringAsync();
 
 			allCourses = JsonSerializer.Deserialize<List<CourseDto>>(coursesJson);
 		}
+		else if (errorMessage == "User does not exist.")
+        {
+            Snackbar.Add("Používateľ neexistuje.", Severity.Error);
+        }
+        else if (errorMessage == "Only teacher can use this endpoint: /teacherCourses.")
+        {
+            Snackbar.Add("Iba učiteľ môže pristupovať na tento endpoint: /teacherCourses.", Severity.Error);
+        }
+        else
+        {
+            Snackbar.Add("Nastala chyba pri zobrazení vašich doučovaní. Skúste to znova neskôr.", Severity.Error);
+        }
 
 		myCoursesList = allCourses;
 
@@ -180,34 +151,35 @@
 	{
 		var httpClient = HttpClientFactory.CreateClient("API");
 
-		// Send DELETE request with course ID in the URL
 		var coursesResponse = await httpClient.DeleteAsync($"removeCourse/{myDoucovanie.Id}");
-
+        var errorMessage = await coursesResponse.Content.ReadAsStringAsync();
 		if (coursesResponse.IsSuccessStatusCode)
 		{
 			filteredMyCoursesList.Remove(myDoucovanie);
 			Snackbar.Add("Doučovanie bolo úspešne zrušené.", Severity.Success);
 		}
-		else if (coursesResponse.StatusCode == HttpStatusCode.NotFound)
-		{
-			Snackbar.Add("Doučovanie neexistuje.", Severity.Error);
-		}
-		else if (coursesResponse.StatusCode == HttpStatusCode.Conflict)
-		{
-			Snackbar.Add("Doucovanie má naplánované stretnutia, ktoré musíte zrušiť na jeho odstránenie.", Severity.Error);
-		}
-		else
-		{
-			Snackbar.Add("Chyba na strane servera", Severity.Error);
-		}
+		else if (errorMessage == "Teacher does not exist.")
+        {
+            Snackbar.Add("Učiteľ neexistuje.", Severity.Error);
+        }
+        else if (errorMessage == "Course does not exist.")
+        {
+            Snackbar.Add("Doučovanie neexistuje.", Severity.Error);
+        }
+        else if (errorMessage == "Only teacher can delete course.")
+        {
+            Snackbar.Add("Iba učiteľ môže odstrániť doučovanie.", Severity.Error);
+        }
+        else
+        {
+            Snackbar.Add("Nastala chyba pri zrušení doučovania. Skúste to znova neskôr.", Severity.Error);
+        }
 
 		await dataList.Reload();
 	}
 
 	async Task CreateDoucovanie()
 	{
-		// TODO: Add via ENDPOINT (assing teacher to course)
-
 		var options = new Radzen.DialogOptions()
 			{
 				Resizable = false,
@@ -223,9 +195,7 @@
 		{
 
 			var httpClient = HttpClientFactory.CreateClient("API");
-			var currentUser = await getcurrentUser(httpClient);
 
-			newCourse.Teacher = currentUser;
 			newCourse.Students = new List<UserDto>();
 			// Test
 			var jsonContent = new StringContent(
@@ -234,16 +204,30 @@
 				"application/json");
 
 			var coursesResponse = await httpClient.PostAsync("createCourse", jsonContent);
-			// End test
+			var errorMessage = await coursesResponse.Content.ReadAsStringAsync();
 			if (coursesResponse.IsSuccessStatusCode)
 			{
 				var jsonResponse = await coursesResponse.Content.ReadAsStringAsync();
 				var courseResponse = JsonSerializer.Deserialize<CourseDto>(jsonResponse);
 				myCoursesList.Add(courseResponse);
 				Snackbar.Add("Doučovanie bolo úspešne vytvorené.", Severity.Success);
-			}else{
-				Snackbar.Add("Unable to create Course.", Severity.Error);
 			}
+			else if (errorMessage == "Course is null.")
+            {
+                Snackbar.Add("Nesprávne vyplnené dáta pre vytvorenie doučovania.", Severity.Error);
+            }
+            else if (errorMessage == "Teacher does not exist.")
+            {
+                Snackbar.Add("Učiteľ neexistuje.", Severity.Error);
+            }
+            else if (errorMessage == "Only teacher can create course.")
+            {
+                Snackbar.Add("Iba učiteľ môže vytvárať doučovanie.", Severity.Error);
+            }
+            else
+            {
+                Snackbar.Add("Nastala chyba pri vytvorení doučovania. Skúste to znova neskôr.", Severity.Error);
+            }
 
 			await dataList.Reload();
 

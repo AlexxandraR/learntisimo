@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
@@ -18,9 +19,14 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(CustomException.class)
-    public ResponseEntity handleCustomException(final CustomException ex){
+    public ResponseEntity handleCustomException(final CustomException ex) {
         logger.error(ex.getLoggingMessage() + " Time: " + LocalDateTime.now());
-        return new ResponseEntity<>(ex.getMessage(), ex.getStatus());
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
     }
 
+//    @ExceptionHandler(UsernameNotFoundException.class)
+//    public ResponseEntity handleUsernameNotFoundException(final UsernameNotFoundException ex) {
+//        logger.error(ex.getMessage() + " Time: " + LocalDateTime.now());
+//        return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
+//    }
 }

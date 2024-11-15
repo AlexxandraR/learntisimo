@@ -224,10 +224,9 @@
 
 	protected override async Task OnInitializedAsync()
 	{
-		// TODO: Fetch data from ENDPOINT
-
 		var httpClient = HttpClientFactory.CreateClient("API");
 		var response = await httpClient.GetAsync("/getTeachingRequests");
+		var errorMessage = await response.Content.ReadAsStringAsync();
 		List<RequestDto> parsedRequestList = new();
 
 		if (response.IsSuccessStatusCode)
@@ -235,7 +234,18 @@
 			var jsonStringData = await response.Content.ReadAsStringAsync();
 			parsedRequestList = JsonSerializer.Deserialize<List<RequestDto>>(jsonStringData);		
 		}
-
+		else if (errorMessage == "User does not exist.")
+        {
+            Snackbar.Add("Používateľ neexistuje.", Severity.Error);
+        }
+        else if (errorMessage == "Only admin can get teaching requests.")
+        {
+            Snackbar.Add("Iba admin môže vidieť žiadosti o učiteľský status.", Severity.Error);
+        }
+        else
+        {
+            Snackbar.Add("Nastala chyba pri prezeraní žiadosťi. Skúste to znova neskôr.", Severity.Error);
+        }
 		requestsList = parsedRequestList;
 		filteredRequestsList = requestsList;
 	}
@@ -312,7 +322,6 @@
 
 	async Task AcceptRequest(RequestDto request)
 	{
-		//TODO: Elevate privilege to be a teacher
 		var jsonContent = new StringContent(
 				JsonSerializer.Serialize(request.User),
 				Encoding.UTF8,
@@ -320,7 +329,7 @@
 
 		var httpClient = HttpClientFactory.CreateClient("API");
 		var response = await httpClient.PatchAsync($"/acceptRequest/{request.Id}", jsonContent);
-
+        var errorMessage = await response.Content.ReadAsStringAsync();
 		if (response.IsSuccessStatusCode)
 		{
 			Snackbar.Add("Žiadosť bola schválená.", Severity.Success);
@@ -331,19 +340,30 @@
 			}
 			ApplyFilters();
 		}
-		else
-		{
-			
-			Snackbar.Add("Akcia nebola spracovaná.", Severity.Error);
-		}
-
-
-
+		else if (errorMessage == "User does not exist.")
+        {
+            Snackbar.Add("Používateľ neexistuje.", Severity.Error);
+        }
+        else if (errorMessage == "Only admin can update teaching request status.")
+        {
+            Snackbar.Add("Iba admin môže schvaľovať žiadosti o učiteľský status.", Severity.Error);
+        }
+        else if (errorMessage == "Teaching request already approved.")
+        {
+            Snackbar.Add("Žiadosť už bola schválená.", Severity.Error);
+        }
+        else if (errorMessage == "Teaching request not found.")
+        {
+            Snackbar.Add("Žiadosť neexistuje.", Severity.Error);
+        }
+        else
+        {
+            Snackbar.Add("Nastala chyba pri schvaľovaní žiadosťi. Skúste to znova neskôr.", Severity.Error);
+        }
 	}
 
 	async Task DenyRequest(RequestDto request)
 	{
-		//TODO: Deny request to be a teacher
 		var jsonContent = new StringContent(
 				JsonSerializer.Serialize(request.User),
 				Encoding.UTF8,
@@ -351,7 +371,7 @@
 
 		var httpClient = HttpClientFactory.CreateClient("API");
 		var response = await httpClient.PatchAsync($"/denyRequest/{request.Id}", jsonContent);
-
+        var errorMessage = await response.Content.ReadAsStringAsync();
 		if (response.IsSuccessStatusCode)
 		{
 			Snackbar.Add("Žiadosť bola zamietnutá.", Severity.Success);
@@ -362,12 +382,25 @@
 			}
 			ApplyFilters();
 		}
-		else
-		{
-			Snackbar.Add("Akcia nebola spracovaná.", Severity.Error);
-		}
-
-
-		
+		else if (errorMessage == "User does not exist.")
+        {
+            Snackbar.Add("Používateľ neexistuje.", Severity.Error);
+        }
+        else if (errorMessage == "Only admin can update teaching request status.")
+        {
+            Snackbar.Add("Iba admin môže schvaľovať/zamietať žiadosti o učiteľský status.", Severity.Error);
+        }
+        else if (errorMessage == "Teaching request already rejected.")
+        {
+            Snackbar.Add("Žiadosť už bola zamietnutá.", Severity.Error);
+        }
+        else if (errorMessage == "Teaching request not found.")
+        {
+            Snackbar.Add("Žiadosť neexistuje.", Severity.Error);
+        }
+        else
+        {
+            Snackbar.Add("Nastala chyba pri zamietnutí žiadosťi. Skúste to znova neskôr.", Severity.Error);
+        }
 	}
 }

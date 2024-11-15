@@ -12,13 +12,9 @@ public interface CourseService {
 
     Optional<Course> assignToCourse(Optional<User> user, Long courseId);
     Optional<Course> deleteFromCourse(Optional<User> user, Long courseId);
-    List<Course> getAllTeacherCourses(Long teacherId);
+    List<Course> getTeacherCourses(Optional<User> user);
+    List<Course> getStudentCourses(Optional<User> user);
+    Course saveCourse(Optional<User> user, Course course);
 
-    List<Course> getAllStudentCourses(Long l);
-
-    Course saveCourse(Course course);
-
-    void removeCourse(Long courseId, Principal connectedUser);
-
-    List<Course> getAllTeacherCoursesByEmail(String teacherEmail);
+    void removeCourse(Long courseId, Optional<User> user);
 }

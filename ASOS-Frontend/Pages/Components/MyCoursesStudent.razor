@@ -138,24 +138,29 @@
 
 	protected override async Task OnInitializedAsync()
 	{
-		// TODO: Fetch data from ENDPOINT
-
 		var httpClient = HttpClientFactory.CreateClient("API");
-		var currentUser = await getcurrentUser(httpClient);
 
-
-		// Test
-		var plainContent = new StringContent(currentUser.Id.ToString(), Encoding.UTF8, "text/plain");
-		var coursesResponse = await httpClient.PostAsync("courseStudent", plainContent);
+		var coursesResponse = await httpClient.GetAsync("studentCourses");
 		List<CourseDto> allCourses = new();
-
+        var errorMessage = await coursesResponse.Content.ReadAsStringAsync();
 		if (coursesResponse.IsSuccessStatusCode)
 		{
 			var coursesJson = await coursesResponse.Content.ReadAsStringAsync();
 
 			allCourses = JsonSerializer.Deserialize<List<CourseDto>>(coursesJson);
 		}
-		// End test
+        else if (errorMessage == "User does not exist.")
+        {
+            Snackbar.Add("Študent neexistuje.", Severity.Error);
+        }
+        else if (errorMessage == "Only student can use this endpoint: /studentCourses.")
+        {
+            Snackbar.Add("Iba študent môže pristupovať na tento endpoint: /studentCourses.", Severity.Error);
+        }
+        else
+        {
+            Snackbar.Add("Nastala chyba pri zobrazení vašich doučovaní. Skúste to znova neskôr.", Severity.Error);
+        }
 		myCoursesList = allCourses;
 
 		filteredMyCoursesList = myCoursesList;
@@ -196,46 +201,37 @@
 
 	async Task RemoveDoucovanie(CourseDto myCourse)
 	{
-		try
-		{
-			//TODO Remove student from all the course meetings if he is assigned to any for this course
-			var httpClient = HttpClientFactory.CreateClient("API");
+        var httpClient = HttpClientFactory.CreateClient("API");
 
-			var response = await httpClient.DeleteAsync($"deleteFromCourse/{myCourse.Id}");
+        var response = await httpClient.DeleteAsync($"deleteFromCourse/{myCourse.Id}");
+        var errorMessage = await response.Content.ReadAsStringAsync();
+        if (response.IsSuccessStatusCode)
+        {
+            Snackbar.Add("Odpísanie prebehlo úspešne!", Severity.Success);
 
-			if (response.IsSuccessStatusCode)
-			{
-				Snackbar.Add("Odpísanie prebehlo úspešne!", Severity.Success);
-
-				filteredMyCoursesList.Remove(myCourse);
-				return;
-			}
-			var errorMessage = await response.Content.ReadAsStringAsync();
-			if (errorMessage == "Course does not exist.")
-			{
-				Snackbar.Add("Kurz neexistuje.", Severity.Error);
-			}
-			else if (errorMessage == "User does not exist.")
-			{
-				Snackbar.Add("Používateľ neexistuje.", Severity.Error);
-			}
-			else if (errorMessage == "User was not assigned to this course.")
-			{
-				Snackbar.Add("Používateľ nebol do daného kurzu zapísaný.", Severity.Error);
-			}
-			else if(errorMessage == "Only student can be removed from a course.")
-			{
-				Snackbar.Add("Iba študent sa môže odpísať z kurzu.", Severity.Error);
-			}
-			else
-			{
-				Snackbar.Add("Nastala chyba pri odpísaní z kurzu. Skúste to znova neskôr.", Severity.Error);
-			}
-		}
-		catch (Exception ex)
-		{
-			Snackbar.Add($"Došlo ku neočakávanej chybe.");
-		}
+            filteredMyCoursesList.Remove(myCourse);
+            return;
+        }
+        else if (errorMessage == "Course does not exist.")
+        {
+            Snackbar.Add("Doučovanie neexistuje.", Severity.Error);
+        }
+        else if (errorMessage == "User does not exist.")
+        {
+            Snackbar.Add("Študent neexistuje.", Severity.Error);
+        }
+        else if (errorMessage == "User was not assigned to this course.")
+        {
+            Snackbar.Add("Už nie ste do daného doučovania zapísaný.", Severity.Error);
+        }
+        else if(errorMessage == "Only student can be removed from a course.")
+        {
+            Snackbar.Add("Iba študent sa môže odpísať z doučovania.", Severity.Error);
+        }
+        else
+        {
+            Snackbar.Add("Nastala chyba pri odpísaní z doučovania. Skúste to znova neskôr.", Severity.Error);
+        }
 	}
 
 	async Task OpenTeacherModal(UserDto teacher)
@@ -275,26 +271,27 @@
 
 		var result = await DialogService.OpenAsync<AvailableMeetingsModal>("Dostupné termíny", parameters, options);
 
-		if (result is MeetingDto meeting)
+        if (result is MeetingDto meeting)
 		{
-			//TODO: Add student to meeting via ENDPOINT
-
 			var httpClient = HttpClientFactory.CreateClient("API");
-			var currentUser = await getcurrentUser(httpClient);
-
-			// Test
-			var coursesResponse = await httpClient.GetAsync($"meetingStudentAdd/{meeting.Id}");
+			var coursesResponse = await httpClient.PatchAsync($"addStudentToMeeting/{meeting.Id}", new StringContent(string.Empty));
+			var errorMessage = await coursesResponse.Content.ReadAsStringAsync();
 			if(coursesResponse.IsSuccessStatusCode)
 			{
-				Snackbar.Add("Doučovanie bolo úspešne naplánované.", Severity.Success);
+				Snackbar.Add("Termín bol úspešne naplánovaný.", Severity.Success);
 			}
-			else
-			{
-				Snackbar.Add("Doučovanie sa nepodarilo naplánovať", Severity.Success);
-			}
-			// End test
-
-
+			else if (errorMessage == "User does not exist.")
+            {
+                Snackbar.Add("Študent neexistuje.", Severity.Error);
+            }
+            else if (errorMessage == "Meeting does not exist.")
+            {
+                Snackbar.Add("Termín neexistuje.", Severity.Error);
+            }
+            else if (errorMessage == "Only student can assign to meeting.")
+            {
+                Snackbar.Add("Iba študent sa môže zapísať na termín.", Severity.Error);
+            }
 		}
 	}
 

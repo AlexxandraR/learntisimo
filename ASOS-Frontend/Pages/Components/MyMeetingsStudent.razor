@@ -146,135 +146,30 @@
 
 	protected override async Task OnInitializedAsync()
 	{
-		// TODO: Fetch data from ENDPOINT
-
 		var httpClient = HttpClientFactory.CreateClient("API");
-		var currentUser = await getcurrentUser(httpClient);
-
-		// var student = currentUser;
-
-		var plainContent = new StringContent(currentUser.Id.ToString(), Encoding.UTF8, "text/plain");
-		var meetingsResponse = await httpClient.PostAsync("meetingsStudent", plainContent);
+		var meetingsResponse = await httpClient.GetAsync("studentMeetings");
 		List<MeetingDto> allMeetings = new();
-
+        var errorMessage = await meetingsResponse.Content.ReadAsStringAsync();
 		if (meetingsResponse.IsSuccessStatusCode)
 		{
 			var meetingsJson = await meetingsResponse.Content.ReadAsStringAsync();
 
 			allMeetings = JsonSerializer.Deserialize<List<MeetingDto>>(meetingsJson);
 		}
+		else if (errorMessage == "User does not exist.")
+        {
+            Snackbar.Add("Študent neexistuje.", Severity.Error);
+        }
+        else if (errorMessage == "Only student can use this endpoint: /studentMeetings.")
+        {
+            Snackbar.Add("Iba študent môže pristupovať na tento endpoint: /studentMeetings.", Severity.Error);
+        }
+        else
+        {
+            Snackbar.Add("Nastala chyba pri zobrazení vašich termínov. Skúste to znova neskôr.", Severity.Error);
+                }
 
 		meetingsList = allMeetings;
-
-		// UserDto teacher = new UserDto
-		// 	{
-		// 		Degree = "Ing.",
-		// 		FirstName = "Peter",
-		// 		LastName = "Dobrák",
-		// 		Email = "peter.dobrak@gmail.com",
-		// 		PhoneNumber = "+421 911 123 456"
-		// 	};
-
-		// UserDto teacher2 = new UserDto
-		// 	{
-		// 		Degree = "prof.",
-		// 		FirstName = "Juraj",
-		// 		LastName = "Petriska",
-		// 		Email = "juraj.petriska@gmail.com",
-		// 		PhoneNumber = "+421 911 796 158"
-		// 	};
-
-		// UserDto teacher3 = new UserDto
-		// 	{
-		// 		Degree = "PhDr.",
-		// 		FirstName = "Slavomíra",
-		// 		LastName = "Lučanská",
-		// 		Email = "slavomira.lucanska@gmail.com",
-		// 		PhoneNumber = "+421 908 455 179"
-		// 	};
-
-		// CourseDto math = new CourseDto
-		// 	{
-		// 		Id = 1,
-		// 		Name = "Matematika",
-		// 		Price = 10,
-		// 		Room = "AB-30",
-		// 		Teacher = teacher,
-		// 		Students = new List<UserDto>
-		// 	{
-		// 		student
-		// 	}
-		// 	};
-
-		// CourseDto physics = new CourseDto
-		// 	{
-		// 		Id = 2,
-		// 		Name = "Fyzika",
-		// 		Price = 10,
-		// 		Room = "BC-30",
-		// 		Teacher = teacher2,
-		// 		Students = new List<UserDto>
-		// 	{
-		// 		student
-		// 	}
-		// 	};
-
-		// CourseDto informatics = new CourseDto
-		// 	{
-		// 		Id = 3,
-		// 		Name = "Informatika",
-		// 		Price = 10,
-		// 		Room = "CD-30",
-		// 		Teacher = teacher3,
-		// 		Students = new List<UserDto>
-		// 	{
-		// 		student
-		// 	}
-		// 	};
-
-		// meetingsList = new List<MeetingDto>
-		// {
-		// 	new MeetingDto
-		// 	{
-		// 		Beginning = new DateTime(2024, 3, 10, 12, 30, 0),
-		// 		Duration = 60,
-		// 		Course = math,
-		// 		Teacher = teacher,
-		// 		Student = student
-		// 	},
-		// 	new MeetingDto
-		// 	{
-		// 		Beginning = new DateTime(2024, 12, 12, 12, 5, 0),
-		// 		Duration = 60,
-		// 		Course = math,
-		// 		Teacher = teacher,
-		// 		Student = student
-		// 	},
-		// 	new MeetingDto
-		// 	{
-		// 		Beginning = new DateTime(2024, 1, 10, 12, 15, 0),
-		// 		Duration = 75,
-		// 		Course = physics,
-		// 		Teacher = teacher2,
-		// 		Student = student
-		// 	},
-		// 	new MeetingDto
-		// 	{
-		// 		Beginning = new DateTime(2024, 11, 18, 8, 0, 0),
-		// 		Duration = 75,
-		// 		Course = physics,
-		// 		Teacher = teacher2,
-		// 		Student = student
-		// 	},
-		// 	new MeetingDto
-		// 	{
-		// 		Beginning = new DateTime(2024, 10, 18, 15, 0, 0),
-		// 		Duration = 120,
-		// 		Course = informatics,
-		// 		Teacher = teacher3,
-		// 		Student = null
-		// 	}
-		// };
 
 		filteredMeetingsList = meetingsList
 			.Where(x => x.Beginning.Date > DateTime.Now.Date)
@@ -321,28 +216,35 @@
 	async Task RemoveMeeting(MeetingDto meeting)
 	{
 		var httpClient = HttpClientFactory.CreateClient("API");
-
-		var plainContent = new StringContent(meeting.Id.ToString(), Encoding.UTF8, "text/plain");
-		var response = await httpClient.PutAsync($"removeStudentMeeting", plainContent);
-
+        var response = await httpClient.DeleteAsync($"removeStudentMeeting/{meeting.Id}");
+        var errorMessage = await response.Content.ReadAsStringAsync();
 		if (response.IsSuccessStatusCode)
 		{
+			meetingsList.Remove(meeting);
 			filteredMeetingsList.Remove(meeting);
 			Snackbar.Add("Termín bol úspešne zrušený.", Severity.Success);
 			await dataList.Reload();
 		}
-		else if (response.StatusCode == HttpStatusCode.NotFound)
-		{
-			Snackbar.Add("Termín neexistuje.", Severity.Error);
-		}
-		else if (response.StatusCode == HttpStatusCode.Conflict)
-		{
-			Snackbar.Add("Meeting cannot be removed due to data integrity violation.", Severity.Error);
-		}
-		else
-		{
-			Snackbar.Add("Chyba na strane servera", Severity.Error);
-		}
+		else if (errorMessage == "Meeting does not exist.")
+        {
+            Snackbar.Add("Termín neexistuje.", Severity.Error);
+        }
+        else if (errorMessage == "User does not exist.")
+        {
+            Snackbar.Add("Študent neexistuje.", Severity.Error);
+        }
+        else if (errorMessage == "User was not assigned to this meeting.")
+        {
+            Snackbar.Add("Už nie ste do daného termínu zapísaný.", Severity.Error);
+        }
+        else if(errorMessage == "Only student can be removed from a meeting.")
+        {
+            Snackbar.Add("Iba študent sa môže odpísať z termínu.", Severity.Error);
+        }
+        else
+        {
+            Snackbar.Add("Nastala chyba pri odpísaní z termínu. Skúste to znova neskôr.", Severity.Error);
+        }
 	}
 
 

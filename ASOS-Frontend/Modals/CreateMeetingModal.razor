@@ -9,6 +9,7 @@
 @inject Radzen.DialogService DialogService
 @inject IHttpClientFactory HttpClientFactory
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@inject ISnackbar Snackbar
 
 <RadzenStack Style="gap:20px; min-width:250px; max-width:350px; margin:auto;">
     <EditForm Model="formInputModel" OnValidSubmit="ReturnCreatedMeeting">
@@ -44,46 +45,26 @@
 
     protected override async Task OnInitializedAsync()
     {
-        Console.WriteLine("OnInitializedAsync triggered");
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        var user = authState.User;
-
-        if (user.Identity != null && user.Identity.IsAuthenticated)
+        var httpClient = HttpClientFactory.CreateClient("API");
+        var coursesResponse = await httpClient.GetAsync("teacherCourses");
+        var errorMessage = await coursesResponse.Content.ReadAsStringAsync();
+        if (coursesResponse.IsSuccessStatusCode)
         {
-            Console.WriteLine("User is authenticated");
-            foreach (var claim in user.Claims)
-            {
-                Console.WriteLine($"Claim Type: {claim.Type}, Claim Value: {claim.Value}");
-            }
-
-            var userIdClaim = user.FindFirst(c => c.Type == ClaimTypes.Email);
-            if (userIdClaim != null)
-            {
-                Console.WriteLine($"User ID Claim found: {userIdClaim.Value}");
-                var httpClient = HttpClientFactory.CreateClient("API");
-                var plainContent = new StringContent(userIdClaim.Value, Encoding.UTF8, "text/plain");
-                var coursesResponse = await httpClient.PostAsync("courseTeacherEmail", plainContent);
-
-                if (coursesResponse.IsSuccessStatusCode)
-                {
-                    var coursesJson = await coursesResponse.Content.ReadAsStringAsync();
-                    courses = System.Text.Json.JsonSerializer.Deserialize<List<CourseDto>>(coursesJson);
-                    subjects = courses.Select(c => c.Name).Distinct().ToList();
-                    Console.WriteLine("Subjects fetched: " + string.Join(", ", subjects));
-                }
-                else
-                {
-                    Console.WriteLine("Failed to fetch courses: " + coursesResponse.StatusCode);
-                }
-            }
-            else
-            {
-                Console.WriteLine("User ID claim not found");
-            }
+            var coursesJson = await coursesResponse.Content.ReadAsStringAsync();
+            courses = System.Text.Json.JsonSerializer.Deserialize<List<CourseDto>>(coursesJson);
+            subjects = courses.Select(c => c.Name).Distinct().ToList();
+        }
+        else if (errorMessage == "User does not exist.")
+        {
+            Snackbar.Add("Používateľ neexistuje.", Severity.Error);
+        }
+        else if (errorMessage == "Only teacher can use this endpoint: /teacherCourses.")
+        {
+            Snackbar.Add("Iba učiteľ môže pristupovať na tento endpoint: /teacherCourses.", Severity.Error);
         }
         else
         {
-            Console.WriteLine("User is not authenticated");
+            Snackbar.Add("Nastala chyba pri zobrazení vašich doučovaní. Skúste to znova neskôr.", Severity.Error);
         }
     }
 
@@ -98,23 +79,6 @@
         };
         DialogService.Close(newMeeting);
     }
-
-	@* async Task<UserDto> getStudent(string email)
-	{
-		var httpClient = HttpClientFactory.CreateClient("API");
-		var plainContent = new StringContent(email, Encoding.UTF8, "text/plain");
-		var studentResponse = await httpClient.PostAsync("userEmail", plainContent);
-
-		UserDto student = new();
-
-		if (studentResponse.IsSuccessStatusCode)
-		{
-			var studentJson = await studentResponse.Content.ReadAsStringAsync();
-			student = JsonSerializer.Deserialize<UserDto>(studentJson);
-		}
-
-		return student;
-	} *@
 
 	async Task<UserDto?> getcurrentUser(HttpClient httpClient)
 	{

@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.security.Principal;
 import java.time.LocalDateTime;
@@ -34,81 +35,54 @@ public class UserController {
 
     @GetMapping(path = "/user")
     public ResponseEntity<UserDto> getUser(Principal connectedCustomer) {
-        try {
-            Optional<User> user = userService.getUser(connectedCustomer);
-            return user.map(userEntity -> {
-                UserDto userDto = userMapper.mapToDto(userEntity);
-                return new ResponseEntity<>(userDto, HttpStatus.OK);
-            }).orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
-        } catch (CustomException e) {
-            logger.error("Error retrieving user: " + e.getLoggingMessage() + " at: " + LocalDateTime.now());
-            return new ResponseEntity<>(e.getStatus());
-        } catch (Exception e) {
-            logger.error("Unexpected error retrieving user: " + e.getMessage() + " at: " + LocalDateTime.now());
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        Optional<User> user = userService.getUser(connectedCustomer);
+        return user.map(userEntity -> {
+            UserDto userDto = userMapper.mapToDto(userEntity);
+            return new ResponseEntity<>(userDto, HttpStatus.OK);
+        }).orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
-    @PostMapping(path = "/userEmail")
-    public ResponseEntity<UserDto> getUserEmail(@RequestBody String email) {
-        try {
-            Optional<User> user = userService.getUserByEmail(email.trim());
-            return user.map(userEntity -> {
-                UserDto userDto = userMapper.mapToDto(userEntity);
-                return new ResponseEntity<>(userDto, HttpStatus.OK);
-            }).orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
-        } catch (CustomException e) {
-            logger.error("Error retrieving user by email: " + e.getLoggingMessage() + " at: " + LocalDateTime.now());
-            return new ResponseEntity<>(e.getStatus());
-        } catch (Exception e) {
-            logger.error("Unexpected error retrieving user by email: " + e.getMessage() + " at: " + LocalDateTime.now());
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+    @PostMapping("/photo")
+    public ResponseEntity<String> uploadPhoto(Principal connectedCustomer, @RequestParam("photo") MultipartFile photo) {
+        Optional<User> user = userService.getUser(connectedCustomer);
+        userService.saveUserPhoto(user, photo);
+        return ResponseEntity.ok("Image uploaded successfully.");
+    }
+
+    @GetMapping("/photo/{id}")
+    public ResponseEntity<byte[]> getPhoto(@PathVariable Long id) {
+        byte[] photoBytes = userService.getUserPhoto(id);
+        return ResponseEntity.ok(photoBytes);
     }
 
     @PutMapping(path = "/updateUserProfile")
     public ResponseEntity<UserDto> updateUserProfile(@RequestBody UserDto userDto, Principal connectedUser) {
         try {
-            User user = userMapper.mapFromDto(userDto);
-            userService.updateProfile(user, connectedUser);
-            logger.info("Successfully updated user profile with id: " + user.getId() + " at: " + LocalDateTime.now());
+            Optional<User> user = userService.getUser(connectedUser);
+            User userData = userMapper.mapFromDto(userDto);
+            userService.updateProfile(user, userData);
+            logger.info("Successfully updated user profile with id: " + user.get().getId() + " at: "
+                    + LocalDateTime.now());
             return new ResponseEntity<>(userDto, HttpStatus.OK);
-        } catch (CustomException e) {
-            logger.error("Error updating user profile: " + e.getLoggingMessage() + " at: " + LocalDateTime.now());
-            return new ResponseEntity<>(e.getStatus());
         } catch (Exception e) {
-            logger.error("Unexpected error updating user profile: " + e.getMessage() + " at: " + LocalDateTime.now());
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new CustomException("Wrong format of data.", "Update profile: Wrong format of data.",
+                    HttpStatus.BAD_REQUEST);
         }
     }
 
     @PatchMapping(path = "/updateEmail")
     public ResponseEntity<UserDto> updateEmail(@RequestBody EmailChangeDto newEmail, Principal connectedUser) {
-        try {
-            userService.updateEmail(connectedUser, newEmail.getNewEmail(), newEmail.getPassword());
-            logger.info("Successfully updated email for user: " + connectedUser.getName() + " at: " + LocalDateTime.now());
-            return new ResponseEntity<>(HttpStatus.OK);
-        } catch (CustomException e) {
-            logger.error("Error updating email: " + e.getLoggingMessage() + " at: " + LocalDateTime.now());
-            return new ResponseEntity<>(e.getStatus());
-        } catch (Exception e) {
-            logger.error("Unexpected error updating email: " + e.getMessage() + " at: " + LocalDateTime.now());
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        Optional<User> user = userService.getUser(connectedUser);
+        userService.updateEmail(user, newEmail.getEmail(), newEmail.getNewEmail(), newEmail.getPassword());
+        logger.info("Successfully updated email for user: " + connectedUser.getName() + " at: " + LocalDateTime.now());
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PatchMapping(path = "/updatePassword")
     public ResponseEntity<UserDto> updatePassword(@RequestBody NewPasswordDTO newPassword, Principal connectedUser) {
-        try {
-            userService.updatePassword(connectedUser, newPassword.getNewPassword(), newPassword.getPassword());
-            logger.info("Successfully updated password for user: " + connectedUser.getName() + " at: " + LocalDateTime.now());
-            return new ResponseEntity<>(HttpStatus.OK);
-        } catch (CustomException e) {
-            logger.error("Error updating password: " + e.getLoggingMessage() + " at: " + LocalDateTime.now());
-            return new ResponseEntity<>(e.getStatus());
-        } catch (Exception e) {
-            logger.error("Unexpected error updating password: " + e.getMessage() + " at: " + LocalDateTime.now());
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        Optional<User> user = userService.getUser(connectedUser);
+        userService.updatePassword(user, newPassword.getNewPassword(), newPassword.getPassword());
+        logger.info("Successfully updated password for user: " + connectedUser.getName() + " at: " + LocalDateTime.now());
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }

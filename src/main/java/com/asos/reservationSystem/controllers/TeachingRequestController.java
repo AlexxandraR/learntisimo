@@ -33,7 +33,8 @@ public class TeachingRequestController {
 
     private final Logger logger;
 
-    public TeachingRequestController(TeachingRequestService requestService, Mapper<TeachingRequest, TeachingRequestDto> requestMapper, UserService userService, Mapper<User, UserDto> userMapper) {
+    public TeachingRequestController(TeachingRequestService requestService, Mapper<TeachingRequest,
+            TeachingRequestDto> requestMapper, UserService userService, Mapper<User, UserDto> userMapper) {
         this.requestService = requestService;
         this.requestMapper = requestMapper;
         this.logger = LoggerFactory.getLogger(TeachingRequestController.class);
@@ -41,75 +42,44 @@ public class TeachingRequestController {
         this.userMapper = userMapper;
     }
 
-    @GetMapping(path = "/applyTeacher")
+    @PatchMapping(path = "/applyTeacher")
     public ResponseEntity<Void> applyTeacher(Principal connectedUser) {
-        try {
-            userService.checkRole(connectedUser, Role.STUDENT);
-            Optional<User> user = userService.getUser(connectedUser);
-            requestService.applyTeacher(user.get());
-            logger.info("Successfully applied teacher with id: " + user.get().getId() + " at: " + LocalDateTime.now());
-            return new ResponseEntity<>(HttpStatus.OK);
-        } catch (CustomException e) {
-            logger.error("Error applying teacher: " + e.getLoggingMessage() + " at: " + LocalDateTime.now());
-            return new ResponseEntity<>(e.getStatus());
-        } catch (Exception e) {
-            logger.error("Unexpected error applying teacher: " + e.getMessage() + " at: " + LocalDateTime.now());
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        Optional<User> user = userService.getUser(connectedUser);
+        requestService.applyTeacher(user);
+        logger.info("Successfully applied teacher with id: " + user.get().getId() + " at: " + LocalDateTime.now());
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @GetMapping(path = "/getTeachingRequests")
-    public ResponseEntity<List<TeachingRequestDto>> getTeachingRequests(Principal connectedUser) {
-        try {
-            userService.checkRole(connectedUser, Role.ADMIN);
-            Optional<User> user = userService.getUser(connectedUser);
-            var teachingRequests = requestService.getTeachingRequests(user.get());
-            logger.info("Successfully retrieved teaching requests for user with id: " + user.get().getId() + " at: " + LocalDateTime.now());
-            return ResponseEntity.ok(teachingRequests.stream().map(requestMapper::mapToDto).toList());
-        } catch (CustomException e) {
-            logger.error("Error retrieving teaching requests: " + e.getLoggingMessage() + " at: " + LocalDateTime.now());
-            return new ResponseEntity<>(e.getStatus());
-        } catch (Exception e) {
-            logger.error("Unexpected error retrieving teaching requests: " + e.getMessage() + " at: " + LocalDateTime.now());
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+    public List<TeachingRequestDto> getTeachingRequests(Principal connectedUser) {
+        Optional<User> user = userService.getUser(connectedUser);
+        var teachingRequests = requestService.getTeachingRequests(user);
+        logger.info("Successfully retrieved teaching requests for user with id: " + user.get().getId() +
+                " at: " + LocalDateTime.now());
+        return teachingRequests.stream().map(requestMapper::mapToDto).toList();
     }
 
 
     @PatchMapping(path = "/acceptRequest/{requestId}")
-    public ResponseEntity<Void> acceptRequest(@PathVariable Long requestId, @RequestBody UserDto userDto, Principal connectedUser) {
-        try {
-            userService.checkRole(connectedUser, Role.ADMIN);
-            var user = userMapper.mapFromDto(userDto);
-            userService.acceptTeacher(user);
-            requestService.updateTeachingRequestStatus(requestId, TeachingRequestStatus.APPROVED);
-            logger.info("Successfully accepted teaching request with id: " + requestId + " for user with id: " + user.getId() + " at: " + LocalDateTime.now());
-            return new ResponseEntity<>(HttpStatus.OK);
-        } catch (CustomException e) {
-            logger.error("Error accepting teaching request: " + e.getLoggingMessage() + " at: " + LocalDateTime.now());
-            return new ResponseEntity<>(e.getStatus());
-        } catch (Exception e) {
-            logger.error("Unexpected error accepting teaching request: " + e.getMessage() + " at: " + LocalDateTime.now());
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+    public ResponseEntity<Void> acceptRequest(@PathVariable Long requestId, @RequestBody UserDto userDto,
+                                              Principal connectedUser) {
+        Optional<User> admin = userService.getUser(connectedUser);
+        User user = userMapper.mapFromDto(userDto);
+        requestService.updateTeachingRequestStatus(requestId, user, admin, TeachingRequestStatus.APPROVED);
+        logger.info("Successfully accepted teaching request with id: " + requestId + " for user with id: "
+                + user.getId() + " at: " + LocalDateTime.now());
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PatchMapping(path = "/denyRequest/{requestId}")
-    public ResponseEntity<Void> denyRequest(@PathVariable Long requestId, @RequestBody UserDto userDto, Principal connectedUser) {
-        try {
-            userService.checkRole(connectedUser, Role.ADMIN);
-            var user = userMapper.mapFromDto(userDto);
-            userService.denyTeacher(user);
-            requestService.updateTeachingRequestStatus(requestId, TeachingRequestStatus.REJECTED);
-            logger.info("Successfully denied teaching request with id: " + requestId + " for user with id: " + user.getId() + " at: " + LocalDateTime.now());
-            return new ResponseEntity<>(HttpStatus.OK);
-        } catch (CustomException e) {
-            logger.error("Error denying teaching request: " + e.getLoggingMessage() + " at: " + LocalDateTime.now());
-            return new ResponseEntity<>(e.getStatus());
-        } catch (Exception e) {
-            logger.error("Unexpected error denying teaching request: " + e.getMessage() + " at: " + LocalDateTime.now());
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+    public ResponseEntity<Void> denyRequest(@PathVariable Long requestId, @RequestBody UserDto userDto,
+                                            Principal connectedUser) {
+        Optional<User> admin = userService.getUser(connectedUser);
+        User user = userMapper.mapFromDto(userDto);
+        requestService.updateTeachingRequestStatus(requestId, user, admin, TeachingRequestStatus.REJECTED);
+        logger.info("Successfully denied teaching request with id: " + requestId + " for user with id: "
+                + user.getId() + " at: " + LocalDateTime.now());
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
 

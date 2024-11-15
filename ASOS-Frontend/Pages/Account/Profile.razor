@@ -180,9 +180,6 @@
 
 	async Task UpdateProfile()
 	{
-		//TODO: Update user's profile via endpoint
-		// There is an option to pass form data directly via UserDto (DECIDE)
-
 		ProfileChangeDto profileChangeDto = new()
 		{
 			Email = currentUser.Email,
@@ -200,26 +197,33 @@
 
 		var httpClient = HttpClientFactory.CreateClient("API");
 		var response = await httpClient.PutAsync("/updateUserProfile", jsonContent);
-
+        var errorMessage = await response.Content.ReadAsStringAsync();
 		if (response.IsSuccessStatusCode)
 		{
 			Snackbar.Add("Profil bol úspešne upravený!", Severity.Success);
 		}
-		else
-		{
-			Snackbar.Add("Nastala chyba servera.", Severity.Error);
-		}
-
-
+        else if (errorMessage == "User does not exist.")
+        {
+            Snackbar.Add("Používateľ neexistuje.", Severity.Error);
+        }
+        else if (errorMessage == "Wrong format of phone number.")
+        {
+            Snackbar.Add("Používate zlý formát telefónneho čísla.", Severity.Error);
+        }
+        else if(errorMessage == "Wrong format of data."){
+            Snackbar.Add("Používate zlý formát dát.", Severity.Error);
+        }
+        else
+        {
+            Snackbar.Add("Nastala chyba pri aktualizácii profilu. Skúste to znova neskôr.", Severity.Error);
+        }
 	}
 
 	async Task UpdateEmail()
 	{
-		//TODO: Update user's email via endpoint
-
 		if (string.Equals(emailChangeInputModel.Email, emailChangeInputModel.NewEmail))
 		{
-			Snackbar.Add("Emailová adresa je totožná!", Severity.Warning);
+			Snackbar.Add("Nová emailová adresa je totožná.", Severity.Error);
 			return;
 		}
 
@@ -235,35 +239,46 @@
 				Encoding.UTF8,
 				"application/json");
 
-		// var plainContent = new StringContent(emailChangeInputModel.NewEmail.ToString(), Encoding.UTF8, "text/plain");
-
-
 		var httpClient = HttpClientFactory.CreateClient("API");
 		var response = await httpClient.PatchAsync("updateEmail", jsonContent);
-
+        var errorMessage = await response.Content.ReadAsStringAsync();
 		if (response.IsSuccessStatusCode)
 		{
 			Snackbar.Add("Email bol úspešne zmenený!", Severity.Success);
 		}
-		else
-		{
-			Snackbar.Add("Nastala chyba servera.", Severity.Error);
-
-		}
-
+        else if (errorMessage == "User does not exist.")
+        {
+            Snackbar.Add("Používateľ neexistuje.", Severity.Error);
+        }
+        else if (errorMessage == "New email is equal to actual email.")
+        {
+            Snackbar.Add("Nová emailová adresa je totožná.", Severity.Error);
+        }
+        else if (errorMessage == "Old email is not equal to actual email.")
+        {
+            Snackbar.Add("Email v políčku \"email\" sa nezhoduje s aktuálnym emailom.", Severity.Error);
+        }
+        else if (errorMessage == "Password is incorrect.")
+        {
+            Snackbar.Add("Nesprávne heslo.", Severity.Error);
+        }
+        else
+        {
+            Snackbar.Add("Nastala chyba pri zmene emailu. Skúste to znova neskôr.", Severity.Error);
+        }
 	}
 
 	async Task UpdatePassword()
 	{
 		if (!string.Equals(passwordChangeInputModel.NewPassword, passwordChangeInputModel.ConfirmNewPassword))
 		{
-			Snackbar.Add("Nové heslá sa nezhodujú.", Severity.Warning);
+			Snackbar.Add("Nové heslá sa nezhodujú.", Severity.Error);
 			return;
 		}
 
 		if (string.Equals(passwordChangeInputModel.NewPassword, passwordChangeInputModel.Password))
 		{
-			Snackbar.Add("Nové heslo sa nemôže rovnať starému heslu.", Severity.Warning);
+			Snackbar.Add("Nové heslo sa nemôže rovnať starému heslu.", Severity.Error);
 			return;
 		}
 		PasswordChangeDto passwordDto = new()
@@ -282,18 +297,23 @@
 
 		var httpClient = HttpClientFactory.CreateClient("API");
 		var response = await httpClient.PatchAsync("/updatePassword", jsonContent);
-
+        var errorMessage = await response.Content.ReadAsStringAsync();
 		if (response.IsSuccessStatusCode)
 		{
 			Snackbar.Add("Heslo bolo úspešne zmenené!", Severity.Success);
 		}
-		else
-		{
-			Snackbar.Add("Nastala chyba servera.", Severity.Error);
-
-		}
-
-		
+        else if (errorMessage == "User does not exist.")
+        {
+            Snackbar.Add("Používateľ neexistuje.", Severity.Error);
+        }
+        else if (errorMessage == "Password is incorrect.")
+        {
+            Snackbar.Add("Nesprávne heslo.", Severity.Error);
+        }
+        else
+        {
+            Snackbar.Add("Nastala chyba pri zmene hesla. Skúste to znova neskôr.", Severity.Error);
+        }
 	}
 
 	async Task UploadProfilePicture(IBrowserFile e)
@@ -312,22 +332,28 @@
 
 	async Task RequestTeacherRole()
 	{
-		//TODO: Create the request via endpoint
-
 		var client = HttpClientFactory.CreateClient("API");
-		var response = await client.GetAsync("/applyTeacher");
-
+		var response = await client.PatchAsync("/applyTeacher", new StringContent(string.Empty));
+        var errorMessage = await response.Content.ReadAsStringAsync();
 		if (response.IsSuccessStatusCode)
 		{
-			Snackbar.Add("Žiadosť o učitela bolo úspešne podaná!", Severity.Success);
+			Snackbar.Add("Žiadosť o status učitela bola úspešne podaná!", Severity.Success);
 		}
-		else
-		{
-			Snackbar.Add("Žiadosť už bola zaslaná na spracovanie alebo nastala chyba pri jej spracovaní.", Severity.Error);
-		}
-
-
-
-		
+		else if (errorMessage == "User does not exist.")
+        {
+            Snackbar.Add("Učiteľ neexistuje.", Severity.Error);
+        }
+        else if (errorMessage == "Only student can apply for teacher status.")
+        {
+            Snackbar.Add("Iba študent môže požiadať o učiteľský status.", Severity.Error);
+        }
+        else if (errorMessage == "Teaching request already exists.")
+        {
+            Snackbar.Add("Žiadosť už bola podaná.", Severity.Error);
+        }
+        else
+        {
+            Snackbar.Add("Nastala chyba pri podaní žiadosťi. Skúste to znova neskôr.", Severity.Error);
+        }
 	}
 }

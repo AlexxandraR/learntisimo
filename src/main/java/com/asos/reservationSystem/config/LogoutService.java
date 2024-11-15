@@ -25,7 +25,7 @@ public class LogoutService implements LogoutHandler {
     ) {
         final String authHeader = request.getHeader("Authorization");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            //TODO: vynimka
+            //throw new CustomException("Authorization has expired.", "Authorization: Authorization has expired.", HttpStatus.FORBIDDEN);
             return;
         }
 

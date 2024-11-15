@@ -3,23 +3,21 @@ package com.asos.reservationSystem.services;
 import com.asos.reservationSystem.domain.entities.Meeting;
 import com.asos.reservationSystem.domain.entities.User;
 
-import java.security.Principal;
 import java.util.List;
+import java.util.Optional;
 
 public interface MeetingService {
 
-    List<Meeting> getAllTeacherMeetings(Long teacherId);
+    List<Meeting> getTeacherMeetings(Optional<User> teacher);
 
-    List<Meeting> getAllStudentMeetings(Long studentId);
+    List<Meeting> getStudentMeetings(Optional<User> student);
 
-    void removeMeeting(Long meetingId, Principal connectedUser);
+    void removeMeeting(Long meetingId, Optional<User> teacher);
 
-    Meeting createMeeting(Meeting meeting);
+    Meeting createMeeting(Meeting meeting, Optional<User> teacher);
 
-    void removeStudentMeeting(Long meetingId, Principal connectedUser);
-    List<Meeting> listMeetingsCourse(Long courseId);
+    Optional<Meeting> removeStudentMeeting(Long meetingId, Optional<User> student);
+    List<Meeting> getCourseMeeting(Long courseId, Optional<User> user);
 
-    void removeStudentFromCourseMeetings(Long courseId, Long studentId);
-
-    void addStudentToMeeting(Long meetingId, User student);
+    Meeting addStudentToMeeting(Long meetingId, Optional<User> student);
 }

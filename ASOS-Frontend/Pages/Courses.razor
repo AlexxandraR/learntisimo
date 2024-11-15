@@ -295,38 +295,30 @@
 
 	async Task JoinCourse(CourseDto course)
 	{
-		try
+        var httpClient = HttpClientFactory.CreateClient("API");
+
+        var response = await httpClient.PatchAsync($"assignToCourse/{course.Id}", new StringContent(string.Empty));
+        var errorMessage = await response.Content.ReadAsStringAsync();
+        if (response.IsSuccessStatusCode)
         {
-            var httpClient = HttpClientFactory.CreateClient("API");
-
-            var response = await httpClient.PatchAsync($"assignToCourse/{course.Id}", new StringContent(string.Empty));
-
-            if (response.IsSuccessStatusCode)
-            {
-                Snackbar.Add("Zápis prebehol úspešne!", Severity.Success);
-                return;
-            }
-            var errorMessage = await response.Content.ReadAsStringAsync();
-            if(errorMessage == "Course does not exist."){
-                Snackbar.Add("Kurz neexistuje.", Severity.Error);
-            }
-            else if(errorMessage == "User does not exist."){
-                Snackbar.Add("Používateľ neexistuje.", Severity.Error);
-            }
-            else if(errorMessage == "User has already been assigned to this course."){
-                Snackbar.Add("Používateľ už bol do daného kurzu zapísaný.", Severity.Error);
-            }
-            else if(errorMessage == "Only student can assign to a course."){
-                Snackbar.Add("Iba študent sa môže zapísať do kurzu.", Severity.Error);
-            }
-            else
-            {
-                Snackbar.Add("Nastala chyba pri zápise do kurzu. Skúste to znova neskôr.", Severity.Error);
-            }
+            Snackbar.Add("Zápis prebehol úspešne!", Severity.Success);
+            return;
         }
-        catch (Exception ex)
+        else if(errorMessage == "Course does not exist."){
+            Snackbar.Add("Doučovanie neexistuje.", Severity.Error);
+        }
+        else if(errorMessage == "User does not exist."){
+            Snackbar.Add("Študent neexistuje.", Severity.Error);
+        }
+        else if(errorMessage == "User has already been assigned to this course."){
+            Snackbar.Add("Už ste na dané doučovanie zapísaný.", Severity.Error);
+        }
+        else if(errorMessage == "Only student can assign to a course."){
+            Snackbar.Add("Iba študent sa môže zapísať na doučovanie.", Severity.Error);
+        }
+        else
         {
-            Snackbar.Add($"Došlo ku neučakávanej chybe.");
+            Snackbar.Add("Nastala chyba pri zápise na doučovanie. Skúste to znova neskôr.", Severity.Error);
         }
 	}
 
