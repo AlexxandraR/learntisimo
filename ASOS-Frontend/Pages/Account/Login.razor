@@ -3,7 +3,6 @@
 @using System.Net.Http
 @using System.Text
 @using System.Text.Json
-@using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Authentication
 @using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.AspNetCore.Components.Authorization
@@ -44,7 +43,7 @@
 		<RadzenColumn Size="12" SizeMD="6">
 			<RadzenCard id="login-card" Class="rz-shadow-0 rz-border-radius-0 rz-p-12" Style="height:100%; display:flex; align-items:center;">
 				<EditForm EditContext="editContext" style="width:100%">
-					<DataAnnotationsValidator />
+					<FluentValidationValidator @ref="_fluentValidator" />
 					<RadzenStack Gap="0.75rem">
 						<h2 class="rz-mb-0">Prihlásenie</h2>
 						<MudTextField T="string" Label="Email" Variant="MudBlazor.Variant.Filled" ShrinkLabel @bind-Value="Input.Email" For="@(() => Input.Email)" />
@@ -70,6 +69,7 @@
 
 	private LoginInputModel Input = new();
 	private EditContext? editContext;
+	private FluentValidationValidator? _fluentValidator;
 
 	protected override async Task OnInitializedAsync()
 	{
@@ -86,25 +86,14 @@
 
 	void ShowPassword()
 	{
-		if (isShow)
-		{
-			isShow = false;
-			PasswordInputIcon = MudBlazor.Icons.Material.Filled.VisibilityOff;
-			PasswordInput = MudBlazor.InputType.Password;
-		}
-		else
-		{
-			isShow = true;
-			PasswordInputIcon = MudBlazor.Icons.Material.Filled.Visibility;
-			PasswordInput = MudBlazor.InputType.Text;
-		}
+		isShow = !isShow;
+		PasswordInput = isShow ? MudBlazor.InputType.Text : MudBlazor.InputType.Password;
+		PasswordInputIcon = isShow ? MudBlazor.Icons.Material.Filled.Visibility : MudBlazor.Icons.Material.Filled.VisibilityOff;
 	}
 
 	async Task LoginUser()
 	{
-		bool isValid = editContext!.Validate();
-
-		if (!isValid)
+		if (!await _fluentValidator!.ValidateAsync())
 		{
 			Snackbar.Add("Formulár nebol vyplnený správne.", Severity.Warning);
 			return;
@@ -128,7 +117,7 @@
 		{
 			Snackbar.Add("Nesprávny email/heslo!", Severity.Error);
 		}
-		catch (HttpRequestException)
+		catch (HttpRequestException e)
 		{
 			Snackbar.Add("Prihlásenie zlyhalo! Skontrolujte pripojenie k internetu.", Severity.Error);
 		}

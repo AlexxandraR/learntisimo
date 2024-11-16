@@ -2,7 +2,6 @@
 
 @using System.Text.Json
 @using Microsoft.AspNetCore.Components.Forms
-@using System.ComponentModel.DataAnnotations;
 @using FormInputModels.Account;
 @using FormInputModels.ManageAccount;
 @using Microsoft.AspNetCore.Components.Authorization
@@ -56,7 +55,7 @@
 			<MudTabs Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-5" ActivePanelIndexChanged="InitializeFormInputs">
 				<MudTabPanel Text="Profil">
 					<EditForm Model="formInputModel" OnValidSubmit="UpdateProfile" style="margin:auto; max-width:650px; flex:1">
-						<DataAnnotationsValidator />
+						<FluentValidationValidator />
 						<RadzenFieldset Text="Základné údaje">
 							<RadzenStack Orientation="Radzen.Orientation.Vertical" Gap="0.5rem">
 								<RadzenRow AlignItems="Radzen.AlignItems.Center" Gap="0">
@@ -68,7 +67,7 @@
 										<MudTextField Label="Titul" Variant="MudBlazor.Variant.Outlined" ShrinkLabel @bind-Value="formInputModel.Degree" For="@(() => formInputModel.Degree)" Style="width:125px;" />
 										<MudTextField Label="Meno" Variant="MudBlazor.Variant.Outlined" ShrinkLabel @bind-Value="formInputModel.FirstName" For="@(() => formInputModel.FirstName)" Style="width:250px;" />
 										<MudTextField Label="Priezvisko" Variant="MudBlazor.Variant.Outlined" ShrinkLabel @bind-Value="formInputModel.LastName" For="@(() => formInputModel.LastName)" Style="width:250px;" />
-										<MudTextField Label="Tel.číslo" Variant="MudBlazor.Variant.Outlined" ShrinkLabel Mask="@(new PatternMask("+000 000 000 000"))" @bind-Value="formInputModel.PhoneNumber" For="@(() => formInputModel.PhoneNumber)" Style="width:250px;" />
+										<MudTextField Label="Tel.číslo" Variant="MudBlazor.Variant.Outlined" ShrinkLabel @bind-Value="formInputModel.PhoneNumber" For="@(() => formInputModel.PhoneNumber)" Style="width:250px;" />
 									</RadzenStack>
 									<RadzenStack Style="width:48%;min-width:250px" JustifyContent="JustifyContent.Center" AlignItems="Radzen.AlignItems.Center" Gap="0.75rem">
 										@if (profileImage != null)
@@ -108,7 +107,7 @@
 
 				<MudTabPanel Text="Email">
 					<EditForm Model="emailChangeInputModel" OnValidSubmit="UpdateEmail" style="margin:auto; max-width:325px; min-width:250px; flex:1">
-						<DataAnnotationsValidator />
+						<FluentValidationValidator />
 						<RadzenFieldset Text="Zmena emailu">
 							<RadzenStack Orientation="Radzen.Orientation.Vertical" Gap="0.5rem">
 								<MudTextField Label="Email" Variant="MudBlazor.Variant.Outlined" ShrinkLabel @bind-Value="emailChangeInputModel.Email" For="@(() => emailChangeInputModel.Email)" Disabled ReadOnly />
@@ -125,7 +124,7 @@
 
 				<MudTabPanel Text="Heslo">
 					<EditForm Model="passwordChangeInputModel" OnValidSubmit="UpdatePassword" style="margin:auto; max-width:340px">
-						<DataAnnotationsValidator />
+						<FluentValidationValidator />
 						<RadzenFieldset Text="Zmena hesla">
 							<RadzenStack Orientation="Radzen.Orientation.Vertical" Gap="0.5rem">
 								<MudTextField Label="Heslo" Variant="MudBlazor.Variant.Outlined" ShrinkLabel @bind-Value="passwordChangeInputModel.Password" For="@(() => passwordChangeInputModel.Password)" InputType="InputType.Password" />

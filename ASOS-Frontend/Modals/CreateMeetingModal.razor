@@ -1,5 +1,4 @@
 ﻿@using System.Globalization;
-@using System.ComponentModel.DataAnnotations;
 @using Microsoft.AspNetCore.Components.Forms;
 @using Microsoft.AspNetCore.Components.Authorization;
 @using System.Security.Claims
@@ -13,7 +12,7 @@
 
 <RadzenStack Style="gap:20px; min-width:250px; max-width:350px; margin:auto;">
     <EditForm Model="formInputModel" OnValidSubmit="ReturnCreatedMeeting">
-        <DataAnnotationsValidator />
+        <FluentValidationValidator />
         <RadzenFieldset Text="Špecifikácia">
             <RadzenStack Orientation="Radzen.Orientation.Vertical" JustifyContent="JustifyContent.Center" AlignItems="Radzen.AlignItems.Center" Gap="1rem">
                 <RadzenFormField Text="Predmet" Variant="Radzen.Variant.Outlined" AllowFloatingLabel="false">

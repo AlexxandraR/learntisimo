@@ -3,7 +3,6 @@
 @using System.Net.Http
 @using System.Text
 @using System.Text.Json
-@using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Authentication
 @using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.AspNetCore.Components.Authorization
@@ -20,14 +19,14 @@
 
 <style>
 	@@media only screen and (max-width: 820px) {
-		#container {
-			height: 100%;
-			max-width: unset !important;
-		}
+	#container {
+	height: 100%;
+	max-width: unset !important;
+	}
 
-		#register-card {
-			padding: 24px !important;
-		}
+	#register-card {
+	padding: 24px !important;
+	}
 	}
 </style>
 
@@ -42,19 +41,19 @@
 		<RadzenColumn Size="12" SizeMD="6">
 			<RadzenCard id="register-card" Class="rz-shadow-0 rz-border-radius-0 rz-p-12" Style="height:100%;">
 				<EditForm EditContext="editContext">
-					<DataAnnotationsValidator />
+					<FluentValidationValidator @ref="_fluentValidator" />
 					<RadzenStack Gap="0.75rem">
 						<h2 class="rz-mb-0">Registrácia</h2>
-						<MudTextField T="string" name="Input.firstName" Label="Meno" Variant="MudBlazor.Variant.Filled" ShrinkLabel @bind-Value="Input.FirstName" For="@(() => Input.FirstName)" />
-						<MudTextField T="string" name="Input.lastName" Label="Priezvisko" Variant="MudBlazor.Variant.Filled" ShrinkLabel @bind-Value="Input.LastName" For="@(() => Input.LastName)" />
-						<MudTextField T="string" name="Input.phoneNumber" Label="Tel.číslo" Variant="MudBlazor.Variant.Filled" ShrinkLabel Mask="@(new PatternMask("+000 000 000 000"))" @bind-Value="Input.PhoneNumber" For="@(() => Input.PhoneNumber)" />
-						<MudTextField T="string" name="Input.Email" Label="Email" Variant="MudBlazor.Variant.Filled" ShrinkLabel @bind-Value="Input.Email" For="@(() => Input.Email)" />
-						<MudTextField T="string" name="Input.Password" Label="Heslo" Variant="MudBlazor.Variant.Filled" InputType="@PasswordInput" ShrinkLabel
-									  Adornment="MudBlazor.Adornment.End" AdornmentIcon="@PasswordInputIcon" OnAdornmentClick="ButtonTestclick" AdornmentAriaLabel="Show Password"
-									  @bind-Value="Input.Password" For="@(() => Input.Password)" />
-						<MudTextField T="string" name="Input.ConfirmPassword" Label="Potvrdenie hesla" Variant="MudBlazor.Variant.Filled" InputType="@PasswordInputConfirm" ShrinkLabel
-									  Adornment="MudBlazor.Adornment.End" AdornmentIcon="@PasswordInputIconConfirm" OnAdornmentClick="ShowHideConfirmPassword" AdornmentAriaLabel="Zobraziť"
-									  @bind-Value="Input.ConfirmPassword" For="@(() => Input.ConfirmPassword)" />
+						<MudTextField T="string" Label="Meno" Variant="MudBlazor.Variant.Filled" ShrinkLabel @bind-Value="Input.FirstName" For="@(() => Input.FirstName)" />
+						<MudTextField T="string" Label="Priezvisko" Variant="MudBlazor.Variant.Filled" ShrinkLabel @bind-Value="Input.LastName" For="@(() => Input.LastName)" />
+						<MudTextField T="string" Label="Tel.číslo" Variant="MudBlazor.Variant.Filled" ShrinkLabel @bind-Value="Input.PhoneNumber" For="@(() => Input.PhoneNumber)" />
+						<MudTextField T="string" Label="Email" Variant="MudBlazor.Variant.Filled" ShrinkLabel @bind-Value="Input.Email" For="@(() => Input.Email)" />
+						<MudTextField T="string" Label="Heslo" Variant="MudBlazor.Variant.Filled" InputType="@PasswordInput" ShrinkLabel
+						Adornment="MudBlazor.Adornment.End" AdornmentIcon="@PasswordInputIcon" OnAdornmentClick="ShowHidePassword" AdornmentAriaLabel="Show Password"
+						@bind-Value="Input.Password" For="@(() => Input.Password)" />
+						<MudTextField T="string" Label="Potvrdenie hesla" Variant="MudBlazor.Variant.Filled" InputType="@PasswordInputConfirm" ShrinkLabel
+						Adornment="MudBlazor.Adornment.End" AdornmentIcon="@PasswordInputIconConfirm" OnAdornmentClick="ShowHideConfirmPassword" AdornmentAriaLabel="Zobraziť"
+						@bind-Value="Input.ConfirmPassword" For="@(() => Input.ConfirmPassword)" />
 						<RadzenRow JustifyContent="JustifyContent.SpaceBetween" Gap="0" RowGap="0.75rem">
 							<MudButton Variant="MudBlazor.Variant.Filled" StartIcon="@Icons.Material.Filled.AppRegistration" Color="MudBlazor.Color.Info" Style="width: 145px;" @onclick="async () => await RegisterUser()">Registrovať</MudButton>
 							<MudButton Variant="MudBlazor.Variant.Filled" StartIcon="@Icons.Material.Filled.Login" Color="MudBlazor.Color.Info" Style="width: 145px;" @onclick='() => NavigationManager.NavigateTo("/login")'>Prihlásenie</MudButton>
@@ -77,6 +76,7 @@
 
 	private RegisterInputModel Input = new();
 	private EditContext? editContext;
+	private FluentValidationValidator? _fluentValidator;
 
 	protected override async Task OnInitializedAsync()
 	{
@@ -91,43 +91,23 @@
 		}
 	}
 
-	void ButtonTestclick()
+	void ShowHidePassword()
 	{
-		if (isShow)
-		{
-			isShow = false;
-			PasswordInputIcon = MudBlazor.Icons.Material.Filled.VisibilityOff;
-			PasswordInput = MudBlazor.InputType.Password;
-		}
-		else
-		{
-			isShow = true;
-			PasswordInputIcon = MudBlazor.Icons.Material.Filled.Visibility;
-			PasswordInput = MudBlazor.InputType.Text;
-		}
+		isShow = !isShow;
+		PasswordInput = isShow ? MudBlazor.InputType.Text : MudBlazor.InputType.Password;
+		PasswordInputIcon = isShow ? MudBlazor.Icons.Material.Filled.Visibility : MudBlazor.Icons.Material.Filled.VisibilityOff;
 	}
 
 	void ShowHideConfirmPassword()
 	{
-		if (isShowConfirm)
-		{
-			isShowConfirm = false;
-			PasswordInputIconConfirm = MudBlazor.Icons.Material.Filled.VisibilityOff;
-			PasswordInputConfirm = MudBlazor.InputType.Password;
-		}
-		else
-		{
-			isShowConfirm = true;
-			PasswordInputIconConfirm = MudBlazor.Icons.Material.Filled.Visibility;
-			PasswordInputConfirm = MudBlazor.InputType.Text;
-		}
+		isShowConfirm = !isShowConfirm;
+		PasswordInputConfirm = isShowConfirm ? MudBlazor.InputType.Text : MudBlazor.InputType.Password;
+		PasswordInputIconConfirm = isShowConfirm ? MudBlazor.Icons.Material.Filled.Visibility : MudBlazor.Icons.Material.Filled.VisibilityOff;
 	}
 
 	async Task RegisterUser()
 	{
-		bool isValid = editContext.Validate();
-
-		if (!isValid)
+		if (!await _fluentValidator!.ValidateAsync())
 		{
 			Snackbar.Add("Formulár nebol vyplnený správne.", Severity.Warning);
 			return;
@@ -137,10 +117,10 @@
 		{
 			RegisterDto registerDto = new RegisterDto
 				{
+					Email = Input.Email,
 					FirstName = Input.FirstName,
 					LastName = Input.LastName,
 					PhoneNumber = Input.PhoneNumber,
-					Email = Input.Email,
 					Password = Input.Password,
 					ConfirmPassword = Input.ConfirmPassword
 				};
@@ -150,6 +130,10 @@
 			Snackbar.Add("Registrácia bola úspešná!", Severity.Success);
 
 			NavigationManager.NavigateTo("/login");
+		}
+		catch (UnauthorizedAccessException)
+		{
+			Snackbar.Add("Tento email je už zaregistrovaný!", Severity.Error);
 		}
 		catch (HttpRequestException)
 		{

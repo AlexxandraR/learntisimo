@@ -16,8 +16,7 @@
 		box-shadow: unset !important;
 	}
 
-	#available-meeting-list .rz-datalist-content .rz-card {
-		padding: 8px !important;
+	#available-meeting-list .rz-card {
 		min-height: unset !important;
 	}
 </style>
@@ -31,7 +30,7 @@
 					Data="@filteredMeetingsList" TItem="MeetingDto" PageSize="5" PagerHorizontalAlign="HorizontalAlign.Left"
 					ShowPagingSummary="true" PagingSummaryFormat="Strana {0} / {1}">
 		<Template Context="meeting">
-			<RadzenCard Variant="Radzen.Variant.Outlined" class="rz-p-0 rz-shadow-3 rz-border-radius-3" Style="width: 100%; overflow: hidden;">
+			<RadzenCard Variant="Radzen.Variant.Outlined" class="rz-p-2 rz-shadow-3 rz-border-radius-3" Style="width: 100%; overflow: hidden;">
 				<RadzenRow JustifyContent="JustifyContent.SpaceEvenly" Gap="0.3rem">
 					<RadzenStack Gap="0.2rem">
 						<RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="rz-mb-0" Style="width:fit-content">Dátum a čas</RadzenText>
