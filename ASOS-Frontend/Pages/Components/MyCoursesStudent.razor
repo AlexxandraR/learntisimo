@@ -292,6 +292,14 @@
             {
                 Snackbar.Add("Iba študent sa môže zapísať na termín.", Severity.Error);
             }
+            else if (errorMessage == "Student has another meeting at this time.")
+            {
+                Snackbar.Add("V tomto čase už máte naplánovaný termín.", Severity.Error);
+            }
+            else
+            {
+                Snackbar.Add("Nastala chyba pri zapísaní na termín. Skúste to znova neskôr.", Severity.Error);
+            }
 		}
 	}
 

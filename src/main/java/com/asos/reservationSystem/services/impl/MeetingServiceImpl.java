@@ -155,6 +155,15 @@ public class MeetingServiceImpl implements MeetingService {
                     "Adding student to meeting: Only student can assign to meeting.",
                     HttpStatus.BAD_REQUEST);
         }
+        List<Meeting> conflictingMeetings = meetingRepository.findByStudentAndTimeRange(
+                student.get().getId(),
+                meeting.get().getBeginning(),
+                meeting.get().getBeginning().plusMinutes(meeting.get().getDuration())
+        );
+        if (!conflictingMeetings.isEmpty()) {
+            throw new CustomException("Student has another meeting at this time.",
+                    "Adding student to meeting: Time conflict with another meeting.", HttpStatus.CONFLICT);
+        }
         Meeting newMeeting = meeting.get();
         newMeeting.setStudent(student.get());
         return meetingRepository.save(newMeeting);

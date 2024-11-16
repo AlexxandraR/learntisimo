@@ -27,6 +27,13 @@ public interface MeetingRepository extends CrudRepository<Meeting, Long> {
     List<Meeting> findByTeacherAndTimeRange(Long teacherId,
                                             LocalDateTime start,
                                             LocalDateTime end);
+
+    @Query(value = "SELECT * FROM meetings WHERE student_id = ?1 AND " +
+            "(beginning < ?3 AND (beginning + duration * INTERVAL '1 minute') > ?2)", nativeQuery = true)
+    List<Meeting> findByStudentAndTimeRange(Long studentId,
+                                            LocalDateTime start,
+                                            LocalDateTime end);
+
     @Modifying
     @Transactional
     @Query("UPDATE Meeting m SET m.student = NULL WHERE m.course.id = ?1 AND m.student.id = ?2")

@@ -297,13 +297,13 @@
                 Snackbar.Add("Iba učiteľ môže vytvárať termín.", Severity.Error);
             }
             else if (errorMessage == "Cannot schedule meeting in the past.")
-                {
-                    Snackbar.Add("Nemôžete vytvoriť termín so začiatkom v minulosti.", Severity.Error);
-                }
+            {
+                Snackbar.Add("Nemôžete vytvoriť termín so začiatkom v minulosti.", Severity.Error);
+            }
             else if (errorMessage == "Teacher has another meeting at this time.")
-                {
-                    Snackbar.Add("V tomto čase už máte naplánovaný termín", Severity.Error);
-                }
+            {
+                Snackbar.Add("V tomto čase už máte naplánovaný termín.", Severity.Error);
+            }
             else
             {
                 Snackbar.Add("Nastala chyba pri vytvorení termínu. Skúste to znova neskôr.", Severity.Error);
