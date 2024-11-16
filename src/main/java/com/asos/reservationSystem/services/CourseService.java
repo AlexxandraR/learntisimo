@@ -3,7 +3,6 @@ package com.asos.reservationSystem.services;
 import com.asos.reservationSystem.domain.entities.Course;
 import com.asos.reservationSystem.domain.entities.User;
 
-import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 

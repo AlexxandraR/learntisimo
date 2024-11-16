@@ -28,7 +28,8 @@ public class CourseController {
 
     private final Logger logger;
 
-    public CourseController(CourseService courseService, UserService userService, Mapper<Course, CourseDto> courseMapper) {
+    public CourseController(CourseService courseService, UserService userService, Mapper<Course, CourseDto>
+            courseMapper) {
         this.courseService = courseService;
         this.userService = userService;
         this.courseMapper = courseMapper;
@@ -46,8 +47,8 @@ public class CourseController {
     public ResponseEntity<CourseDto> assignToCourse(Principal connectedUser, @PathVariable Long courseId) {
         Optional<User> user = userService.getUser(connectedUser);
         Optional<Course> course = courseService.assignToCourse(user, courseId);
-        logger.info("User with id: " + user.get().getId() + " assigned to course with id: " + course.get().getId()
-                + " at: " + LocalDateTime.now());
+        logger.info("Assignment to course: User with id: " + user.get().getId() + " assigned to course with id: "
+                + course.get().getId() + " at: " + LocalDateTime.now());
         return course.map(courseEntity -> {
             CourseDto courseDto = courseMapper.mapToDto(courseEntity);
             return new ResponseEntity<>(courseDto, HttpStatus.OK);
@@ -58,8 +59,8 @@ public class CourseController {
     public ResponseEntity<CourseDto> deleteFromCourse(Principal connectedUser, @PathVariable Long courseId) {
         Optional<User> user = userService.getUser(connectedUser);
         Optional<Course> course = courseService.deleteFromCourse(user, courseId);
-        logger.info("User with id: " + user.get().getId() + " removed from course with id: " + course.get().getId()
-                + " at: " + LocalDateTime.now());
+        logger.info("Removal from course: User with id: " + user.get().getId() + " removed from course with id: "
+                + course.get().getId() + " at: " + LocalDateTime.now());
         return course.map(courseEntity -> {
             CourseDto courseDto = courseMapper.mapToDto(courseEntity);
             return new ResponseEntity<>(courseDto, HttpStatus.OK);
@@ -70,8 +71,8 @@ public class CourseController {
     public List<CourseDto> getTeacherCourses(Principal connectedUser) {
         Optional<User> teacher = userService.getUser(connectedUser);
         List<Course> courses = courseService.getTeacherCourses(teacher);
-        logger.info("Successfully retrieved all courses for teacher with id: " + teacher.get().getId()
-                + " at: " + LocalDateTime.now());
+        logger.info("Get teacher courses: Successfully retrieved all courses for teacher with id: "
+                + teacher.get().getId() + " at: " + LocalDateTime.now());
         return courses.stream().map(courseMapper::mapToDto)
                 .collect(Collectors.toList());
     }
@@ -80,8 +81,8 @@ public class CourseController {
     public List<CourseDto> getStudentCourses(Principal connectedUser) {
         Optional<User> student = userService.getUser(connectedUser);
         List<Course> courses = courseService.getStudentCourses(student);
-        logger.info("Successfully retrieved all courses for student with id: " + student.get().getId()
-                + " at: " + LocalDateTime.now());
+        logger.info("Get student courses: Successfully retrieved all courses for student with id: "
+                + student.get().getId() + " at: " + LocalDateTime.now());
         return courses.stream().map(courseMapper::mapToDto).
                 collect(Collectors.toList());
     }
@@ -91,7 +92,8 @@ public class CourseController {
         Optional<User> teacher = userService.getUser(connectedUser);
         Course newCourse = courseService.saveCourse(teacher, courseMapper.mapFromDto(courseDto));
         CourseDto newCourseDto = courseMapper.mapToDto(newCourse);
-        logger.info("Successfully created course with id: " + newCourse.getId() + " at: " + LocalDateTime.now());
+        logger.info("Saving course: Successfully created course with id: " + newCourse.getId() + " at: "
+                + LocalDateTime.now());
         return new ResponseEntity<>(newCourseDto, HttpStatus.CREATED);
     }
 
@@ -99,7 +101,8 @@ public class CourseController {
     public ResponseEntity<Void> removeCourse(@PathVariable Long courseId, Principal connectedUser) {
         Optional<User> teacher = userService.getUser(connectedUser);
         courseService.removeCourse(courseId, teacher);
-        logger.info("Successfully removed course with id: " + courseId + " at: " + LocalDateTime.now());
+        logger.info("Removal of course: Successfully removed course with id: " + courseId + " at: "
+                + LocalDateTime.now());
         return new ResponseEntity<>(HttpStatus.OK);
     }
 }

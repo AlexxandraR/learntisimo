@@ -28,7 +28,8 @@ public class MeetingController {
 
     private final Logger logger;
 
-    public MeetingController(MeetingService meetingService, Mapper<Meeting, MeetingDto> meetingMapper, UserService userService) {
+    public MeetingController(MeetingService meetingService, Mapper<Meeting, MeetingDto> meetingMapper,
+                             UserService userService) {
         this.meetingService = meetingService;
         this.meetingMapper = meetingMapper;
         this.logger = LoggerFactory.getLogger(MeetingController.class);
@@ -39,7 +40,8 @@ public class MeetingController {
     public List<MeetingDto> getTeacherMeetings(Principal connectedUser) {
         Optional<User> teacher = userService.getUser(connectedUser);
         List<Meeting> meetings = meetingService.getTeacherMeetings(teacher);
-        logger.info("Successfully retrieved all meetings for teacher with id: " + teacher.get().getId()
+        logger.info("Get teacher's meetings: Successfully retrieved all meetings for teacher with id: "
+                + teacher.get().getId()
                 + " at: " + LocalDateTime.now());
         return meetings.stream().map(meetingMapper::mapToDto)
                 .collect(Collectors.toList());
@@ -49,7 +51,8 @@ public class MeetingController {
     public List<MeetingDto> getStudentMeetings(Principal connectedUser) {
         Optional<User> student = userService.getUser(connectedUser);
         List<Meeting> meetings = meetingService.getStudentMeetings(student);
-        logger.info("Successfully retrieved all meetings for student with id: " + student.get().getId()
+        logger.info("Get student's meetings: Successfully retrieved all meetings for student with id: "
+                + student.get().getId()
                 + " at: " + LocalDateTime.now());
         return meetings.stream().map(meetingMapper::mapToDto).collect(Collectors.toList());
     }
@@ -58,7 +61,8 @@ public class MeetingController {
     public ResponseEntity<Void> removeMeeting(@PathVariable Long meetingId, Principal connectedUser) {
         Optional<User> teacher = userService.getUser(connectedUser);
         meetingService.removeMeeting(meetingId, teacher);
-        logger.info("Successfully removed meeting with id: " + meetingId + " at: " + LocalDateTime.now());
+        logger.info("Removal of meeting: Successfully removed meeting with id: " + meetingId + " at: "
+                + LocalDateTime.now());
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -66,7 +70,7 @@ public class MeetingController {
     public ResponseEntity<MeetingDto> removeStudentMeeting(@PathVariable Long meetingId, Principal connectedUser) {
         Optional<User> user = userService.getUser(connectedUser);
         Optional<Meeting> meeting = meetingService.removeStudentMeeting(meetingId, user);
-        logger.info("Successfully removed student with id: " + user.get().getId()
+        logger.info("Removal of student from meeting: Successfully removed student with id: " + user.get().getId()
                 + " from meeting with id: " + meetingId + " at: " + LocalDateTime.now());
         return meeting.map(meetingEntity -> {
             MeetingDto meetingDto = meetingMapper.mapToDto(meetingEntity);
@@ -79,7 +83,8 @@ public class MeetingController {
         Optional<User> teacher = userService.getUser(connectedUser);
         Meeting newMeeting = meetingService.createMeeting(meetingMapper.mapFromDto(meetingDto), teacher);
         MeetingDto newMeetingDto = meetingMapper.mapToDto(newMeeting);
-        logger.info("Successfully created meeting with id: " + newMeeting.getId() + " at: " + LocalDateTime.now());
+        logger.info("Creation of meeting: Successfully created meeting with id: " + newMeeting.getId() + " at: "
+                + LocalDateTime.now());
         return new ResponseEntity<>(newMeetingDto, HttpStatus.CREATED);
     }
 
@@ -87,7 +92,8 @@ public class MeetingController {
     public List<MeetingDto> getCourseMeetings(@PathVariable Long courseId, Principal connectedUser) {
         Optional<User> student = userService.getUser(connectedUser);
         List<Meeting> meetings = meetingService.getCourseMeeting(courseId, student);
-        logger.info("Successfully retrieved all meetings for course with id: " + courseId + " at: " + LocalDateTime.now());
+        logger.info("Get course meeting: Successfully retrieved all meetings for course with id: " + courseId
+                + " at: " + LocalDateTime.now());
         return meetings.stream().map(meetingMapper::mapToDto).collect(Collectors.toList());
     }
 
@@ -95,7 +101,8 @@ public class MeetingController {
     public ResponseEntity<MeetingDto> addStudentToMeeting(Principal connectedUser, @PathVariable Long meetingId) {
         Optional<User> student = userService.getUser(connectedUser);
         Meeting meeting = meetingService.addStudentToMeeting(meetingId, student);
-        logger.info("Successfully added student with id: " + student.get().getId() + " to meeting with id: "
+        logger.info("Adding student to meeting: Successfully added student with id: " + student.get().getId()
+                + " to meeting with id: "
                 + meetingId + " at: " + LocalDateTime.now());
         return new ResponseEntity<>(meetingMapper.mapToDto(meeting), HttpStatus.OK);
     }

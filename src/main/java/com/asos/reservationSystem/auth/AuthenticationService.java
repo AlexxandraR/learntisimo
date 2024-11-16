@@ -1,7 +1,9 @@
 package com.asos.reservationSystem.auth;
 
 import com.asos.reservationSystem.config.JwtService;
+import com.asos.reservationSystem.controllers.UserController;
 import com.asos.reservationSystem.domain.entities.User;
+import com.asos.reservationSystem.exception.CustomException;
 import com.asos.reservationSystem.repositories.UserRepository;
 import com.asos.reservationSystem.token.Token;
 import com.asos.reservationSystem.token.TokenRepository;
@@ -10,14 +12,19 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.asos.reservationSystem.domain.entities.Role;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 
 
 @Service
@@ -31,30 +38,49 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
 
     public AuthenticationResponse register(RegisterRequest request) {
-        var user = User.builder()
-                .firstName(request.getFirstName())
-                .lastName(request.getLastName())
-                .email(request.getEmail())
-                .phoneNumber(request.getPhoneNumber())
-                .password(passwordEncoder.encode(request.getPassword()))
-                .role(Role.STUDENT)
-                .build();
-        var savedUser = repository.save(user);
-        var jwtToken = jwtService.generateToken(user);
-        var refreshedToken = jwtService.generateRefreshToken(user);
-        saveUserToken(savedUser, jwtToken, true);
-        saveUserToken(savedUser, refreshedToken, false);
-        return AuthenticationResponse.builder().accessToken(jwtToken).refreshToken(refreshedToken).build();
+        Logger logger = LoggerFactory.getLogger(UserController.class);
+        try {
+            var user = User.builder()
+                    .firstName(request.getFirstName())
+                    .lastName(request.getLastName())
+                    .email(request.getEmail())
+                    .phoneNumber(request.getPhoneNumber())
+                    .password(passwordEncoder.encode(request.getPassword()))
+                    .role(Role.STUDENT)
+                    .build();
+            var savedUser = repository.save(user);
+            var jwtToken = jwtService.generateToken(user);
+            var refreshedToken = jwtService.generateRefreshToken(user);
+            saveUserToken(savedUser, jwtToken, true);
+            saveUserToken(savedUser, refreshedToken, false);
+            logger.info("Register: Successfully registered user with id: " + user.getId() + " at: "
+                    + LocalDateTime.now());
+            return AuthenticationResponse.builder().accessToken(jwtToken).refreshToken(refreshedToken).build();
+        }catch (Exception e){
+            throw new CustomException("Registration failed.", "Registration: Registration failed for "
+                    + "user with email: " + request.getEmail() + ".",
+                    HttpStatus.UNAUTHORIZED);
+        }
     }
 
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
-        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
+        Logger logger = LoggerFactory.getLogger(UserController.class);
+        try{
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(),
+                    request.getPassword()));
+        }catch (AuthenticationException e){
+            throw new CustomException("Authentication failed.", "Authentication: Authentication failed for "
+                    + "user with email: " + request.getEmail() + ".",
+                    HttpStatus.UNAUTHORIZED);
+        }
         var user = repository.findUserByEmail(request.getEmail()).orElseThrow();
         var jwtToken = jwtService.generateToken(user);
         var refreshedToken = jwtService.generateRefreshToken(user);
         revokeAllUserTokens(user);
         saveUserToken(user, jwtToken, true);
         saveUserToken(user, refreshedToken, false);
+        logger.info("Authenticate: Successfully authenticated user with id: " + user.getId() + " at: "
+                + LocalDateTime.now());
         return AuthenticationResponse.builder().accessToken(jwtToken).refreshToken(refreshedToken).build();
     }
 
@@ -120,7 +146,6 @@ public class AuthenticationService {
                         .build();
                 new ObjectMapper().writeValue(response.getOutputStream(), authResponse);
             } else {
-                //throw new CustomException("Authorization has expired.", "Authorization: Authorization has expired.", HttpStatus.FORBIDDEN);
                 return;
             }
         }

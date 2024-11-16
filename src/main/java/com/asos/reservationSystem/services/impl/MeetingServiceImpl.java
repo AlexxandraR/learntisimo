@@ -6,23 +6,19 @@ import com.asos.reservationSystem.domain.entities.User;
 import com.asos.reservationSystem.exception.CustomException;
 import com.asos.reservationSystem.repositories.MeetingRepository;
 import com.asos.reservationSystem.services.MeetingService;
-import com.asos.reservationSystem.services.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
 public class MeetingServiceImpl implements MeetingService {
     private final MeetingRepository meetingRepository;
-    private final UserService userService;
 
 
-    public MeetingServiceImpl(MeetingRepository meetingRepository, UserService userService) {
+    public MeetingServiceImpl(MeetingRepository meetingRepository) {
         this.meetingRepository = meetingRepository;
-        this.userService = userService;
     }
 
     @Override
@@ -43,7 +39,7 @@ public class MeetingServiceImpl implements MeetingService {
     public List<Meeting> getStudentMeetings(Optional<User> student) {
         if(student.isEmpty()){
             throw new CustomException("User does not exist.",
-                    "Get student meetings: User does not exist.", HttpStatus.NOT_FOUND);
+                    "Get student's meetings: User does not exist.", HttpStatus.NOT_FOUND);
         }
         if(student.get().getRole() != Role.STUDENT){
             throw new CustomException("Only student can use this endpoint: /studentMeetings.",
@@ -147,7 +143,8 @@ public class MeetingServiceImpl implements MeetingService {
         Optional<Meeting> meeting = meetingRepository.findById(meetingId);
         if (meeting.isEmpty()) {
             throw new CustomException("Meeting does not exist.",
-                    "Adding student to meeting: Meeting with id: " + meetingId + " does not exist.", HttpStatus.NOT_FOUND);
+                    "Adding student to meeting: Meeting with id: " + meetingId + " does not exist.",
+                    HttpStatus.NOT_FOUND);
         }
         if(student.isEmpty()){
             throw new CustomException("User does not exist.",

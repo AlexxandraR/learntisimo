@@ -21,7 +21,8 @@ public class TeachingServiceImpl implements TeachingRequestService {
     private final CourseService courseService;
 
 
-    public TeachingServiceImpl(TeachingRequestRepository teachingRequestRepository, UserService userService, CourseService courseService) {
+    public TeachingServiceImpl(TeachingRequestRepository teachingRequestRepository, UserService userService,
+                               CourseService courseService) {
         this.teachingRequestRepository = teachingRequestRepository;
         this.userService = userService;
         this.courseService = courseService;
@@ -67,22 +68,27 @@ public class TeachingServiceImpl implements TeachingRequestService {
     }
 
     @Override
-    public void updateTeachingRequestStatus(Long requestId, User user, Optional<User> admin, TeachingRequestStatus status) {
+    public void updateTeachingRequestStatus(Long requestId, User user, Optional<User> admin,
+                                            TeachingRequestStatus status) {
         if (admin.isEmpty()) {
             throw new CustomException("User does not exist.",
                     "Update teaching request status: User does not exist.", HttpStatus.NOT_FOUND);
         }
         if (!admin.get().getRole().equals(Role.ADMIN)) {
             throw new CustomException("Only admin can update teaching request status.",
-                    "Update teaching request status: Only admin can update teaching request status.", HttpStatus.BAD_REQUEST);
+                    "Update teaching request status: Only admin can update teaching request status.",
+                    HttpStatus.BAD_REQUEST);
         }
 
         teachingRequestRepository.findById(requestId).ifPresentOrElse(
                 teachingRequest -> {
-                    if ((status == TeachingRequestStatus.APPROVED && teachingRequest.getStatus() == TeachingRequestStatus.APPROVED) ||
-                            (status == TeachingRequestStatus.REJECTED && teachingRequest.getStatus() == TeachingRequestStatus.REJECTED)) {
+                    if ((status == TeachingRequestStatus.APPROVED &&
+                            teachingRequest.getStatus() == TeachingRequestStatus.APPROVED) ||
+                            (status == TeachingRequestStatus.REJECTED
+                                    && teachingRequest.getStatus() == TeachingRequestStatus.REJECTED)) {
                         throw new CustomException("Teaching request already " + status.toString().toLowerCase() + ".",
-                                "Update teaching request status: Teaching request with id: " + requestId + " is already " + status.toString().toLowerCase() + ".",
+                                "Update teaching request status: Teaching request with id: " + requestId
+                                        + " is already " + status.toString().toLowerCase() + ".",
                                 HttpStatus.BAD_REQUEST);
                     }
 
@@ -102,7 +108,8 @@ public class TeachingServiceImpl implements TeachingRequestService {
                 },
                 () -> {
                     throw new CustomException("Teaching request not found.",
-                            "Update teaching request status: Teaching request with id: " + requestId + " not found.", HttpStatus.NOT_FOUND);
+                            "Update teaching request status: Teaching request with id: " + requestId + " not found.",
+                            HttpStatus.NOT_FOUND);
                 }
         );
     }

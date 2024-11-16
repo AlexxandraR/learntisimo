@@ -15,7 +15,6 @@ import java.util.Optional;
 @Repository
 public interface MeetingRepository extends CrudRepository<Meeting, Long> {
     List<Meeting> findByCourse(Course course);
-    List<Meeting> findByCourseAndBeginningBefore(Course course, LocalDateTime dateTime);
     List<Meeting> findByTeacherId(Long teacherId);
     List<Meeting> findByStudentId(Long studentId);
 

@@ -2,7 +2,6 @@ package com.asos.reservationSystem.services.impl;
 
 import com.asos.reservationSystem.auth.AuthenticationService;
 import com.asos.reservationSystem.exception.CustomException;
-import org.springframework.boot.context.properties.source.MutuallyExclusiveConfigurationPropertiesException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import com.asos.reservationSystem.domain.entities.Role;
@@ -18,7 +17,6 @@ import java.sql.Blob;
 import java.security.Principal;
 import java.util.Objects;
 import java.util.Optional;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -26,7 +24,8 @@ public class UserServiceImpl implements UserService {
     private final AuthenticationService authenticationService;
     private final PasswordEncoder passwordEncoder;
 
-    public UserServiceImpl(UserRepository userRepository, AuthenticationService authenticationService, PasswordEncoder passwordEncoder)
+    public UserServiceImpl(UserRepository userRepository, AuthenticationService authenticationService,
+                           PasswordEncoder passwordEncoder)
     {
         this.userRepository = userRepository;
         this.authenticationService = authenticationService;
@@ -51,7 +50,8 @@ public class UserServiceImpl implements UserService {
                 user.get().setPhoto(photoBlob);
                 userRepository.save(user.get());
             }catch (Exception e){
-                throw new CustomException("The image could not be loaded.", "Set image: The image could not be loaded.", HttpStatus.INTERNAL_SERVER_ERROR);
+                throw new CustomException("The image could not be loaded.", "Set image: The image could not be loaded.",
+                        HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
     }
@@ -63,13 +63,14 @@ public class UserServiceImpl implements UserService {
                     "Get image: User does not exist.", HttpStatus.NOT_FOUND);
         }
         if (user.get().getPhoto() == null) {
-            throw new CustomException("Image not found for user.", "Get image: Image not found for user.", HttpStatus.NOT_FOUND);
+            throw new CustomException("Image not found for user.", "Get image: Image not found for user.",
+                    HttpStatus.NOT_FOUND);
         }
         try {
             return user.get().getPhoto().getBytes(1, (int) user.get().getPhoto().length());
         }catch (Exception e){
-            e.printStackTrace();  // This prints the stack trace to the console
-            throw new CustomException("The image could not be loaded.", "Set image: The image could not be loaded.", HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new CustomException("The image could not be loaded.", "Set image: The image could not be loaded.",
+                    HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -79,7 +80,7 @@ public class UserServiceImpl implements UserService {
                     "Remove image: User does not exist.", HttpStatus.NOT_FOUND);
         }
         try {
-            user.get().setPhoto(null);  // Set the photo to null to remove it
+            user.get().setPhoto(null);
             userRepository.save(user.get());
         } catch (Exception e) {
             throw new CustomException("The image could not be removed.", 
@@ -96,7 +97,8 @@ public class UserServiceImpl implements UserService {
                 },
                 () -> {
                     throw new CustomException("User does not exist.",
-                            "Set status: User with email: " + user.getEmail() + " does not exist.", HttpStatus.NOT_FOUND);
+                            "Set status: User with email: " + user.getEmail() + " does not exist.",
+                            HttpStatus.NOT_FOUND);
                 }
         );
     }
@@ -113,7 +115,8 @@ public class UserServiceImpl implements UserService {
         try{
             user.get().setPhoneNumber(userData.getPhoneNumber());
         }catch (Exception e){
-            throw new CustomException("Wrong format of phone number.", "Update profile: Wrong format of phone number.", HttpStatus.BAD_REQUEST);
+            throw new CustomException("Wrong format of phone number.", "Update profile: Wrong format of phone number.",
+                    HttpStatus.BAD_REQUEST);
         }
         user.get().setDescription(userData.getDescription());
         userRepository.save(user.get());
@@ -126,10 +129,12 @@ public class UserServiceImpl implements UserService {
                     "Update email: User does not exist.", HttpStatus.NOT_FOUND);
         }
         if(Objects.equals(user.get().getEmail(), email)){
-            throw new CustomException("New email is equal to actual email.", "Update email: New email is equal to actual email.", HttpStatus.BAD_REQUEST);
+            throw new CustomException("New email is equal to actual email.", "Update email: New email is equal to actual"
+                    + " email.", HttpStatus.BAD_REQUEST);
         }
         else if(!Objects.equals(oldEmail, user.get().getEmail())){
-            throw new CustomException("Old email is not equal to actual email.", "Update email: Old email is not equal to actual email.", HttpStatus.BAD_REQUEST);
+            throw new CustomException("Old email is not equal to actual email.", "Update email: Old email is not equal"
+                    + " to actual email.", HttpStatus.BAD_REQUEST);
         }
          else if (passwordEncoder.matches(password, user.get().getPassword())) {
             user.get().setEmail(email);
@@ -138,7 +143,8 @@ public class UserServiceImpl implements UserService {
         }
         else {
             throw new CustomException("Password is incorrect.",
-                    "Update email: Password is incorrect for user with id: " + user.get().getId() + ".", HttpStatus.BAD_REQUEST);
+                    "Update email: Password is incorrect for user with id: " + user.get().getId() + ".",
+                    HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -149,7 +155,8 @@ public class UserServiceImpl implements UserService {
                     "Update password: User does not exist.", HttpStatus.NOT_FOUND);
         }
         if(Objects.equals(newPassword, oldPassword)){
-            throw new CustomException("New password is qual to old password.", "Update password: New password is qual to old password.", HttpStatus.BAD_REQUEST);
+            throw new CustomException("New password is qual to old password.", "Update password: New password is " +
+                    "qual to old password.", HttpStatus.BAD_REQUEST);
         }
         else if (passwordEncoder.matches(oldPassword, user.get().getPassword())) {
             user.get().setPassword(passwordEncoder.encode(newPassword));
@@ -157,7 +164,8 @@ public class UserServiceImpl implements UserService {
             authenticationService.revokeAllUserTokens(user.get());
         } else {
             throw new CustomException("Password is incorrect.",
-                    "Update password: Password is incorrect for user with id: " + user.get().getId() + ".", HttpStatus.BAD_REQUEST);
+                    "Update password: Password is incorrect for user with id: " + user.get().getId() + ".",
+                    HttpStatus.BAD_REQUEST);
         }
     }
 }

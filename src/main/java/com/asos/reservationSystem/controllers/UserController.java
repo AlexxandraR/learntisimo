@@ -48,6 +48,8 @@ public class UserController {
     public ResponseEntity<String> uploadPhoto(Principal connectedCustomer, @RequestParam("photo") MultipartFile photo) {
         Optional<User> user = userService.getUser(connectedCustomer);
         userService.saveUserPhoto(user, photo);
+        logger.info("Set image: Successfully uploaded image for user with id: " + user.get().getId() + " at: "
+                + LocalDateTime.now());
         return ResponseEntity.ok("Image uploaded successfully.");
     }
 
@@ -55,7 +57,9 @@ public class UserController {
     public ResponseEntity<byte[]> getPhoto(@PathVariable Long id) {
         byte[] photoBytes = userService.getUserPhoto(id);
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.IMAGE_JPEG); // Adjust for PNG if necessary
+        headers.setContentType(MediaType.IMAGE_JPEG);
+        logger.info("Get image: Successfully get image for user with id: " + id + " at: "
+                + LocalDateTime.now());
         return new ResponseEntity<>(photoBytes, headers, HttpStatus.OK);
     }
 
@@ -63,6 +67,8 @@ public class UserController {
     public ResponseEntity<String> deletePhoto(Principal connectedCustomer) {
         Optional<User> user = userService.getUser(connectedCustomer);
         userService.removeUserPhoto(user);
+        logger.info("Remove image: Successfully removed image of user with id: " + user.get().getId() + " at: "
+                + LocalDateTime.now());
         return ResponseEntity.ok("Profile photo removed successfully.");
     }
 
@@ -72,7 +78,7 @@ public class UserController {
             Optional<User> user = userService.getUser(connectedUser);
             User userData = userMapper.mapFromDto(userDto);
             userService.updateProfile(user, userData);
-            logger.info("Successfully updated user profile with id: " + user.get().getId() + " at: "
+            logger.info("Update profile: Successfully updated user profile with id: " + user.get().getId() + " at: "
                     + LocalDateTime.now());
             return new ResponseEntity<>(userDto, HttpStatus.OK);
         } catch (Exception e) {
@@ -85,7 +91,8 @@ public class UserController {
     public ResponseEntity<UserDto> updateEmail(@RequestBody EmailChangeDto newEmail, Principal connectedUser) {
         Optional<User> user = userService.getUser(connectedUser);
         userService.updateEmail(user, newEmail.getEmail(), newEmail.getNewEmail(), newEmail.getPassword());
-        logger.info("Successfully updated email for user: " + connectedUser.getName() + " at: " + LocalDateTime.now());
+        logger.info("Update email: Successfully updated email for user: " + connectedUser.getName() + " at: "
+                + LocalDateTime.now());
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -93,7 +100,8 @@ public class UserController {
     public ResponseEntity<UserDto> updatePassword(@RequestBody NewPasswordDTO newPassword, Principal connectedUser) {
         Optional<User> user = userService.getUser(connectedUser);
         userService.updatePassword(user, newPassword.getNewPassword(), newPassword.getPassword());
-        logger.info("Successfully updated password for user: " + connectedUser.getName() + " at: " + LocalDateTime.now());
+        logger.info("Update password: Successfully updated password for user: " + connectedUser.getName() + " at: "
+                + LocalDateTime.now());
         return new ResponseEntity<>(HttpStatus.OK);
     }
 }

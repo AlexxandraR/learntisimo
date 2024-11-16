@@ -5,8 +5,6 @@ import com.asos.reservationSystem.domain.dto.UserDto;
 import com.asos.reservationSystem.domain.entities.TeachingRequest;
 import com.asos.reservationSystem.domain.entities.TeachingRequestStatus;
 import com.asos.reservationSystem.domain.entities.User;
-import com.asos.reservationSystem.domain.entities.Role;
-import com.asos.reservationSystem.exception.CustomException;
 import com.asos.reservationSystem.mappers.Mapper;
 import com.asos.reservationSystem.services.TeachingRequestService;
 import com.asos.reservationSystem.services.UserService;
@@ -46,7 +44,8 @@ public class TeachingRequestController {
     public ResponseEntity<Void> applyTeacher(Principal connectedUser) {
         Optional<User> user = userService.getUser(connectedUser);
         requestService.applyTeacher(user);
-        logger.info("Successfully applied teacher with id: " + user.get().getId() + " at: " + LocalDateTime.now());
+        logger.info("Teaching request: Successfully applied teacher with id: " + user.get().getId() + " at: "
+                + LocalDateTime.now());
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -54,8 +53,8 @@ public class TeachingRequestController {
     public List<TeachingRequestDto> getTeachingRequests(Principal connectedUser) {
         Optional<User> user = userService.getUser(connectedUser);
         var teachingRequests = requestService.getTeachingRequests(user);
-        logger.info("Successfully retrieved teaching requests for user with id: " + user.get().getId() +
-                " at: " + LocalDateTime.now());
+        logger.info("Teaching request: Successfully retrieved teaching requests for user with id: " + user.get().getId()
+                + " at: " + LocalDateTime.now());
         return teachingRequests.stream().map(requestMapper::mapToDto).toList();
     }
 
@@ -66,8 +65,8 @@ public class TeachingRequestController {
         Optional<User> admin = userService.getUser(connectedUser);
         User user = userMapper.mapFromDto(userDto);
         requestService.updateTeachingRequestStatus(requestId, user, admin, TeachingRequestStatus.APPROVED);
-        logger.info("Successfully accepted teaching request with id: " + requestId + " for user with id: "
-                + user.getId() + " at: " + LocalDateTime.now());
+        logger.info("Teaching request: Successfully accepted teaching request with id: " + requestId
+                + " for user with id: " + user.getId() + " at: " + LocalDateTime.now());
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -77,8 +76,8 @@ public class TeachingRequestController {
         Optional<User> admin = userService.getUser(connectedUser);
         User user = userMapper.mapFromDto(userDto);
         requestService.updateTeachingRequestStatus(requestId, user, admin, TeachingRequestStatus.REJECTED);
-        logger.info("Successfully denied teaching request with id: " + requestId + " for user with id: "
-                + user.getId() + " at: " + LocalDateTime.now());
+        logger.info("Teaching request: Successfully denied teaching request with id: " + requestId
+                + " for user with id: " + user.getId() + " at: " + LocalDateTime.now());
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
