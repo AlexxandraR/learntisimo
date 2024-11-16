@@ -38,6 +38,7 @@ public class UserServiceImpl implements UserService {
         return userRepository.findById(user.getId());
     }
 
+    @Override
     public void saveUserPhoto(Optional<User> user, MultipartFile photoFile){
         if(user.isEmpty()){
             throw new CustomException("User does not exist.",
@@ -56,6 +57,7 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    @Override
     public byte[] getUserPhoto(Long id) {
         Optional<User> user = userRepository.findById(id);
         if(user.isEmpty()){
@@ -74,6 +76,7 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    @Override
     public void removeUserPhoto(Optional<User> user) {
         if (user.isEmpty()) {
             throw new CustomException("User does not exist.",

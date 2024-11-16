@@ -12,7 +12,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
+import java.util.List;
 
 @Component
 public class DBInitializer implements CommandLineRunner {
@@ -25,8 +25,9 @@ public class DBInitializer implements CommandLineRunner {
     private final PasswordEncoder passwordEncoder;
 
     public DBInitializer(UserRepository userRepository, CourseRepository courseRepository,
-                         MeetingRepository meetingRepository, TeachingRequestRepository teachingRequestRepository, JwtService jwtService,
-                         AuthenticationService authenticationService, PasswordEncoder passwordEncoder) {
+                         MeetingRepository meetingRepository, TeachingRequestRepository teachingRequestRepository,
+                         JwtService jwtService, AuthenticationService authenticationService,
+                         PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.courseRepository = courseRepository;
         this.meetingRepository = meetingRepository;
@@ -38,137 +39,86 @@ public class DBInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
+        var admin = createUser("Admin", "1", "admin@admin.sk", "+421949000000", "admin", Role.ADMIN, null, null);
+        var student1 = createUser("Ján", "Novák", "student@student.com", "+421949111111", "student", Role.STUDENT, null, null);
+        var student2 = createUser("Petra", "Kováčová", "petra.kovacova@student.com", "+421949222222", "student", Role.STUDENT, null, null);
+        var student3 = createUser("Lukáš", "Horák", "lukas.horak@student.com", "+421949333333", "student", Role.STUDENT, null, null);
+
+        var teacher1 = createUser("Mária", "Kučerová", "teacher@teacher.com", "+421949444444", "teacher", Role.TEACHER, "Mgr.", "Skúsená učiteľka fyziky a matematiky.");
+        var teacher2 = createUser("Tomáš", "Král", "tomas.kral@teacher.com", "+421949555555", "teacher", Role.TEACHER, "PhDr.", "Špecialista na informatiku a programovanie.");
+
+        var course1 = createCourse("Fyzika 1", 15.00, "AB-101", teacher1, List.of(student1, student2));
+        var course2 = createCourse("Matematika 1", 20.00, "AB-102", teacher1, List.of(student1, student3));
+        var course5 = createCourse("Matematika 2", 20.00, "AB-102", teacher1, List.of());
+        var course3 = createCourse("Informatika 1", 25.00, "BC-201", teacher2, List.of(student2, student3));
+        var course4 = createCourse("Programovanie v Jave 1", 30.00, "BC-202", teacher2, List.of(student1));
+        var course6 = createCourse("Programovanie v Jave 2", 30.00, "BC-202", teacher2, List.of());
+        var course7 = createCourse("Informatika  2", 35.00, "BC-202", teacher2, List.of());
+
+        createMeeting(LocalDateTime.now().minusDays(2), 2, student1, teacher1, course1);
+        createMeeting(LocalDateTime.now().minusDays(5), 1, student2, teacher1, course2);
+        createMeeting(LocalDateTime.now().minusDays(1), 3, student3, teacher2, course3);
+        createMeeting(LocalDateTime.now().minusHours(6), 2, student1, teacher2, course4);
+        createMeeting(LocalDateTime.now().plusDays(6), 60, null, teacher2, course4);
+        createMeeting(LocalDateTime.now().plusDays(6), 60, null, teacher1, course2);
+        createMeeting(LocalDateTime.now().plusDays(8), 60, null, teacher2, course6);
+        createMeeting(LocalDateTime.now().plusDays(9), 60, null, teacher2, course6);
+        createMeeting(LocalDateTime.now().plusDays(10), 60, null, teacher2, course6);
+        createMeeting(LocalDateTime.now().plusDays(11), 60, null, teacher2, course6);
+        createMeeting(LocalDateTime.now().plusDays(1), 60, null, teacher2, course7);
+        createMeeting(LocalDateTime.now().plusDays(2), 60, null, teacher1, course5);
+
+        createTeachingRequest(LocalDateTime.now().minusDays(3), teacher1, TeachingRequestStatus.APPROVED);
+        createTeachingRequest(LocalDateTime.now().minusDays(7), teacher2, TeachingRequestStatus.APPROVED);
+    }
+
+    private User createUser(String firstName, String lastName, String email, String phoneNumber, String password, Role role, String degree, String description) {
         var user = User.builder()
-                .firstName("Admin")
-                .lastName("1")
-                .email("admin@admin.sk")
-                .phoneNumber("+421949000000")
-                .password(passwordEncoder.encode("admin"))
-                .role(Role.ADMIN)
+                .firstName(firstName)
+                .lastName(lastName)
+                .email(email)
+                .phoneNumber(phoneNumber)
+                .password(passwordEncoder.encode(password))
+                .role(role)
+                .degree(degree)
+                .description(description)
                 .build();
         var savedUser = userRepository.save(user);
         var jwtToken = jwtService.generateToken(user);
         var refreshedToken = jwtService.generateRefreshToken(user);
         authenticationService.saveUserToken(savedUser, jwtToken, true);
         authenticationService.saveUserToken(savedUser, refreshedToken, false);
+        return savedUser;
+    }
 
-        var user1 = User.builder()
-                .firstName("John")
-                .lastName("Boe")
-                .email("student@student.com")
-                .phoneNumber("+421949000000")
-                .password(passwordEncoder.encode("student"))
-                .role(Role.STUDENT)
-                .build();
-        var savedUser1 = userRepository.save(user1);
-        var jwtToken1 = jwtService.generateToken(user1);
-        var refreshedToken1 = jwtService.generateRefreshToken(user1);
-        authenticationService.saveUserToken(savedUser1, jwtToken1, true);
-        authenticationService.saveUserToken(savedUser1, refreshedToken1, false);
-
-        var user11 = User.builder()
-                .firstName("Pepek")
-                .lastName("Namornik")
-                .email("studen1t@student1.com")
-                .phoneNumber("+421949000000")
-                .password(passwordEncoder.encode("student"))
-                .role(Role.STUDENT)
-                .build();
-        var savedUser11 = userRepository.save(user11);
-        var jwtToken11 = jwtService.generateToken(user11);
-        var refreshedToken11 = jwtService.generateRefreshToken(user11);
-        authenticationService.saveUserToken(savedUser11, jwtToken11, true);
-        authenticationService.saveUserToken(savedUser11, refreshedToken11, false);
-
-        var user12 = User.builder()
-                .firstName("Bulanec")
-                .lastName("Bulancakovsky")
-                .email("studen2t@student2.com")
-                .phoneNumber("+421949000000")
-                .password(passwordEncoder.encode("student"))
-                .role(Role.STUDENT)
-                .build();
-        var savedUser12 = userRepository.save(user12);
-        var jwtToken12 = jwtService.generateToken(user12);
-        var refreshedToken12 = jwtService.generateRefreshToken(user12);
-        authenticationService.saveUserToken(savedUser12, jwtToken12, true);
-        authenticationService.saveUserToken(savedUser12, refreshedToken12, false);
-
-
-        var user2 = User.builder()
-                .firstName("Sanne")
-                .lastName("Boe")
-                .email("teacher@teacher.com")
-                .phoneNumber("+421949000000")
-                .password(passwordEncoder.encode("teacher"))
-                .role(Role.TEACHER)
-                .degree("Mgr.")
-                .description("I am awesome!")
-                .build();
-        var savedUser2 = userRepository.save(user2);
-        var jwtToken2 = jwtService.generateToken(user2);
-        var refreshedToken2 = jwtService.generateRefreshToken(user2);
-        authenticationService.saveUserToken(savedUser2, jwtToken2, true);
-        authenticationService.saveUserToken(savedUser2, refreshedToken2, false);
-
-        var user3 = User.builder()
-                .firstName("Jakub")
-                .lastName("Gombala")
-                .email("kubinel47@gmail.com")
-                .phoneNumber("+421949000001")
-                .password(passwordEncoder.encode("Q1w2e3r4_"))
-                .role(Role.TEACHER)
-                .degree("Ing.")
-                .description("TOP")
-                .build();
-        var savedUser3 = userRepository.save(user3);
-        var jwtToken3 = jwtService.generateToken(user3);
-        var refreshedToken3 = jwtService.generateRefreshToken(user3);
-        authenticationService.saveUserToken(savedUser3, jwtToken3, true);
-        authenticationService.saveUserToken(savedUser3, refreshedToken3, false);
-
-
+    private Course createCourse(String name, double price, String room, User teacher, List<User> students) {
         var course = Course.builder()
-                .name("Fyzika")
-                .price(10.50)
-                .room("AB-300")
-                .teacher(savedUser2)
-                .students(Arrays.asList(savedUser1, savedUser11))
+                .name(name)
+                .price(price)
+                .room(room)
+                .teacher(teacher)
+                .students(students)
                 .build();
-        var savedCourse = courseRepository.save(course);
+        return courseRepository.save(course);
+    }
 
-        var course2 = Course.builder()
-                .name("Informatika")
-                .price(25.0)
-                .room("AB-150")
-                .teacher(savedUser3)
-                .students(Arrays.asList(savedUser1, savedUser12))
-                .build();
-        var savedCourse2 = courseRepository.save(course2);
-
-        var course1 = Course.builder()
-                .name("Matematika")
-                .price(12.50)
-                .room("BC-300")
-                .teacher(savedUser2)
-                .students(Arrays.asList(savedUser1, savedUser12))
-                .build();
-        var savedCourse1 = courseRepository.save(course1);
-
+    private void createMeeting(LocalDateTime beginning, int duration, User student, User teacher, Course course) {
         var meeting = Meeting.builder()
-                .beginning(LocalDateTime.now().minusDays(4))
-                .duration(1)
-                .student(savedUser1)
-                .teacher(savedUser2)
-                .course(savedCourse)
+                .beginning(beginning)
+                .duration(duration)
+                .student(student)
+                .teacher(teacher)
+                .course(course)
                 .build();
-        var savedMeeting = meetingRepository.save(meeting);
+        meetingRepository.save(meeting);
+    }
 
+    private void createTeachingRequest(LocalDateTime dateTime, User teacher, TeachingRequestStatus status) {
         var request = TeachingRequest.builder()
-                .status(TeachingRequestStatus.APPROVED)
-                .dateTime(LocalDateTime.now())
-                .teacher(savedUser2)
+                .status(status)
+                .dateTime(dateTime)
+                .teacher(teacher)
                 .build();
-        var savedTeachingRequest = teachingRequestRepository.save(request);
+        teachingRequestRepository.save(request);
     }
 }
