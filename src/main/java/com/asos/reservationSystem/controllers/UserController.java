@@ -17,6 +17,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.Optional;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 
 @RestController
 @RequestMapping("/")
@@ -52,7 +54,16 @@ public class UserController {
     @GetMapping("/photo/{id}")
     public ResponseEntity<byte[]> getPhoto(@PathVariable Long id) {
         byte[] photoBytes = userService.getUserPhoto(id);
-        return ResponseEntity.ok(photoBytes);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.IMAGE_JPEG); // Adjust for PNG if necessary
+        return new ResponseEntity<>(photoBytes, headers, HttpStatus.OK);
+    }
+
+    @DeleteMapping("/photo")
+    public ResponseEntity<String> deletePhoto(Principal connectedCustomer) {
+        Optional<User> user = userService.getUser(connectedCustomer);
+        userService.removeUserPhoto(user);
+        return ResponseEntity.ok("Profile photo removed successfully.");
     }
 
     @PutMapping(path = "/updateUserProfile")

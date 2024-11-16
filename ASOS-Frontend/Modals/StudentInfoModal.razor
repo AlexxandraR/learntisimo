@@ -1,4 +1,5 @@
-﻿
+﻿@inject IHttpClientFactory HttpClientFactory
+
 <style>
     .rz-fieldset-legend-text {
         font-weight: bold;
@@ -9,7 +10,16 @@
 <RadzenStack Style="gap:20px; min-width: 250px;">
     <RadzenFieldset Text="Základné údaje">
         <RadzenRow JustifyContent="JustifyContent.Start" Gap="1rem">
-            <RadzenImage Style="width: 200px; height: 225px;" Path="/profile_picture.jpg" />
+            @if (profileImage != null)
+            {
+                <RadzenImage Style="width: 200px; height: 225px;" Path="@profileImage" />
+            }
+            else
+            {
+                <div style="width: 200px; height: 225px; display: flex; justify-content: center; align-items: center; border: 1px dashed gray; border-radius: 10px;">
+                    <RadzenIcon Icon="account_circle" Style="color: gray; font-size: 5rem;" />
+                </div>
+            }
             <RadzenStack Gap="0">
                 <RadzenText TextStyle="TextStyle.Overline" class="rz-display-flex rz-mt-0 rz-my-0" Style="font-size:small;">Titul</RadzenText>
                 <RadzenText TextStyle="TextStyle.Body1" Style="font-size:large;"><b>@(Student.Degree == null ? "-" : Student.Degree)</b></RadzenText>
@@ -27,8 +37,19 @@
 </RadzenStack>
 
 @code {
-    //TODO: Assign student's picture
-
     [Parameter]
     public UserDto Student { get; set; }
+
+    string? profileImage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var httpClient = HttpClientFactory.CreateClient("API");
+        var photoResponse = await httpClient.GetAsync($"/photo/{Student!.Id}");
+        if (photoResponse.IsSuccessStatusCode)
+        {
+            var imageBytes = await photoResponse.Content.ReadAsByteArrayAsync();
+            profileImage = $"data:image/jpeg;base64,{Convert.ToBase64String(imageBytes)}";
+        }
+    }
 }

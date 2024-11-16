@@ -14,38 +14,38 @@
 
 <style>
 	.mud-tabs-tabbar {
-		border-bottom: var(--rz-fieldset-border);
+	border-bottom: var(--rz-fieldset-border);
 	}
 
 	.mud-tabs {
-		display: flex;
-		width: 100%;
-		height: 100%;
+	display: flex;
+	width: 100%;
+	height: 100%;
 	}
 
 	.mud-tabs-panels {
-		display: flex;
-		height: 100%;
-		overflow-y: auto;
-		overflow-x: hidden;
+	display: flex;
+	height: 100%;
+	overflow-y: auto;
+	overflow-x: hidden;
 	}
 
 	.rz-fieldset-legend-text {
-		font-weight: bold;
-		font-size: medium;
+	font-weight: bold;
+	font-size: medium;
 	}
 
 	@@media only screen and (max-width: 1000px) {
-		#profile-page {
-			height: 100%;
-			border-radius: 0 !important;
-		}
+	#profile-page {
+	height: 100%;
+	border-radius: 0 !important;
+	}
 	}
 
 	@@media only screen and (max-width: 590px) {
-		#profile-form {
-			justify-content: center !important;
-		}
+	#profile-form {
+	justify-content: center !important;
+	}
 	}
 </style>
 
@@ -53,7 +53,7 @@
 	<RadzenCard id="profile-page" Variant="Radzen.Variant.Filled" class="rz-p-0 rz-shadow-3 rz-border-radius-3" Style="max-width: 1000px; min-height:690px; flex:1 1; margin:auto; overflow: auto;">
 		@if (currentUser != null)
 		{
-			<MudTabs Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-5">
+			<MudTabs Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-5" ActivePanelIndexChanged="InitializeFormInputs">
 				<MudTabPanel Text="Profil">
 					<EditForm Model="formInputModel" OnValidSubmit="UpdateProfile" style="margin:auto; max-width:650px; flex:1">
 						<DataAnnotationsValidator />
@@ -71,7 +71,16 @@
 										<MudTextField Label="Tel.číslo" Variant="MudBlazor.Variant.Outlined" ShrinkLabel Mask="@(new PatternMask("+000 000 000 000"))" @bind-Value="formInputModel.PhoneNumber" For="@(() => formInputModel.PhoneNumber)" Style="width:250px;" />
 									</RadzenStack>
 									<RadzenStack Style="width:48%;min-width:250px" JustifyContent="JustifyContent.Center" AlignItems="Radzen.AlignItems.Center" Gap="0.75rem">
-										<RadzenImage Style="height: 250px;" Path="/profile_picture.jpg" />
+										@if (profileImage != null)
+										{
+											<RadzenImage Style="height: 250px;" Path="@profileImage" />
+										}
+										else
+										{
+											<div style="width: 250px; height: 250px; display: flex; justify-content: center; align-items: center; border: 1px dashed gray; border-radius: 10px;">
+												<RadzenIcon Icon="account_circle" Style="color: gray; font-size: 5rem;" />
+											</div>
+										}
 										<RadzenRow JustifyContent="JustifyContent.Center" Gap="0.6rem">
 											<MudFileUpload T="IBrowserFile" FilesChanged="(e) => UploadProfilePicture(e)" Accept=".jpg, .png" Style="width:fit-content; border-radius:20px; ">
 												<ActivatorContent>
@@ -102,8 +111,8 @@
 						<DataAnnotationsValidator />
 						<RadzenFieldset Text="Zmena emailu">
 							<RadzenStack Orientation="Radzen.Orientation.Vertical" Gap="0.5rem">
-								<MudTextField Label="Email" Variant="MudBlazor.Variant.Outlined" ShrinkLabel @bind-Value="emailChangeInputModel.Email" For="@(() => emailChangeInputModel.Email)" />
-								<MudTextField Label="Nový email" Variant="MudBlazor.Variant.Outlined" ShrinkLabel @bind-Value="emailChangeInputModel.NewEmail" For="@(() => emailChangeInputModel.NewEmail)" />
+								<MudTextField Label="Email" Variant="MudBlazor.Variant.Outlined" ShrinkLabel @bind-Value="emailChangeInputModel.Email" For="@(() => emailChangeInputModel.Email)" Disabled ReadOnly />
+								<MudTextField Label="Nový email" Variant="MudBlazor.Variant.Outlined" ShrinkLabel @bind-Value="emailChangeInputModel.NewEmail" For="@(() => emailChangeInputModel.NewEmail)" autocomplete="off" />
 								<MudTextField Label="Heslo" Variant="MudBlazor.Variant.Outlined" ShrinkLabel @bind-Value="emailChangeInputModel.Password" For="@(() => emailChangeInputModel.Password)" InputType="InputType.Password" />
 							</RadzenStack>
 						</RadzenFieldset>
@@ -140,6 +149,8 @@
 	EmailChangeInputModel emailChangeInputModel;
 	PasswordChangeInputModel passwordChangeInputModel;
 
+	string? profileImage;
+
 	protected override async Task OnInitializedAsync()
 	{
 		var httpClient = HttpClientFactory.CreateClient("API");
@@ -152,43 +163,55 @@
 
 			currentUser = JsonSerializer.Deserialize<UserDto>(userJson);
 
-			formInputModel = new ProfileInputModel
-				{
-					Degree = currentUser.Degree,
-					FirstName = currentUser.FirstName,
-					LastName = currentUser.LastName,
-					Email = currentUser.Email,
-					PhoneNumber = currentUser.PhoneNumber,
-					Description = currentUser.Description
-				};
-
-			emailChangeInputModel = new EmailChangeInputModel
-				{
-					Email = currentUser.Email,
-					NewEmail = string.Empty,
-					Password = string.Empty
-				};
-
-			passwordChangeInputModel = new PasswordChangeInputModel
-				{
-					Password = string.Empty,
-					NewPassword = string.Empty,
-					ConfirmNewPassword = string.Empty
-				};
+			var photoResponse = await httpClient.GetAsync($"/photo/{currentUser!.Id}");
+			if (photoResponse.IsSuccessStatusCode)
+			{
+				var imageBytes = await photoResponse.Content.ReadAsByteArrayAsync();
+				profileImage = $"data:image/jpeg;base64,{Convert.ToBase64String(imageBytes)}";
+			}
 		}
+
+		InitializeFormInputs();
+	}
+
+	void InitializeFormInputs()
+	{
+		formInputModel = new ProfileInputModel
+			{
+				Degree = currentUser.Degree,
+				FirstName = currentUser.FirstName,
+				LastName = currentUser.LastName,
+				Email = currentUser.Email,
+				PhoneNumber = currentUser.PhoneNumber,
+				Description = currentUser.Description
+			};
+
+		emailChangeInputModel = new EmailChangeInputModel
+			{
+				Email = currentUser.Email,
+				NewEmail = string.Empty,
+				Password = string.Empty
+			};
+
+		passwordChangeInputModel = new PasswordChangeInputModel
+			{
+				Password = string.Empty,
+				NewPassword = string.Empty,
+				ConfirmNewPassword = string.Empty
+			};
 	}
 
 	async Task UpdateProfile()
 	{
 		ProfileChangeDto profileChangeDto = new()
-		{
-			Email = currentUser.Email,
-			Degree = formInputModel.Degree,
-			FirstName = formInputModel.FirstName,
-			LastName = formInputModel.LastName,
-			PhoneNumber = formInputModel.PhoneNumber,
-			Description = formInputModel.Description
-		};
+			{
+				Email = currentUser.Email,
+				Degree = formInputModel.Degree,
+				FirstName = formInputModel.FirstName,
+				LastName = formInputModel.LastName,
+				PhoneNumber = formInputModel.PhoneNumber,
+				Description = formInputModel.Description
+			};
 
 		var jsonContent = new StringContent(
 				JsonSerializer.Serialize(profileChangeDto),
@@ -197,26 +220,27 @@
 
 		var httpClient = HttpClientFactory.CreateClient("API");
 		var response = await httpClient.PutAsync("/updateUserProfile", jsonContent);
-        var errorMessage = await response.Content.ReadAsStringAsync();
+		var errorMessage = await response.Content.ReadAsStringAsync();
 		if (response.IsSuccessStatusCode)
 		{
 			Snackbar.Add("Profil bol úspešne upravený!", Severity.Success);
 		}
-        else if (errorMessage == "User does not exist.")
-        {
-            Snackbar.Add("Používateľ neexistuje.", Severity.Error);
-        }
-        else if (errorMessage == "Wrong format of phone number.")
-        {
-            Snackbar.Add("Používate zlý formát telefónneho čísla.", Severity.Error);
-        }
-        else if(errorMessage == "Wrong format of data."){
-            Snackbar.Add("Používate zlý formát dát.", Severity.Error);
-        }
-        else
-        {
-            Snackbar.Add("Nastala chyba pri aktualizácii profilu. Skúste to znova neskôr.", Severity.Error);
-        }
+		else if (errorMessage == "User does not exist.")
+		{
+			Snackbar.Add("Používateľ neexistuje.", Severity.Error);
+		}
+		else if (errorMessage == "Wrong format of phone number.")
+		{
+			Snackbar.Add("Používate zlý formát telefónneho čísla.", Severity.Error);
+		}
+		else if (errorMessage == "Wrong format of data.")
+		{
+			Snackbar.Add("Používate zlý formát dát.", Severity.Error);
+		}
+		else
+		{
+			Snackbar.Add("Nastala chyba pri aktualizácii profilu. Skúste to znova neskôr.", Severity.Error);
+		}
 	}
 
 	async Task UpdateEmail()
@@ -228,11 +252,11 @@
 		}
 
 		EmailChangeDto emailChangeDto = new()
-		{
-			Email = emailChangeInputModel.Email,
-			NewEmail = emailChangeInputModel.NewEmail,
-			Password = emailChangeInputModel.Password,
-		};
+			{
+				Email = emailChangeInputModel.Email,
+				NewEmail = emailChangeInputModel.NewEmail,
+				Password = emailChangeInputModel.Password,
+			};
 
 		var jsonContent = new StringContent(
 				JsonSerializer.Serialize(emailChangeDto),
@@ -241,31 +265,33 @@
 
 		var httpClient = HttpClientFactory.CreateClient("API");
 		var response = await httpClient.PatchAsync("updateEmail", jsonContent);
-        var errorMessage = await response.Content.ReadAsStringAsync();
+		var errorMessage = await response.Content.ReadAsStringAsync();
 		if (response.IsSuccessStatusCode)
 		{
 			Snackbar.Add("Email bol úspešne zmenený!", Severity.Success);
+
+			NavigationManager.NavigateTo("/logout");
 		}
-        else if (errorMessage == "User does not exist.")
-        {
-            Snackbar.Add("Používateľ neexistuje.", Severity.Error);
-        }
-        else if (errorMessage == "New email is equal to actual email.")
-        {
-            Snackbar.Add("Nová emailová adresa je totožná.", Severity.Error);
-        }
-        else if (errorMessage == "Old email is not equal to actual email.")
-        {
-            Snackbar.Add("Email v políčku \"email\" sa nezhoduje s aktuálnym emailom.", Severity.Error);
-        }
-        else if (errorMessage == "Password is incorrect.")
-        {
-            Snackbar.Add("Nesprávne heslo.", Severity.Error);
-        }
-        else
-        {
-            Snackbar.Add("Nastala chyba pri zmene emailu. Skúste to znova neskôr.", Severity.Error);
-        }
+		else if (errorMessage == "User does not exist.")
+		{
+			Snackbar.Add("Používateľ neexistuje.", Severity.Error);
+		}
+		else if (errorMessage == "New email is equal to actual email.")
+		{
+			Snackbar.Add("Nová emailová adresa je totožná.", Severity.Error);
+		}
+		else if (errorMessage == "Old email is not equal to actual email.")
+		{
+			Snackbar.Add("Email v políčku \"email\" sa nezhoduje s aktuálnym emailom.", Severity.Error);
+		}
+		else if (errorMessage == "Password is incorrect.")
+		{
+			Snackbar.Add("Nesprávne heslo.", Severity.Error);
+		}
+		else
+		{
+			Snackbar.Add("Nastala chyba pri zmene emailu. Skúste to znova neskôr.", Severity.Error);
+		}
 	}
 
 	async Task UpdatePassword()
@@ -282,78 +308,121 @@
 			return;
 		}
 		PasswordChangeDto passwordDto = new()
-		{
+			{
 				Password = passwordChangeInputModel.Password,
 				NewPassword = passwordChangeInputModel.NewPassword
-		};
+			};
 
 		var jsonContent = new StringContent(
 				JsonSerializer.Serialize(passwordDto),
 				Encoding.UTF8,
 				"application/json");
 
-		// var plainContent = new StringContent(passwordChangeInputModel.NewPassword.ToString(), Encoding.UTF8, "text/plain");
-
-
 		var httpClient = HttpClientFactory.CreateClient("API");
 		var response = await httpClient.PatchAsync("/updatePassword", jsonContent);
-        var errorMessage = await response.Content.ReadAsStringAsync();
+		var errorMessage = await response.Content.ReadAsStringAsync();
 		if (response.IsSuccessStatusCode)
 		{
 			Snackbar.Add("Heslo bolo úspešne zmenené!", Severity.Success);
+
+			NavigationManager.NavigateTo("/logout");
 		}
-        else if (errorMessage == "User does not exist.")
-        {
-            Snackbar.Add("Používateľ neexistuje.", Severity.Error);
-        }
-        else if (errorMessage == "Password is incorrect.")
-        {
-            Snackbar.Add("Nesprávne heslo.", Severity.Error);
-        }
-        else
-        {
-            Snackbar.Add("Nastala chyba pri zmene hesla. Skúste to znova neskôr.", Severity.Error);
-        }
+		else if (errorMessage == "User does not exist.")
+		{
+			Snackbar.Add("Používateľ neexistuje.", Severity.Error);
+		}
+		else if (errorMessage == "Password is incorrect.")
+		{
+			Snackbar.Add("Nesprávne heslo.", Severity.Error);
+		}
+		else
+		{
+			Snackbar.Add("Nastala chyba pri zmene hesla. Skúste to znova neskôr.", Severity.Error);
+		}
 	}
 
-	async Task UploadProfilePicture(IBrowserFile e)
+	async Task UploadProfilePicture(IBrowserFile file)
 	{
-		//TODO: Upload profile picture via endpoint
+		if (file == null)
+		{
+			Snackbar.Add("Žiadny súbor nebol vybraný.", Severity.Warning);
+			return;
+		}
 
-		Snackbar.Add("Profilová fotka úspešne nahraná!", Severity.Success);
+		try
+		{
+			var httpClient = HttpClientFactory.CreateClient("API");
+
+			using var stream = new MemoryStream();
+			await file.OpenReadStream(maxAllowedSize: 5 * 1024 * 1024).CopyToAsync(stream);
+
+			var content = new MultipartFormDataContent();
+			content.Add(new ByteArrayContent(stream.ToArray()), "photo", file.Name);
+
+			var response = await httpClient.PostAsync($"/photo", content);
+			if (response.IsSuccessStatusCode)
+			{
+				Snackbar.Add("Profilová fotka úspešne nahraná!", Severity.Success);
+
+				var photoResponse = await httpClient.GetAsync($"/photo/{currentUser!.Id}");
+				if (photoResponse.IsSuccessStatusCode)
+				{
+					var imageBytes = await photoResponse.Content.ReadAsByteArrayAsync();
+					profileImage = $"data:image/jpeg;base64,{Convert.ToBase64String(imageBytes)}";
+				}
+			}
+			else
+			{
+				Snackbar.Add("Nepodarilo sa nahrať fotku.", Severity.Error);
+			}
+		}
+		catch (Exception)
+		{
+			Snackbar.Add($"Nastala neočakávaná chyba.", Severity.Error);
+		}
 	}
 
 	async Task DeleteProfilePicture()
 	{
-		//TODO: Delete profile picture via endpoint
+		var httpClient = HttpClientFactory.CreateClient("API");
+		var deleteResponse = await httpClient.DeleteAsync("/photo");
+		if (deleteResponse.IsSuccessStatusCode)
+		{
+			Snackbar.Add("Profilová fotka bola úspešne odstránená.", Severity.Success);
+		}
+		else
+		{
+			Snackbar.Add("Chyba pri odstraňovaní fotky.", Severity.Error);
+			return;
+		}
 
-		Snackbar.Add("Profilová fotka úspešne odstránená!", Severity.Success);
+		profileImage = null;
 	}
 
 	async Task RequestTeacherRole()
 	{
 		var client = HttpClientFactory.CreateClient("API");
 		var response = await client.PatchAsync("/applyTeacher", new StringContent(string.Empty));
-        var errorMessage = await response.Content.ReadAsStringAsync();
+		var errorMessage = await response.Content.ReadAsStringAsync();
 		if (response.IsSuccessStatusCode)
 		{
 			Snackbar.Add("Žiadosť o status učitela bola úspešne podaná!", Severity.Success);
 		}
 		else if (errorMessage == "User does not exist.")
-        {
-            Snackbar.Add("Učiteľ neexistuje.", Severity.Error);
-        }
-        else if (errorMessage == "Only student can apply for teacher status.")
-        {
-            Snackbar.Add("Iba študent môže požiadať o učiteľský status.", Severity.Error);
-        }
-        else if (errorMessage == "Teaching request already exists.")
-        {
-            Snackbar.Add("Žiadosť už bola podaná.", Severity.Error);
-        }
-        else
-        {
-            Snackbar.Add("Nastala chyba pri podaní žiadosťi. Skúste to znova neskôr.", Severity.Error);
-        }
+		{
+			Snackbar.Add("Učiteľ neexistuje.", Severity.Error);
+		}
+		else if (errorMessage == "Only student can apply for teacher status.")
+		{
+			Snackbar.Add("Iba študent môže požiadať o učiteľský status.", Severity.Error);
+		}
+		else if (errorMessage == "Teaching request already exists.")
+		{
+			Snackbar.Add("Žiadosť už bola podaná.", Severity.Error);
+		}
+		else
+		{
+			Snackbar.Add("Nastala chyba pri podaní žiadosťi. Skúste to znova neskôr.", Severity.Error);
+		}
 	}
 }

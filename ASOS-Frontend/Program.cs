@@ -22,8 +22,6 @@ builder.Services.AddHttpClient("API", client =>
 })
 .AddHttpMessageHandler<AuthDelegateHandler>();
 
-//builder.Services.AddSingleton(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("API"));
-
 builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddAuthenticationCore();
 builder.Services.AddAuthorizationCore();

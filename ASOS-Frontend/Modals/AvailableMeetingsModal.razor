@@ -16,7 +16,7 @@
 		box-shadow: unset !important;
 	}
 
-	.rz-datalist-content .rz-card {
+	#available-meeting-list .rz-datalist-content .rz-card {
 		padding: 8px !important;
 		min-height: unset !important;
 	}
@@ -26,7 +26,7 @@
 	<RadzenRow Style="padding-left:8px">
 		<RadzenDatePicker @bind-Value=@SelectDate Name="RadzenDatePickerBindValue" ShowCalendarWeek AllowClear Placeholder="Dátum" DateFormat="dd.MM.yyyy" Culture='new CultureInfo("sk-SK")' class="rz-shadow-5" />
 	</RadzenRow>
-	<RadzenDataList AllowVirtualization="false"
+	<RadzenDataList id="available-meeting-list" AllowVirtualization="false"
 					WrapItems="true" AllowPaging="true" PagerAlwaysVisible="true" EmptyText="Zoznam je prázdny, skontrolujte zvolené filtre."
 					Data="@filteredMeetingsList" TItem="MeetingDto" PageSize="5" PagerHorizontalAlign="HorizontalAlign.Left"
 					ShowPagingSummary="true" PagingSummaryFormat="Strana {0} / {1}">

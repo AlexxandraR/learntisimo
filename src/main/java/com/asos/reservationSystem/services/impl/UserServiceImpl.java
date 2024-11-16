@@ -18,6 +18,7 @@ import java.sql.Blob;
 import java.security.Principal;
 import java.util.Objects;
 import java.util.Optional;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -67,7 +68,22 @@ public class UserServiceImpl implements UserService {
         try {
             return user.get().getPhoto().getBytes(1, (int) user.get().getPhoto().length());
         }catch (Exception e){
+            e.printStackTrace();  // This prints the stack trace to the console
             throw new CustomException("The image could not be loaded.", "Set image: The image could not be loaded.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    public void removeUserPhoto(Optional<User> user) {
+        if (user.isEmpty()) {
+            throw new CustomException("User does not exist.",
+                    "Remove image: User does not exist.", HttpStatus.NOT_FOUND);
+        }
+        try {
+            user.get().setPhoto(null);  // Set the photo to null to remove it
+            userRepository.save(user.get());
+        } catch (Exception e) {
+            throw new CustomException("The image could not be removed.", 
+                    "Remove image: The image could not be removed.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -84,27 +100,6 @@ public class UserServiceImpl implements UserService {
                 }
         );
     }
-
-//    @Override
-//    public void acceptTeacher(User user) {
-//        try {
-//            userRepository.findUserByEmail(user.getEmail()).ifPresentOrElse(
-//                    u -> {
-//                        u.setRole(Role.TEACHER);
-//                        userRepository.save(u);
-//                    },
-//                    () -> {
-//                        throw new CustomException("User not found.",
-//                                "Accepting teacher: User with email: " + user.getEmail() + " not found.", HttpStatus.NOT_FOUND);
-//                    }
-//            );
-//        } catch (CustomException e) {
-//            throw e;
-//        } catch (Exception e) {
-//            throw new CustomException("Unexpected error occurred while accepting teacher.",
-//                    "Unexpected error: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-//        }
-//    }
 
     @Override
     public void updateProfile(Optional<User> user, User userData) {
@@ -165,95 +160,4 @@ public class UserServiceImpl implements UserService {
                     "Update password: Password is incorrect for user with id: " + user.get().getId() + ".", HttpStatus.BAD_REQUEST);
         }
     }
-
-//    @Override
-//    public void checkRole(Principal connectedUser, Role role) {
-//        try {
-//            getUser(connectedUser).ifPresentOrElse(
-//                    u -> {
-//                        if (u.getRole() != role) {
-//                            throw new CustomException("User does not have required role.",
-//                                    "Checking role: User does not have required role.", HttpStatus.FORBIDDEN);
-//                        }
-//                    },
-//                    () -> {
-//                        throw new CustomException("User not found.",
-//                                "Checking role: User "+ connectedUser.getName() +" not found.", HttpStatus.NOT_FOUND);
-//                    }
-//            );
-//        } catch (CustomException e) {
-//            throw e;
-//        } catch (Exception e) {
-//            throw new CustomException("Unexpected error occurred while checking role.",
-//                    "Unexpected error: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-//        }
-//    }
-
-//    @Override
-//    public void checkConnectedToProvidedUser(Principal connectedUser, String id) {
-//        try {
-//            getUser(connectedUser).ifPresentOrElse(
-//                    u -> {
-//                        if (!u.getId().equals(Long.parseLong(id))) {
-//                            throw new CustomException("User is not connected to provided user.",
-//                                    "Checking connection: User is not connected to provided user with id: " + id, HttpStatus.FORBIDDEN);
-//                        }
-//                    },
-//                    () -> {
-//                        throw new CustomException("User not found.",
-//                                "Checking connection: User " + connectedUser.getName() + " not found.", HttpStatus.NOT_FOUND);
-//                    }
-//            );
-//        } catch (CustomException e) {
-//            throw e;
-//        } catch (Exception e) {
-//            throw new CustomException("Unexpected error occurred while checking connection.",
-//                    "Unexpected error: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-//        }
-//    }
-
-//    @Override
-//    public void checkConnectedToProvidedUserByEmail(Principal connectedUser, String email) {
-//        try {
-//            getUser(connectedUser).ifPresentOrElse(
-//                    u -> {
-//                        if (!u.getEmail().equals(email)) {
-//                            throw new CustomException("User is not connected to provided user.",
-//                                    "Checking connection by email: User is not connected to provided user with email: " + email, HttpStatus.FORBIDDEN);
-//                        }
-//                    },
-//                    () -> {
-//                        throw new CustomException("User not found.",
-//                                "Checking connection by email: User " + connectedUser.getName() + " not found.", HttpStatus.NOT_FOUND);
-//                    }
-//            );
-//        } catch (CustomException e) {
-//            throw e;
-//        } catch (Exception e) {
-//            throw new CustomException("Unexpected error occurred while checking connection by email.",
-//                    "Unexpected error: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-//        }
-//    }
-
-
-//    @Override
-//    public void denyTeacher(User user) {
-//        try {
-//            userRepository.findUserByEmail(user.getEmail()).ifPresentOrElse(
-//                    u -> {
-//                        u.setRole(Role.STUDENT);
-//                        userRepository.save(u);
-//                    },
-//                    () -> {
-//                        throw new CustomException("User not found.",
-//                                "Denying teacher: User with email: " + user.getEmail() + " not found.", HttpStatus.NOT_FOUND);
-//                    }
-//            );
-//        } catch (CustomException e) {
-//            throw e;
-//        } catch (Exception e) {
-//            throw new CustomException("Unexpected error occurred while denying teacher.",
-//                    "Unexpected error: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-//        }
-//    }
 }
