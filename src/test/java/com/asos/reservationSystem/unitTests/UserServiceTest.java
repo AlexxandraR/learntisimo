@@ -42,13 +42,15 @@ public class UserServiceTest {
         mockUser.setId(1L);
 
         MultipartFile mockPhotoFile = Mockito.mock(MultipartFile.class);
-        byte[] photoBytes = Files.readAllBytes(Paths.get("src/test/java/com/asos/reservationSystem/unitTests/graf1.png"));
+        byte[] photoBytes = Files.readAllBytes(
+                Paths.get("src/test/java/com/asos/reservationSystem/unitTests/graf1.png"));
         Mockito.when(mockPhotoFile.isEmpty()).thenReturn(false);
         Mockito.when(mockPhotoFile.getBytes()).thenReturn(photoBytes);
 
         Optional<User> optionalUser = Optional.of(mockUser);
 
-        Mockito.when(userRepository.save(Mockito.any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        Mockito.when(userRepository.save(Mockito.any(User.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
 
         userService.saveUserPhoto(optionalUser, mockPhotoFile);
 
@@ -85,7 +87,8 @@ public class UserServiceTest {
         User mockUser = new User();
         mockUser.setId(1L);
 
-        byte[] photoBytes = Files.readAllBytes(Paths.get("src/test/java/com/asos/reservationSystem/unitTests/graf1.png"));
+        byte[] photoBytes = Files.readAllBytes(
+                Paths.get("src/test/java/com/asos/reservationSystem/unitTests/graf1.png"));
         Blob photoBlob = new SerialBlob(photoBytes);
         mockUser.setPhoto(photoBlob);
 
@@ -130,7 +133,8 @@ public class UserServiceTest {
         mockUser.setId(1L);
 
         Optional<User> optionalUser = Optional.of(mockUser);
-        byte[] photoBytes = Files.readAllBytes(Paths.get("src/test/java/com/asos/reservationSystem/unitTests/graf1.png"));
+        byte[] photoBytes = Files.readAllBytes(
+                Paths.get("src/test/java/com/asos/reservationSystem/unitTests/graf1.png"));
         Blob photoBlob = new SerialBlob(photoBytes);
         mockUser.setPhoto(photoBlob);
 
@@ -147,11 +151,11 @@ public class UserServiceTest {
     void removeUserPhotoShouldThrowExceptionWhenUserIsEmpty() {
         Optional<User> optionalUser = Optional.empty();
 
-        CustomException exception = assertThrows(CustomException.class, () -> {
-            userService.removeUserPhoto(optionalUser);
-        });
+        CustomException exception = assertThrows(CustomException.class, () ->
+                userService.removeUserPhoto(optionalUser));
 
-        assertEquals("User does not exist.", exception.getMessage(), "Exception message should be 'User does not exist.'");
+        assertEquals("User does not exist.", exception.getMessage(),
+                "Exception message should be 'User does not exist.'");
     }
 
     @Test
@@ -162,11 +166,11 @@ public class UserServiceTest {
         Optional<User> optionalUser = Optional.of(mockUser);
         Mockito.doThrow(new RuntimeException("Database error")).when(userRepository).save(mockUser);
 
-        CustomException exception = assertThrows(CustomException.class, () -> {
-            userService.removeUserPhoto(optionalUser);
-        });
+        CustomException exception = assertThrows(CustomException.class, () ->
+                userService.removeUserPhoto(optionalUser));
 
-        assertEquals("The image could not be removed.", exception.getMessage(), "Exception message should be 'The image could not be removed.'");
+        assertEquals("The image could not be removed.", exception.getMessage(),
+                "Exception message should be 'The image could not be removed.'");
     }
 
     @Test
@@ -201,9 +205,8 @@ public class UserServiceTest {
         Optional<User> optionalUser = Optional.empty();
         User userData = new User();
 
-        CustomException exception = assertThrows(CustomException.class, () -> {
-            userService.updateProfile(optionalUser, userData);
-        });
+        CustomException exception = assertThrows(CustomException.class, () ->
+                userService.updateProfile(optionalUser, userData));
 
         assertEquals("User does not exist.", exception.getMessage());
     }
@@ -238,9 +241,8 @@ public class UserServiceTest {
         String newEmail = "new@example.com";
         String password = "validPassword";
 
-        CustomException exception = assertThrows(CustomException.class, () -> {
-            userService.updateEmail(optionalUser, oldEmail, newEmail, password);
-        });
+        CustomException exception = assertThrows(CustomException.class, () ->
+                userService.updateEmail(optionalUser, oldEmail, newEmail, password));
 
         assertEquals("User does not exist.", exception.getMessage());
     }
@@ -256,9 +258,8 @@ public class UserServiceTest {
         String newEmail = "old@example.com";
         String password = "validPassword";
 
-        CustomException exception = assertThrows(CustomException.class, () -> {
-            userService.updateEmail(optionalUser, oldEmail, newEmail, password);
-        });
+        CustomException exception = assertThrows(CustomException.class, () ->
+                userService.updateEmail(optionalUser, oldEmail, newEmail, password));
 
         assertEquals("New email is equal to actual email.", exception.getMessage());
     }
@@ -274,9 +275,8 @@ public class UserServiceTest {
         String newEmail = "new@example.com";
         String password = "validPassword";
 
-        CustomException exception = assertThrows(CustomException.class, () -> {
-            userService.updateEmail(optionalUser, oldEmail, newEmail, password);
-        });
+        CustomException exception = assertThrows(CustomException.class, () ->
+                userService.updateEmail(optionalUser, oldEmail, newEmail, password));
 
         assertEquals("Old email is not equal to actual email.", exception.getMessage());
     }
@@ -295,9 +295,8 @@ public class UserServiceTest {
 
         Mockito.when(passwordEncoder.matches(password, mockUser.getPassword())).thenReturn(false);
 
-        CustomException exception = assertThrows(CustomException.class, () -> {
-            userService.updateEmail(optionalUser, oldEmail, newEmail, password);
-        });
+        CustomException exception = assertThrows(CustomException.class, () ->
+                userService.updateEmail(optionalUser, oldEmail, newEmail, password));
 
         assertEquals("Password is incorrect.", exception.getMessage());
     }
@@ -330,9 +329,8 @@ public class UserServiceTest {
         String oldPassword = "oldPassword";
         String newPassword = "newPassword";
 
-        CustomException exception = assertThrows(CustomException.class, () -> {
-            userService.updatePassword(optionalUser, newPassword, oldPassword);
-        });
+        CustomException exception = assertThrows(CustomException.class, () ->
+                userService.updatePassword(optionalUser, newPassword, oldPassword));
 
         assertEquals("User does not exist.", exception.getMessage());
     }
@@ -346,13 +344,12 @@ public class UserServiceTest {
         Optional<User> optionalUser = Optional.of(mockUser);
 
         String oldPassword = "oldPassword";
-        String newPassword = "oldPassword"; // Same as old password
+        String newPassword = "oldPassword";
 
-        CustomException exception = assertThrows(CustomException.class, () -> {
-            userService.updatePassword(optionalUser, newPassword, oldPassword);
-        });
+        CustomException exception = assertThrows(CustomException.class, () ->
+                userService.updatePassword(optionalUser, newPassword, oldPassword));
 
-        assertEquals("New password is qual to old password.", exception.getMessage());
+        assertEquals("New password is equal to old password.", exception.getMessage());
     }
 
     @Test
@@ -368,9 +365,8 @@ public class UserServiceTest {
 
         Mockito.when(passwordEncoder.matches(oldPassword, mockUser.getPassword())).thenReturn(false);
 
-        CustomException exception = assertThrows(CustomException.class, () -> {
-            userService.updatePassword(optionalUser, newPassword, oldPassword);
-        });
+        CustomException exception = assertThrows(CustomException.class, () ->
+                userService.updatePassword(optionalUser, newPassword, oldPassword));
 
         assertEquals("Password is incorrect.", exception.getMessage());
     }

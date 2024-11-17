@@ -158,8 +158,8 @@ public class UserServiceImpl implements UserService {
                     "Update password: User does not exist.", HttpStatus.NOT_FOUND);
         }
         if(Objects.equals(newPassword, oldPassword)){
-            throw new CustomException("New password is qual to old password.", "Update password: New password is " +
-                    "qual to old password.", HttpStatus.BAD_REQUEST);
+            throw new CustomException("New password is equal to old password.", "Update password: New password is " +
+                    "equal to old password.", HttpStatus.BAD_REQUEST);
         }
         else if (passwordEncoder.matches(oldPassword, user.get().getPassword())) {
             user.get().setPassword(passwordEncoder.encode(newPassword));
