@@ -32,7 +32,7 @@ public class SecurityConfiguration {
                 .cors(cors -> cors
                         .configurationSource(request -> {
                             var corsConfiguration = new org.springframework.web.cors.CorsConfiguration();
-                            corsConfiguration.setAllowedOriginPatterns(List.of("http://localhost:[*]"));
+                            corsConfiguration.setAllowedOriginPatterns(List.of("https://3.72.250.156"));
                             corsConfiguration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE",
                                     "OPTIONS"));
                             corsConfiguration.setAllowedHeaders(List.of("*"));

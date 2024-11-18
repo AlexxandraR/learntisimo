@@ -17,6 +17,9 @@ WORKDIR /app
 # Copy only the JAR file from the build stage
 COPY --from=build /app/target/*.jar app.jar
 
+# Copy the self-signed certificate and key
+COPY selfsigned.p12 /etc/ssl/certs/selfsigned.p12
+
 # Expose the application port
 EXPOSE 8080
 

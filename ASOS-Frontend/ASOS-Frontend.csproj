@@ -4,6 +4,7 @@
     <TargetFramework>net7.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+	<ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
   </PropertyGroup>
 
   <ItemGroup>
@@ -21,6 +22,7 @@
     <PackageReference Include="Radzen.Blazor" Version="5.2.9" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.1.0" />
 	<PackageReference Include="Blazored.FluentValidation" Version="2.2.0" />
+	<ServiceWorker    Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" /> 
   </ItemGroup>
 
 </Project>

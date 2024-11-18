@@ -18,7 +18,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<AuthDelegateHandler>();
 builder.Services.AddHttpClient("API", client =>
 {
-	client.BaseAddress = new Uri("http://localhost:8080/");
+	client.BaseAddress = new Uri("https://3.72.250.156:8080/");
 })
 .AddHttpMessageHandler<AuthDelegateHandler>();
 
