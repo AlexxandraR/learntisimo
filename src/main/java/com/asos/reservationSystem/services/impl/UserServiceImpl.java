@@ -107,7 +107,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void updateProfile(Optional<User> user, User userData) {
+    public User updateProfile(Optional<User> user, User userData) {
         if(user.isEmpty()){
             throw new CustomException("User does not exist.",
                     "Update profile: User does not exist.", HttpStatus.NOT_FOUND);
@@ -122,7 +122,7 @@ public class UserServiceImpl implements UserService {
                     HttpStatus.BAD_REQUEST);
         }
         user.get().setDescription(userData.getDescription());
-        userRepository.save(user.get());
+        return userRepository.save(user.get());
     }
 
     @Override
