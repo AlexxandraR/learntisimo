@@ -6,6 +6,7 @@ import com.asos.reservationSystem.domain.dto.UserDto;
 import com.asos.reservationSystem.domain.entities.User;
 import com.asos.reservationSystem.exception.CustomException;
 import com.asos.reservationSystem.mappers.Mapper;
+import com.asos.reservationSystem.mappers.impl.UserMapperImpl;
 import com.asos.reservationSystem.services.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,10 +78,10 @@ public class UserController {
         try {
             Optional<User> user = userService.getUser(connectedUser);
             User userData = userMapper.mapFromDto(userDto);
-            userService.updateProfile(user, userData);
+            User savedUser = userService.updateProfile(user, userData);
             logger.info("Update profile: Successfully updated user profile with id: " + user.get().getId() + " at: "
                     + LocalDateTime.now());
-            return new ResponseEntity<>(userDto, HttpStatus.OK);
+            return new ResponseEntity<>(userMapper.mapToDto(savedUser), HttpStatus.OK);
         } catch (Exception e) {
             throw new CustomException("Wrong format of data.", "Update profile: Wrong format of data.",
                     HttpStatus.BAD_REQUEST);
