@@ -68,7 +68,8 @@ public class DBInitializer implements CommandLineRunner {
         createMeeting(LocalDateTime.now().plusDays(1), 60, null, teacher2, course7);
         createMeeting(LocalDateTime.now().plusDays(2), 60, null, teacher1, course5);
 
-        createTeachingRequest(LocalDateTime.now().minusDays(3), teacher1, TeachingRequestStatus.APPROVED);
+        createTeachingRequest(LocalDateTime.now().minusDays(3), student1, TeachingRequestStatus.PENDING);
+        createTeachingRequest(LocalDateTime.now().minusDays(7), teacher1, TeachingRequestStatus.APPROVED);
         createTeachingRequest(LocalDateTime.now().minusDays(7), teacher2, TeachingRequestStatus.APPROVED);
     }
 
